@@ -10,28 +10,28 @@ namespace Assets.Game.Scripts
         [Tooltip("1-up. 2-normal/down. 3-left. 4-right")]
         public int gravityDir;
         
-        private float grav = -9.81f;
+        private readonly float _gravity = -9.81f;
 
         private void ChangeGravity()
         {
-            print("gravity: " + grav);
+            print("gravity: " + _gravity);
 
             switch (gravityDir)
             {
                 case 1:
-                    Physics.gravity = new Vector3(0, -grav, 0);
+                    Physics.gravity = new Vector3(0, -_gravity, 0);
                     break;
                 case 2:
-                    Physics.gravity = new Vector3(0, grav, 0);
+                    Physics.gravity = new Vector3(0, _gravity, 0);
                     break;
                 case 3:
-                    Physics.gravity = new Vector3(-grav, 0, 0);
+                    Physics.gravity = new Vector3(-_gravity, 0, 0);
                     break;
                 case 4:
-                    Physics.gravity = new Vector3(grav, 0, 0);
+                    Physics.gravity = new Vector3(_gravity, 0, 0);
                     break;
                 default:
-                    Physics.gravity = new Vector3(0, grav, 0);
+                    Physics.gravity = new Vector3(0, _gravity, 0);
                     break;
             }
         }

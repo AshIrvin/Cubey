@@ -69,34 +69,14 @@ namespace Assets.Game.Scripts
             startPos.x += startXOffset;
             startPos.y += startYOffset;
 
-            if (fixedObject)
-            {
-                //if (arrow == null)
-                    //arrow = transform.parent.parent.transform.Find("Items").Find("platform_Arrow").gameObject;
-
-                //spawnedArrow = Instantiate(arrow, gameObject.transform);
-                //spawnedArrow.transform.localPosition = new Vector3(1, 3, 0);
-                
-
-                //if (!moveHor)
-                    //spawnedArrow.transform.rotation = new Quaternion(0, 0, 0, 0);
-                //else
-                    //spawnedArrow.transform.rotation = new Quaternion(0, 0, 90, 0);
-
-                //spawnedArrow.SetActive(true);
-            }
-
             targetPos = new Vector3(startPos.x + horPlatformDistance, startPos.y + vertPlatformDistance);
-
             playerDragThruCloud = 25f;
         }
 
         private void FixedUpdate()
         {
             HorizontalPlatforms();
-
             VerticalPlatforms();
-
             currentPos = transform.position;
         }
 
@@ -117,7 +97,6 @@ namespace Assets.Game.Scripts
                     if (transform.position.x < (startPos.x + offset))
                         moveRight = true;
                 }
-
             }
         }
 

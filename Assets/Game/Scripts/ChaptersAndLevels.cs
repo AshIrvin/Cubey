@@ -7,7 +7,7 @@ namespace Assets.Game.Scripts
     public class ChaptersAndLevels : MonoBehaviour
     {
 
-        #region MyRegion
+        #region Public
 
         public GameManager gameManager;
 
@@ -32,7 +32,6 @@ namespace Assets.Game.Scripts
 
         private void Start()
         {
-            print("ChapterAndLevels script starting");
             SetupLevels();
         }
 
@@ -48,9 +47,9 @@ namespace Assets.Game.Scripts
 
             if (levelsParent != null && chaptersList.Count == 0)
             {
-                print("levels parent found: " + levelsParent.name);
+                //print("levels parent found: " + levelsParent.name);
 
-                for (int i = 0; i < 6; i++)
+                for (var i = 0; i < 6; i++)
                 {
                     // search for each gameobject with Chapter in its name to add it to the List
                     GameObject chapterFolders = levelsParent.transform.Find("Chapter_" + i).gameObject;
@@ -60,7 +59,7 @@ namespace Assets.Game.Scripts
                 }
             }
 
-            for (int i = 0; i < chaptersList.Count; i++)
+            for (var i = 0; i < chaptersList.Count; i++)
             {
                 chaptersList[i].SetActive(false);
             }
@@ -79,17 +78,14 @@ namespace Assets.Game.Scripts
             }
 
             // take the chapters assigned to the array
-            for (int i = 0; i < chaptersList.Count; i++)
+            for (var i = 0; i < chaptersList.Count; i++)
             {
-                // 
                 if (chaptersList[i].activeInHierarchy)
                 {
                     gameManager.levelsGrp = chaptersList[i].transform.Find("Levels").gameObject;
                     var levelsCount = gameManager.levelsGrp.transform.childCount;
 
-                    print("loading levels into array. Length: " + levelsCount);
-
-                    for (int j = 0; j < levelsCount; j++)
+                    for (var j = 0; j < levelsCount; j++)
                     {
                         levelsList.Add(gameManager.levelsGrp.transform.GetChild(j).gameObject);
                     }
@@ -100,7 +96,6 @@ namespace Assets.Game.Scripts
             if (PlayerPrefs.HasKey("levels_n"))
             {
                 gameManager.levelNo = PlayerPrefs.GetInt("levels_n");
-                print("Enabling level: " + gameManager.levelNo);
                 levelsList[gameManager.levelNo].gameObject.SetActive(true);
             }
         }

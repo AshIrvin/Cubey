@@ -10,7 +10,7 @@ namespace Assets.Game.Scripts
     {
         public static VisualEffects Instance { get; private set; }
 
-        #region Public Variables
+        #region Public
         
         [Header("Scripts")]
         public AudioManager audioManager;
@@ -118,14 +118,14 @@ namespace Assets.Game.Scripts
             {
                 var ray = Camera.main.ScreenPointToRay(Input.mousePosition);
 
+                // Todo - needs fixed - cam to button erroring out
                 var target = player.transform.position;
                 target.z -= 0.2f;
                 var distance = Vector3.Distance(target, Camera.main.transform.position);
                 var startPoint = ray.GetPoint(distance);
+
                 // Todo - fix start point to keep pe on z 0
                 startPoint.z = angle;
-
-                //print("ray.origin.y < target.y: " + startPoint.y + " / " + target.y);
 
                 if (Physics.Raycast(ray) && startPoint.y < target.y)
                 {

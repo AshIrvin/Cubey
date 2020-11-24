@@ -6,6 +6,8 @@ namespace Assets.Game.Scripts
 {
     public class PlayerConfig : MonoBehaviour
     {
+        // Todo - move player related setup methods here
+        // or change name of script
 
         private void OnCollisionEnter(Collision collision)
         {

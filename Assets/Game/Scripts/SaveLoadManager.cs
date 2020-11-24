@@ -128,7 +128,7 @@ namespace Assets.Game.Scripts
             CloseWindow(screenChapterComplete);
         }
 
-        public void CloseWindow(GameObject go)
+        private void CloseWindow(GameObject go)
         {
             go.SetActive(!go.activeInHierarchy);
         }
@@ -260,7 +260,7 @@ namespace Assets.Game.Scripts
 
         }
 
-        // Set STARS for each level button
+        // Set stars for each level button
         private void SetStarsForEachLevel()
         {
             storyButtonEnd.interactable = false;
@@ -287,13 +287,12 @@ namespace Assets.Game.Scripts
                     mapPickup.SetActive(true);
                 }
 
-
                 // load level stats
                 levelStats.LoadLevelStats(i);
 
                 // set score with stars
-                var s = levelStats.Score;
-                CheckAwards(s);
+                var scoreForLevel = levelStats.score;
+                CheckAwards(scoreForLevel);
 
                 List<SpriteRenderer> starImages = new List<SpriteRenderer>();
 
@@ -303,7 +302,7 @@ namespace Assets.Game.Scripts
                     starImages[j].color = starDefault;
                 }
 
-                switch (s)
+                switch (scoreForLevel)
                 {
                     case 1:
                         starImages[0].color = starBronze;
@@ -434,11 +433,12 @@ namespace Assets.Game.Scripts
         }
 
         // comes from map buttons
-        public void LoadLevel(int level_n)
+        private void LoadLevel(int level_n)
         {
             LoadingScreen(true);
 
-            CheckLevelsPlayed(); // for Ads
+            // for Ads
+            CheckLevelsPlayed(); 
 
             if (audioManager != null && audioManager.allowSounds)
                 audioManager.PlayMusic(audioManager.menuStartLevel);
@@ -602,12 +602,12 @@ namespace Assets.Game.Scripts
                 SetCubeyPosition(levelButtons[0].transform.position);
         }
 
-        void CheckChapterUnlocks()
+        private void CheckChapterUnlocks()
         {
             CycleButtonLocks(chapterButtons);
         }
 
-        void CheckLevelUnlocks() 
+        private void CheckLevelUnlocks() 
         {
             CycleButtonLocks(levelButtons);
         }
@@ -649,7 +649,7 @@ namespace Assets.Game.Scripts
         */
 
         // Check which levels are unlocked inside the chapter
-        void CycleButtonLocks(List<GameObject> buttons)
+        private void CycleButtonLocks(List<GameObject> buttons)
         {
             // get correct saved level
             GetLevel();

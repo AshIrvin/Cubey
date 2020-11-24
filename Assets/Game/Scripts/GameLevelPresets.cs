@@ -7,26 +7,29 @@ namespace Assets.Game.Scripts
 {
     public class GameLevelPresets : MonoBehaviour
     {
+
+        #region Public
+
         public GameManager gameManager;
+
+        public int gold;
+        public int silver;
+        public int bronze;
+
+        #endregion
+
+        #region Private
 
         [SerializeField]
         [Tooltip("Finds Exit for level")]
         private GameObject exitObject;
-
-        public int gold, silver, bronze;
+        
+        #endregion
 
         private void Start()
         {
             if (gameManager == null)
                 gameManager = GetComponent<GameManager>();
-        }
-
-        private void SwapGroundRiver(bool on)
-        {
-            // on = ground/normal
-            //gameManager.groundEdge.SetActive(!on);
-            //gameManager.river.SetActive(!on);
-
         }
 
         private void LevelTimer(int n)
@@ -41,8 +44,6 @@ namespace Assets.Game.Scripts
         public void LoadLevelPresets(int c, int n)
         {
             gameManager.levelStats.LoadLevelStats(gameManager.levelNo);
-            //gameManager.river.SetActive(false);
-            //gameManager.groundEdge.SetActive(false);
             gameManager.camMovement = true;
             gameManager.leanForceRb.VelocityMultiplier = gameManager.cubeyJumpHeight;
             Physics.gravity = new Vector3(0, -9.81f, 0);
@@ -53,6 +54,7 @@ namespace Assets.Game.Scripts
             gameManager.jumpCountReduces = true;
             gameManager.jumpCount = 10;
             gameManager.jumpText.text = gameManager.jumpCount.ToString();
+
             // set text back to jumps
             gameManager.jumpsText.text = "Jumps";
             gameManager.useTimer = false;
@@ -451,10 +453,12 @@ namespace Assets.Game.Scripts
             {
 
             }
+            // Lollypop chapter
             else if (c == 4)
             {
 
             }
+            // Alien planet chapter
             else if (c == 5)
             {
 
