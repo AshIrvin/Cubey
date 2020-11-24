@@ -6,21 +6,18 @@ namespace Assets.Game.Scripts
 {
     public class ChaptersAndLevels : MonoBehaviour
     {
-
         #region Public
 
         public GameManager gameManager;
 
         public static List<GameObject> chaptersList = new List<GameObject>();
-        public static int chapterNo;
         public static List<GameObject> levelsList = new List<GameObject>();
+        public static int chapterNo;
         
         [Header("Set chapter")]
         public int customChapter;
 
         #endregion
-
-
 
         private void Awake()
         {
@@ -37,9 +34,9 @@ namespace Assets.Game.Scripts
 
         private void SetupLevels()
         {
-            // find Levels go
+            // find Levels GO
             // find active folder start with Chapter
-            // get all go in folder and add to list
+            // get all GO in folder and add to list
 
             var levelsParent = GameObject.Find("Chapters").gameObject;
 
