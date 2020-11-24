@@ -338,3 +338,24 @@ ASALocalRun/
 
 # BeatPulse healthcheck temp database
 healthchecksdb
+/Assets/BayatGames/SaveGamePro
+/Assets/LeanTouch
+/Assets/Plugins
+/Assets/Src_Sounds
+/Library
+/ProjectSettings
+/Temp
+/UserSettings
+/Assets/Src_Images
+/Assets/New Terrain.asset
+/Assets/Game/Scenes
+/Assets/Game/Prefabs
+/Assets/Game/Objects
+/Assets/Game/Materials
+/Assets/Game/Animations
+/Assets/Game/Textures
+/Assembly-CSharp-Editor.csproj
+/Assembly-CSharp-firstpass.csproj
+/Assembly-CSharp.csproj
+/Cubey.sln
+/.vsconfig
