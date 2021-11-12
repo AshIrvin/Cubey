@@ -1,0 +1,32 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8a68e27eb77129047b6bb6ccf2d31997, type: 3}
+  m_Name: Level04
+  m_EditorClassIdentifier: 
+  chapterNumber: 0
+  levelName: Level 4
+  levelNumber: 4
+  timer: 99
+  jumpsForGold: 3
+  jumpsForSilver: 5
+  jumpsForBronze: 8
+  levelSprite: {fileID: 0}
+  levelPrefab: {fileID: 6938469229071303072, guid: f47be86464902524dbafcf37d14a8a0f,
+    type: 3}
+  startPosition: {fileID: 8766191377454351387, guid: f47be86464902524dbafcf37d14a8a0f,
+    type: 3}
+  exitPosition: {fileID: 4339027409659408465, guid: f47be86464902524dbafcf37d14a8a0f,
+    type: 3}
+  awardsReceived: 1
+  portalEnter: []
+  portalExit: []
+  pathName: Assets/Game/Prefabs/LevelPrefabs/Chapter02

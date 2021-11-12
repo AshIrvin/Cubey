@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Assets.Game.Scripts
+namespace Game.Scripts
 {
     public class ScrollingBackground : MonoBehaviour
     {
@@ -21,7 +21,7 @@ namespace Assets.Game.Scripts
 
         private void FixedUpdate()
         {
-            if (GameManager.Instance.allowFlight)
+            /*if (GameManager.Instance.allowFlight)
             {
                 // move different layers
                 if (gameObject.name.Contains("bush_back"))
@@ -51,7 +51,7 @@ namespace Assets.Game.Scripts
                         Destroy(this);
                     transform.position = t;
                 }
-            }
+            }*/
             //if (GameManager.Instance.allowFlight)
             //{
             //    transform.Translate(Vector3.left * Time.deltaTime * speed, Space.World);

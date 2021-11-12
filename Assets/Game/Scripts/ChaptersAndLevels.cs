@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Assets.Game.Scripts
+namespace Game.Scripts
 {
     public class ChaptersAndLevels : MonoBehaviour
     {
@@ -79,21 +79,21 @@ namespace Assets.Game.Scripts
             {
                 if (chaptersList[i].activeInHierarchy)
                 {
-                    gameManager.levelsGrp = chaptersList[i].transform.Find("Levels").gameObject;
-                    var levelsCount = gameManager.levelsGrp.transform.childCount;
+                    /*gameManager.levelsGrp = chaptersList[i].transform.Find("Levels").gameObject;
+                    var levelsCount = gameManager.levelsGrp.transform.childCount;*/
 
-                    for (var j = 0; j < levelsCount; j++)
+                    /*for (var j = 0; j < levelsCount; j++)
                     {
                         levelsList.Add(gameManager.levelsGrp.transform.GetChild(j).gameObject);
-                    }
+                    }*/
                 }
             }
 
             // change all these '_n's
             if (PlayerPrefs.HasKey("levels_n"))
             {
-                gameManager.levelNo = PlayerPrefs.GetInt("levels_n");
-                levelsList[gameManager.levelNo].gameObject.SetActive(true);
+                /*gameManager.levelNo = PlayerPrefs.GetInt("levels_n");
+                levelsList[gameManager.levelNo].gameObject.SetActive(true);*/
             }
         }
     }

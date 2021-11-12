@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Assets.Game.Scripts
+namespace Game.Scripts
 {
     public class ScrollingHorizontalLevel : MonoBehaviour
     {
@@ -33,14 +33,14 @@ namespace Assets.Game.Scripts
 
             //GameManager.Instance.LoadLevelPresets();
 
-            if (gameObject.activeInHierarchy || GameManager.Instance.levelNo == 5)
+            /*if (gameObject.activeInHierarchy || GameManager.Instance.levelNo == 5)
             {
                 GameManager.Instance.allowFlight = true;
                 print("ALLOW FLIGHT: " + GameManager.Instance.allowFlight + ", level: " + GameManager.Instance.levelNo);
                 GameManager.Instance.playerRb.constraints = RigidbodyConstraints.FreezePositionX | RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationY | RigidbodyConstraints.FreezePositionZ;
                 GameManager.Instance.deathWalls.SetActive(true);
                 CameraStatic();
-            }
+            }*/
 
             countdown = time;
         }

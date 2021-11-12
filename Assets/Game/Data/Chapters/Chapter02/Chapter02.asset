@@ -1,0 +1,91 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9994f75f442ab0444bb747cfa8b3682f, type: 3}
+  m_Name: Chapter02
+  m_EditorClassIdentifier: 
+  menuEnvironment: {fileID: 7326525578732712116, guid: c4d489ca35182e644b9a20c108e753a3,
+    type: 3}
+  chapterNumber: 2
+  chapterName: On The Beach
+  pickupIcon: {fileID: 0}
+  lastLevelPlayed: 4
+  lastLevelUnlocked: 4
+  chapterMap: {fileID: 1237286781212638121, guid: 7271a4f8c2113d24d876f236e784ec43,
+    type: 3}
+  cubeyPlayer: {fileID: 0}
+  levelList: {fileID: 11400000, guid: 168e2870586d1ec42aa1f77f4b6910bd, type: 2}
+  chapterMapButtonList:
+  - {fileID: 1525343958251369463, guid: 7271a4f8c2113d24d876f236e784ec43, type: 3}
+  - {fileID: 1525343958540926143, guid: 7271a4f8c2113d24d876f236e784ec43, type: 3}
+  - {fileID: 1525343958611661085, guid: 7271a4f8c2113d24d876f236e784ec43, type: 3}
+  - {fileID: 1525343958495444635, guid: 7271a4f8c2113d24d876f236e784ec43, type: 3}
+  - {fileID: 1525343959257748798, guid: 7271a4f8c2113d24d876f236e784ec43, type: 3}
+  - {fileID: 1525343958310534218, guid: 7271a4f8c2113d24d876f236e784ec43, type: 3}
+  - {fileID: 1525343959167299790, guid: 7271a4f8c2113d24d876f236e784ec43, type: 3}
+  - {fileID: 1525343959287928646, guid: 7271a4f8c2113d24d876f236e784ec43, type: 3}
+  - {fileID: 1525343959193339841, guid: 7271a4f8c2113d24d876f236e784ec43, type: 3}
+  - {fileID: 1525343958329382406, guid: 7271a4f8c2113d24d876f236e784ec43, type: 3}
+  - {fileID: 1525343958856078349, guid: 7271a4f8c2113d24d876f236e784ec43, type: 3}
+  - {fileID: 1525343957977197682, guid: 7271a4f8c2113d24d876f236e784ec43, type: 3}
+  - {fileID: 1525343958154787301, guid: 7271a4f8c2113d24d876f236e784ec43, type: 3}
+  - {fileID: 1525343958406847621, guid: 7271a4f8c2113d24d876f236e784ec43, type: 3}
+  - {fileID: 1525343958646780469, guid: 7271a4f8c2113d24d876f236e784ec43, type: 3}
+  - {fileID: 1525343959910958406, guid: 7271a4f8c2113d24d876f236e784ec43, type: 3}
+  - {fileID: 1525343958521711943, guid: 7271a4f8c2113d24d876f236e784ec43, type: 3}
+  - {fileID: 1525343958204785935, guid: 7271a4f8c2113d24d876f236e784ec43, type: 3}
+  - {fileID: 1525343959621441456, guid: 7271a4f8c2113d24d876f236e784ec43, type: 3}
+  - {fileID: 1525343957939507836, guid: 7271a4f8c2113d24d876f236e784ec43, type: 3}
+  - {fileID: 1525343957885853177, guid: 7271a4f8c2113d24d876f236e784ec43, type: 3}
+  - {fileID: 1525343959680067366, guid: 7271a4f8c2113d24d876f236e784ec43, type: 3}
+  - {fileID: 8311821501551583949, guid: 7271a4f8c2113d24d876f236e784ec43, type: 3}
+  - {fileID: 641391202396024854, guid: 7271a4f8c2113d24d876f236e784ec43, type: 3}
+  - {fileID: 459633588137799640, guid: 7271a4f8c2113d24d876f236e784ec43, type: 3}
+  - {fileID: 8120744964620833281, guid: 7271a4f8c2113d24d876f236e784ec43, type: 3}
+  - {fileID: 132227149871636636, guid: 7271a4f8c2113d24d876f236e784ec43, type: 3}
+  - {fileID: 2381643656769639443, guid: 7271a4f8c2113d24d876f236e784ec43, type: 3}
+  - {fileID: 7168011479302437796, guid: 7271a4f8c2113d24d876f236e784ec43, type: 3}
+  - {fileID: 7227474102643206153, guid: 7271a4f8c2113d24d876f236e784ec43, type: 3}
+  inGameMapButtonList:
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  awardsBronze: 0
+  awardsSilver: 0
+  awardsGold: 0
+  fullPathName: Assets/Src_Images/MainMenu/MapLevelImages/Chapter02/

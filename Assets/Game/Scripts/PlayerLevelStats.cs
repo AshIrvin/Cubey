@@ -4,10 +4,13 @@ using UnityEngine;
 using BayatGames.SaveGamePro;
 
 
-namespace Assets.Game.Scripts
+namespace Game.Scripts
 {
     public class PlayerLevelStats : MonoBehaviour
     {
+        [SerializeField] private SaveMetaData saveMetaData;
+        
+        // old
         public static PlayerLevelStats Instance { get; set; }
 
         private GameManager gameManager;
@@ -44,7 +47,9 @@ namespace Assets.Game.Scripts
 
         public void SaveLevel(int _levelNo, float _time, int _star, int _items, int _jumped, int _restarted, int _score)
         {
-            var chapter = MainMenuManager.Instance.chapter.ToString("0");
+            // var chapter = MainMenuManager.Instance.chapter.ToString("0");
+            var chapter = saveMetaData.LastChapterPlayed;
+            
             var levelString = chapter + levelNo.ToString("00");
 
             if (int.TryParse(levelString, out _levelNo))
@@ -126,20 +131,20 @@ namespace Assets.Game.Scripts
         }
 
         // Todo - not used?
-        public int FindActiveChapter()
-        {
-            GameObject chapterFolder = GameObject.Find("Chapters").gameObject;
+        //public int FindActiveChapter()
+        //{
+        //    GameObject chapterFolder = GameObject.Find("Chapters").gameObject;
             
-            // get all children and check if name starts with chapter_
-            for (int i = 0; i < chapterFolder.transform.childCount; i++)
-            {
+        //    // get all children and check if name starts with chapter_
+        //    for (int i = 0; i < chapterFolder.transform.childCount; i++)
+        //    {
 
-            }
+        //    }
 
-            // if chapter_ is active, return
+        //    // if chapter_ is active, return
 
-            return 0;
-        }
+        //    return 0;
+        //}
 
         public void LoadLevelStats(int levelNo)
         {
@@ -164,8 +169,8 @@ namespace Assets.Game.Scripts
                     //print("3. Load stats level" + LevelNo + " Time: " + Time + ", star: " + Star + ", items: " + Items +
                         //", jumped: " + Jumped + ", restarted: " + Restarted + ", score: " + Score);
 
-                    if (gameManager != null)
-                        gameManager.bestTime.text = "Best " + time.ToString("#0"); // "#0"
+                    /*if (gameManager != null)
+                        gameManager.bestTime.text = "Best " + time.ToString("#0"); // "#0"*/
                 } else
                 {
                     SaveGame.Save("Level" + levelNo + "/Time", time);

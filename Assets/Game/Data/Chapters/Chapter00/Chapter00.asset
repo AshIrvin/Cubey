@@ -1,0 +1,70 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9994f75f442ab0444bb747cfa8b3682f, type: 3}
+  m_Name: Chapter00
+  m_EditorClassIdentifier: 
+  menuEnvironment: {fileID: 4453112334427730176, guid: 47005d0f31d502842b8142bf33cab8ca,
+    type: 3}
+  chapterNumber: 0
+  chapterName: Festive Special
+  pickupIcon: {fileID: 0}
+  lastLevelPlayed: 0
+  lastLevelUnlocked: 0
+  chapterMap: {fileID: 7939797506585355753, guid: fbbc67249d1a9ff43bbf7bf14e919cd7,
+    type: 3}
+  levelList: {fileID: 11400000, guid: 9d7a17c323ad5ec4da9f1b148f120b62, type: 2}
+  chapterMapButtonList:
+  - {fileID: 7939797505131494812, guid: fbbc67249d1a9ff43bbf7bf14e919cd7, type: 3}
+  - {fileID: 7651464283200398295, guid: fbbc67249d1a9ff43bbf7bf14e919cd7, type: 3}
+  - {fileID: 7651464281648387623, guid: fbbc67249d1a9ff43bbf7bf14e919cd7, type: 3}
+  - {fileID: 7651464282988908662, guid: fbbc67249d1a9ff43bbf7bf14e919cd7, type: 3}
+  - {fileID: 7651464282072410510, guid: fbbc67249d1a9ff43bbf7bf14e919cd7, type: 3}
+  - {fileID: 7651464283393419012, guid: fbbc67249d1a9ff43bbf7bf14e919cd7, type: 3}
+  - {fileID: 7651464283370261322, guid: fbbc67249d1a9ff43bbf7bf14e919cd7, type: 3}
+  - {fileID: 7651464281662915166, guid: fbbc67249d1a9ff43bbf7bf14e919cd7, type: 3}
+  - {fileID: 7651464282653307970, guid: fbbc67249d1a9ff43bbf7bf14e919cd7, type: 3}
+  - {fileID: 7651464283367115814, guid: fbbc67249d1a9ff43bbf7bf14e919cd7, type: 3}
+  - {fileID: 7651464281844968910, guid: fbbc67249d1a9ff43bbf7bf14e919cd7, type: 3}
+  - {fileID: 7651464281733150735, guid: fbbc67249d1a9ff43bbf7bf14e919cd7, type: 3}
+  - {fileID: 7651464283009348480, guid: fbbc67249d1a9ff43bbf7bf14e919cd7, type: 3}
+  - {fileID: 7651464281580396757, guid: fbbc67249d1a9ff43bbf7bf14e919cd7, type: 3}
+  - {fileID: 7651464282595522084, guid: fbbc67249d1a9ff43bbf7bf14e919cd7, type: 3}
+  - {fileID: 7651464281487017523, guid: fbbc67249d1a9ff43bbf7bf14e919cd7, type: 3}
+  - {fileID: 7651464282866510432, guid: fbbc67249d1a9ff43bbf7bf14e919cd7, type: 3}
+  - {fileID: 7651464282353743627, guid: fbbc67249d1a9ff43bbf7bf14e919cd7, type: 3}
+  - {fileID: 7651464282606017467, guid: fbbc67249d1a9ff43bbf7bf14e919cd7, type: 3}
+  - {fileID: 7651464282624247173, guid: fbbc67249d1a9ff43bbf7bf14e919cd7, type: 3}
+  inGameMapButtonList:
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  awardsBronze: 0
+  awardsSilver: 0
+  awardsGold: 0
+  fullPathName: Assets/Src_Images/MainMenu/MapLevelImages/ChapterChristmas/

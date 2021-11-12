@@ -3,51 +3,43 @@ using System.Collections.Generic;
 using UnityEngine;
 
 
-namespace Assets.Game.Scripts
+namespace Game.Scripts
 {
     public class GameLevelPresets : MonoBehaviour
     {
+        // public GameManager gameManager;
 
-        #region Public
-
-        public GameManager gameManager;
-
-        public int gold;
+        /*public int gold;
         public int silver;
         public int bronze;
-
-        #endregion
-
-        #region Private
 
         [SerializeField]
         [Tooltip("Finds Exit for level")]
         private GameObject exitObject;
         
-        #endregion
 
         private void Start()
         {
-            if (gameManager == null)
-                gameManager = GetComponent<GameManager>();
+            // if (gameManager == null)
+            //     gameManager = GetComponent<GameManager>();
         }
 
         private void LevelTimer(int n)
         {
-            gameManager.useTimer = true;
+            /*gameManager.useTimer = true;
             gameManager.timer.enableTimer = true;
             gameManager.timer.StartTimer(n);
             gameManager.jumpsText.text = "Seconds";
-            gameManager.jumpText.gameObject.SetActive(false);
+            gameManager.jumpText.gameObject.SetActive(false);#1#
         }
 
         public void LoadLevelPresets(int c, int n)
         {
-            gameManager.levelStats.LoadLevelStats(gameManager.levelNo);
+            /*gameManager.levelStats.LoadLevelStats(gameManager.levelNo);
             gameManager.camMovement = true;
             gameManager.leanForceRb.VelocityMultiplier = gameManager.cubeyJumpHeight;
             Physics.gravity = new Vector3(0, -9.81f, 0);
-            gameManager.cubeyWings.SetActive(false);
+            // gameManager.cubeyWings.SetActive(false);
             gameManager.deathWalls.SetActive(false);
             gameManager.allowFlight = false;
             VisualEffects.Instance.pePowerJump.gameObject.SetActive(true);
@@ -62,7 +54,7 @@ namespace Assets.Game.Scripts
             gameManager.timer.timerText.text = "";
 
             gameManager.CountSweetsForLevel();
-            VisualEffects.Instance.peExitSwirl.SetActive(false);
+            VisualEffects.Instance.peExitSwirl.SetActive(false);#1#
 
             // Christmas chapter
             if (c == 0)
@@ -70,7 +62,7 @@ namespace Assets.Game.Scripts
                 VisualEffects.Instance.PlayEffectOverScreen(VisualEffects.Instance.peSnow);
                 VisualEffects.Instance.PlayEffectOverScreen(VisualEffects.Instance.peSnowClose);
 
-                gameManager.SetupExit(true, false);
+                // gameManager.SetupExit(true, false);
 
                 switch (n)
                 {
@@ -177,8 +169,8 @@ namespace Assets.Game.Scripts
                     case 20:
                         // enable timer - bonus level
                         LevelTimer(60);
-                        gameManager.pickupsLeft = 50;
-                        gameManager.itemText.text = gameManager.pickupsLeft + " Sweets left";
+                        /*gameManager.pickupsLeft = 50;
+                        gameManager.itemText.text = gameManager.pickupsLeft + " Sweets left";#1#
                         break;
                     case 21:
                         gold = 7;
@@ -192,9 +184,9 @@ namespace Assets.Game.Scripts
             {
                 VisualEffects.Instance.PlayEffectOverScreen(VisualEffects.Instance.peLeaves);
 
-                if (gameManager.xagon)
+                /*if (gameManager.xagon)
                     gameManager.xagonBg.SetActive(true);
-                gameManager.treeRight.SetActive(true);
+                gameManager.treeRight.SetActive(true);#1#
 
                 BasicLevelSetup(c, n);
 
@@ -203,13 +195,13 @@ namespace Assets.Game.Scripts
                     case 0:
                         //var ln = gameManager.levelNo + 1;
                         //UiManager.Instance.Tutorial(true, "Level " + ln + "!", "Welcome to\nCubey!");
-                        UiManager.Instance.tutorialSketchImage.SetActive(true);
+                        // UiManager.Instance.tutorialSketchImage.SetActive(true);
                         gold = 1;
                         silver = 2;
                         bronze = 10;
                         break;
                     case 1:
-                        UiManager.Instance.TutorialPause(true);
+                        // UiManager.Instance.TutorialPause(true);
                         gold = 1;
                         silver = 2;
                         bronze = 10;
@@ -311,10 +303,10 @@ namespace Assets.Game.Scripts
                         break;
                     case 21:
                         LevelTimer(99);
-                        UiManager.Instance.tutorialBonusSketch.SetActive(true);
-                        gameManager.UpdateLevelString("Boss\nlevel!");
+                        // UiManager.Instance.tutorialBonusSketch.SetActive(true);
+                        /*gameManager.UpdateLevelString("Boss\nlevel!");
                         gameManager.xagonBg.SetActive(false);
-                        gameManager.treeRight.SetActive(false);
+                        gameManager.treeRight.SetActive(false);#1#
 
                         break;
 
@@ -330,13 +322,13 @@ namespace Assets.Game.Scripts
                     case 0:
                         //var ln = gameManager.levelNo + 1;
                         //UiManager.Instance.Tutorial(true, "Level " + ln + "!", "Welcome to\nCubey!");
-                        UiManager.Instance.tutorialSketchImage.SetActive(true);
+                        // UiManager.Instance.tutorialSketchImage.SetActive(true);
                         gold = 1;
                         silver = 2;
                         bronze = 10;
                         break;
                     case 1:
-                        UiManager.Instance.TutorialPause(true);
+                        // UiManager.Instance.TutorialPause(true);
                         gold = 1;
                         silver = 2;
                         bronze = 10;
@@ -493,7 +485,7 @@ namespace Assets.Game.Scripts
             exitObject.SetActive(false);
 
             print("setting up chapter: " + c + ", level: " + n);
-        }
+        }*/
 
     }
 }

@@ -1,0 +1,46 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f77c1a5d79c4dd9479732aefcc7fa741, type: 3}
+  m_Name: Chapter04_levelList
+  m_EditorClassIdentifier: 
+  list:
+  - {fileID: 11400000, guid: 00600017d99b1674482bf88a6a32d79b, type: 2}
+  - {fileID: 11400000, guid: 8aa65ff5857503d45a7794ca760cd462, type: 2}
+  - {fileID: 11400000, guid: 139ac671971818a4695425cf91f0b134, type: 2}
+  - {fileID: 11400000, guid: be885043afddea24f8b567c4a6436976, type: 2}
+  - {fileID: 11400000, guid: a594966883cc7eb429d2da4446f42f84, type: 2}
+  - {fileID: 11400000, guid: 41c6cdd1f5084a548828863cd82ed958, type: 2}
+  - {fileID: 11400000, guid: 0791ef27761c50f4ab7e18c6e5e989f9, type: 2}
+  - {fileID: 11400000, guid: 462df4bec15af5149a012d44e7e82986, type: 2}
+  - {fileID: 11400000, guid: 2e9b2877889489f48a50303318facc17, type: 2}
+  - {fileID: 11400000, guid: d6a45a67e10626c4f931fe13efeef8e8, type: 2}
+  - {fileID: 11400000, guid: 47fe20e630bc1f845a2b9dc21db6e757, type: 2}
+  - {fileID: 11400000, guid: ae7e0de0279d09141ba7b53bf3dbc1a4, type: 2}
+  - {fileID: 11400000, guid: 1bcd14b2057695648b18c925d3d769ab, type: 2}
+  - {fileID: 11400000, guid: 4e39eda3611ccb24ba7ad03bd1a34363, type: 2}
+  - {fileID: 11400000, guid: 08d396ac4df9ed44fa5b7f93c9aa67a7, type: 2}
+  - {fileID: 11400000, guid: f57252acb6eb8014da0b442ffb89b8dc, type: 2}
+  - {fileID: 11400000, guid: 5a00682d32361cc4e978ff3a343a3d50, type: 2}
+  - {fileID: 11400000, guid: 61e3fceea4df6804393eed70a5dd22a1, type: 2}
+  - {fileID: 11400000, guid: 11db35086e3d3fd4c90eeff7b46b8501, type: 2}
+  - {fileID: 11400000, guid: b5c8e6cd8f40f5241b4bdff570fa2e2c, type: 2}
+  - {fileID: 11400000, guid: 788ce262704cc304eac86bc374662d4b, type: 2}
+  - {fileID: 11400000, guid: 286fd141774f5d84aaaddf15fb88f290, type: 2}
+  - {fileID: 11400000, guid: 78f443bd2a37df94b9ab80f4bad09d6c, type: 2}
+  - {fileID: 11400000, guid: a13602444ac4926438b4690602c5eec4, type: 2}
+  - {fileID: 11400000, guid: d97a9fd4db3abf3419adf0bc1bdb5eab, type: 2}
+  - {fileID: 11400000, guid: 6f3b1aadd9cc5f7409346006492929f1, type: 2}
+  - {fileID: 11400000, guid: f17db0bf5f0d1e145ab97c57bc882b98, type: 2}
+  - {fileID: 11400000, guid: f1b25ba0f172bef47a0d9688a8f0a857, type: 2}
+  - {fileID: 11400000, guid: 7b9d8657c20dda04d8c9e17a599099dc, type: 2}
+  - {fileID: 11400000, guid: 3d11e8508aebec04c946484ef80c6c3d, type: 2}
+  pathName: Assets/Game/Data/Chapters/Chapter04

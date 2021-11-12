@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using Lean.Touch;
 
-namespace Assets.Game.Scripts
+namespace Game.Scripts
 {
     public class GlobalScripts : MonoBehaviour
     {

@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 
 
-namespace Assets.Game.Scripts
+namespace Game.Scripts
 {
     public class DeathVolume : MonoBehaviour
     {
@@ -14,7 +14,7 @@ namespace Assets.Game.Scripts
         {
             if (collision.collider.CompareTag("Player"))
             {
-                GameManager.Instance.FailedScreen(true);
+                // GameManager.Instance.FailedScreen(true);
             }
         }
 
@@ -22,7 +22,7 @@ namespace Assets.Game.Scripts
         {
             if (other.gameObject.CompareTag("Player"))
             {
-                GameManager.Instance.FailedScreen(true);
+                // GameManager.Instance.FailedScreen(true);
             }
         }
 
