@@ -7,7 +7,7 @@ Initial release
 * [Technologies](#technologies)
 
 ## General info
-A game I've been creating for over a year now, but I'm determined to finish it before moving onto the next solo project!
+A game I've been creating for well over a year now, but I'm determined to finish it before moving onto the next solo project!
 
 I wanted to create a simple platformer that my 5 year old could play, recognise and enjoy. He even helps design the levels! Next to get him a Tshirt to secretely advertise Cubey in school...
 
@@ -16,8 +16,7 @@ I wanted to create a simple platformer that my 5 year old could play, recognise 
 
 ## Technologies
 Project is created with:
-* Unity 2019 / 2020
+* Unity 2019 / 2020 / 2021
 * Affinity Designer on iPad
-* gf's voice as Cubey
 
 	
