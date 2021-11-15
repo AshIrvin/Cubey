@@ -4,20 +4,25 @@ using UnityEngine;
 
 public class AutoRotation : MonoBehaviour
 {
-    private Rigidbody rb;
-    public float torque;
+    // [SerializeField] private float torque = 2;
     [SerializeField] private bool enableRotation;
-    
+    private Rigidbody rb;
+
     private void Awake()
     {
         rb = GetComponent<Rigidbody>();
     }
 
-    // Start is called before the first frame update
     void Start()
+    {
+        AddRotation(2);
+    }
+
+    public void AddRotation(float torque)
     {
         if (!enableRotation) return;
         
-        rb.AddTorque(transform.forward * torque);
+        if (rb != null)
+            rb.AddTorque(transform.forward * torque);
     }
 }

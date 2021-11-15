@@ -28,7 +28,10 @@ public class VisualEffects : MonoBehaviour
     public ParticleSystem peExitOpened;
     public ParticleSystem peExitExplosion;
     public ParticleSystem peNewLevel;
+    public ParticleSystem pePortalEffects;
+    public ParticleSystem pePortalEffectsExit;
 
+    [Header("Exit object")]
     public GameObject peExitSwirl;
 
     [Header("Used?")]
@@ -65,8 +68,8 @@ public class VisualEffects : MonoBehaviour
         Instance = this;
         
         // peExitSwirl.SetActive(false);
-        if (particleEffectsGo.activeInHierarchy)
-            ParticleEffectsGo = false;
+        // if (particleEffectsGo.activeInHierarchy)
+        //     ParticleEffectsGo = false;
         
         if (powerText != null)
             powerText.gameObject.SetActive(false);

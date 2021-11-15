@@ -53,11 +53,10 @@ public class EyesLookingManager : MonoBehaviour
             pupils = transform.Find("Pupils").gameObject;
 
         if (pupilCenterTarget == null)
-            pupilCenterTarget = transform.Find("Sphere").gameObject;
+            pupilCenterTarget = transform.Find("EyeCenter").gameObject;
 
         FindPointsOfInterests();
         SetEyeDelay();
-        // EyesMovement(pointsOfInterestList[0].gameObject.transform.position);
 
         if (!gameObject.CompareTag("Player") && playerTarget == null)
             playerTarget = GameObject.FindWithTag("Player").gameObject;
@@ -96,14 +95,20 @@ public class EyesLookingManager : MonoBehaviour
         // set eyes to default pos looking at player
         if (randomEyeReset < 0 )
         {
-            pupils.transform.localPosition = defaultPos;
-            RandomEyeReset();
-            SetEyeDelay();
+            StartCoroutine(ResetEyes(UnityEngine.Random.Range(1, 4)));
         }
 
         // for testing
         if (showPupilMovement)
             pupilPosition = pupils.transform.localPosition;
+    }
+
+    IEnumerator ResetEyes(float delay)
+    {
+        pupils.transform.localPosition = defaultPos;
+        yield return new WaitForSeconds(delay);
+        RandomEyeReset();
+        SetEyeDelay();
     }
 
     // Look for points of interest active when starting level
@@ -121,42 +126,11 @@ public class EyesLookingManager : MonoBehaviour
     }
 
     private void RandomEyeReset(){
-        randomEyeReset = UnityEngine.Random.Range(4, 6);
+        randomEyeReset = UnityEngine.Random.Range(2, 6);
     }
 
-    /* resets to default position after n secs
-     * chooses a point of interest
-     * eyes move to direction of interest     
-    */
     private void EyesMovement(Vector3 newTarget)
     {
-        /*
-        // reset to localPos before continuing
-        pupils.transform.localPosition = defaultPos;
-
-        var targetPos = Vector3.zero;
-        if (targetPointsOfInterestList)
-        {
-            targetPos = targetPointsOfInterestList.transform.position;
-            targetPos.z = pupils.transform.localPosition.z;
-        }
-
-        // gets distance between clamped target and face
-        float dist = Vector3.Distance(pupilCenterTarget.transform.position, targetPos);
-
-        dist = Mathf.Clamp(dist, eyeXmin, eyeXmax);
-        dist = Mathf.Clamp(dist, eyeYmin, eyeYmax);
-
-        //
-        // float distX = pupilCenterTarget.transform.position.x - targetPos.x;
-        // float distY = pupilCenterTarget.transform.position.y - targetPos.y;
-        // distX = Mathf.Clamp(distX, eyeXmin, eyeXmax);
-        // distY = Mathf.Clamp(distY, eyeYmin, eyeYmax);
-        //
-        
-        pupils.transform.position = Vector3.MoveTowards(pupilCenterTarget.transform.position, targetPos, dist);
-        */
-
         MovePupils(newTarget);
         
         Debug.DrawLine(pupilCenterTarget.transform.position, newTarget, Color.yellow, 1f);
@@ -165,7 +139,9 @@ public class EyesLookingManager : MonoBehaviour
     private void MovePupils(Vector3 newTarget)
     {
         Vector3 target = new Vector3(MoveEyesAlongX(newTarget.x), MoveEyesAlongY(newTarget.y), 0);
-        pupils.transform.position = Vector3.MoveTowards(pupilCenterTarget.transform.position, target, dist);
+        Vector3 localTarget = transform.InverseTransformPoint(target);
+        localTarget.z = 0;
+        pupils.transform.localPosition = Vector3.MoveTowards(pupilCenterTarget.transform.localPosition, localTarget, dist);
     }
     
     private float MoveEyesAlongX(float posX)
@@ -178,20 +154,20 @@ public class EyesLookingManager : MonoBehaviour
         return Mathf.Clamp(posY, pupilCenterTarget.transform.position.y + eyeYmin, pupilCenterTarget.transform.position.y + eyeYmax);
     }
     
-    
     private int ChooseRandomInterest()
     {
-        return randomNo = UnityEngine.Random.Range(0, pointsOfInterestList.Length);
+        // Debug.Log("randomNo: " + randomNo);
+        randomNo = UnityEngine.Random.Range(0, pointsOfInterestList.Length);
+        return randomNo;
     }
 
     private GameObject RandomlyChoosePoint()
     {
+        var n = ChooseRandomInterest();
+        // Debug.Log("interest: " + n);
+        if (pointsOfInterestList[n] != null)
+            return pointsOfInterestList[n];
         return pointsOfInterestList[ChooseRandomInterest()];
-
-        // if (target != null)
-            // EyesMovement(target.transform.position);
-        
-        // return pointsOfInterestList[ChooseRandomInterest()];
     }
 }
 
