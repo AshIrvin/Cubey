@@ -25,8 +25,8 @@ public class WindManager : MonoBehaviour {
 
         targetPosition = new Vector3(pos.x + distanceToFlow, pos.y, pos.z);
 
-        if (transform.GetChild(0).name.Contains("PlaceHolder"))
-            transform.GetChild(0).gameObject.SetActive(false);
+        // if (transform.GetChild(0).name.Contains("PlaceHolder"))
+        //     transform.GetChild(0).gameObject.SetActive(false);
     }
 
     void TreeWindMotion()

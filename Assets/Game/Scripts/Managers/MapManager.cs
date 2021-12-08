@@ -10,8 +10,6 @@ using UnityEngine.UI;
 
 public class MapManager : MonoBehaviour
 {
-
-    
     [SerializeField] private SaveMetaData saveMetaData;
     [SerializeField] private ChapterList allChapters;
     [SerializeField] private BoolGlobalVariable enableGameManager;
@@ -25,7 +23,6 @@ public class MapManager : MonoBehaviour
     [SerializeField] public bool mapActive;
     [SerializeField] private GameObject levelParent;
     [SerializeField] private GameObject cubeyOnMap;
-    
     
     [SerializeField] private GameObject levelGameObject;
     
@@ -59,6 +56,10 @@ public class MapManager : MonoBehaviour
         
     }
 
+    /// <summary>
+    /// Sets the position of Cubey on the map
+    /// </summary>
+    /// <param name="reset">Disables Cubey</param>
     private void SetCubeyMapPosition(bool reset)
     {
         cubeyOnMap.SetActive(!reset);
@@ -171,11 +172,7 @@ public class MapManager : MonoBehaviour
     {
         CheckLevelsPlayed(); 
         
-        var mapCollider = allChapters[saveMetaData.LastChapterPlayed].ChapterMap.GetComponentInChildren<BoxCollider>();
-        if (mainMenuManager.leanConstrainToBox != null)
-            mainMenuManager.leanConstrainToBox.Target = mapCollider;
-        else
-            Debug.LogError("Can't find mainMenuManager.leanConstrainToBox! mainMenuManager ok?:" + mainMenuManager);
+        mainMenuManager.SetCollisionBox("CollisionMap");
         
         // if (audioManager != null && audioManager.allowSounds)
         //     audioManager.PlayMusic(audioManager.menuStartLevel);
@@ -224,18 +221,31 @@ public class MapManager : MonoBehaviour
 
     #region Button Level Locking
 
-    /*private void UnlockAllLevels(int n)
+    public void UnlockAllLevels(bool revert)
     {
+        // revert to previous level/chapter state
+        if (revert)
+        {
+            saveMetaData.LastLevelPlayed = PlayerPrefs.GetInt("lastLevelPlayed");
+            saveMetaData.LastChapterPlayed = PlayerPrefs.GetInt("lastChapterPlayed");
+            // todo need to cycle through all the chapters and set each last level unlocked for each
+            int levelBeforeUnlock = PlayerPrefs.GetInt("levelBeforeUnlock");
+            mainMenuManager.chapterUnlockedTo = PlayerPrefs.GetInt("chapterBeforeUnlock");
+            return;
+        }
+        
+        PlayerPrefs.SetInt("lastLevelPlayed", allChapters[saveMetaData.LastChapterPlayed].LastLevelPlayed);
+        PlayerPrefs.SetInt("lastChapterPlayed", saveMetaData.LastChapterPlayed);
+        PlayerPrefs.SetInt("levelBeforeUnlock", allChapters[saveMetaData.LastChapterPlayed].LastLevelUnlocked);
+        PlayerPrefs.SetInt("chapterBeforeUnlock", mainMenuManager.chapterUnlockedTo);
+        
         levelButtons = allChapters[saveMetaData.LastChapterPlayed].ChapterMapButtonList;
             
         saveMetaData.LastChapterPlayed = allChapters.Count;
         saveMetaData.LastLevelPlayed = allChapters[saveMetaData.LastChapterPlayed].ChapterMapButtonList.Count;
             
-        CheckLevelUnlocks();
-        SetUnlockGold(n);
-
         SetCubeyMapPosition(false);
-    }*/
+    }
     
     private void SetUnlockGold(int count)
     {
@@ -262,7 +272,6 @@ public class MapManager : MonoBehaviour
     {
         bool levelUnlocked = false;
         var lastChapter = allChapters[saveMetaData.LastChapterPlayed];
-        // Debug.Log("Cycling through unlocks for chapter: " + lastChapter);
 
         var buttons = lastChapter.InGameMapButtonList;
         levelButtons = buttons;
@@ -278,7 +287,7 @@ public class MapManager : MonoBehaviour
             {
                 if (lastChapter.LevelList[i - 1].AwardsReceived > 0)
                 {
-                    Debug.Log($"AwardsReceived for level {i}/({i-1}): " + lastChapter.LevelList[i - 1].AwardsReceived);
+                    // Debug.Log($"AwardsReceived for level {i}/({i-1}): " + lastChapter.LevelList[i - 1].AwardsReceived);
                     button.interactable = true;
                 }
                 else
@@ -289,7 +298,7 @@ public class MapManager : MonoBehaviour
                     {
                         levelUnlocked = true;
                         lastChapter.LastLevelUnlocked = i-1;
-                        Debug.Log($"level {i}/({i-1}) unlocked. Metadata save: {lastChapter.LastLevelUnlocked}");
+                        // Debug.Log($"level {i}/({i-1}) unlocked. Metadata save: {lastChapter.LastLevelUnlocked}");
                         EditorUtility.SetDirty(allChapters[saveMetaData.LastChapterPlayed]);
                     }
                 }

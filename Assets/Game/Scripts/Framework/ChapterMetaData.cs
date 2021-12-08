@@ -14,9 +14,11 @@ public class ChapterMetaData : ScriptableObject
     [SerializeField] private GameObject pickupIcon;
     [SerializeField] private int lastLevelPlayed;
     [SerializeField] private int lastLevelUnlocked;
+    [SerializeField] private bool chapterUnlocked;
     [SerializeField] private GameObject chapterMap;
     [SerializeField] private GameObject cubeyPlayer;
     [SerializeField] private LevelList levelList;
+    [SerializeField] private float menuZoomLevel;
     [SerializeField] private List<GameObject> chapterMapButtonList;
     [SerializeField] private List<GameObject> inGameMapButtonList;
     [SerializeField] private int awardsBronze;
@@ -51,6 +53,12 @@ public class ChapterMetaData : ScriptableObject
         set => lastLevelUnlocked = value;
     }
 
+    public bool ChapterUnlocked
+    {
+        get => chapterUnlocked;
+        set => chapterUnlocked = value;
+    }
+    
     public int AwardsBronze
     {
         get => awardsBronze;
@@ -67,6 +75,12 @@ public class ChapterMetaData : ScriptableObject
     {
         get => awardsGold;
         set => awardsGold = value;
+    }
+
+    public float MenuZoomLevel
+    {
+        get => menuZoomLevel;
+        set => menuZoomLevel = value;
     }
     
     /// <summary>

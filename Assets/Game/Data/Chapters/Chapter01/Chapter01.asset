@@ -17,12 +17,14 @@ MonoBehaviour:
   chapterNumber: 1
   chapterName: Forest
   pickupIcon: {fileID: 0}
-  lastLevelPlayed: 4
-  lastLevelUnlocked: 6
+  lastLevelPlayed: 7
+  lastLevelUnlocked: 7
+  chapterUnlocked: 1
   chapterMap: {fileID: 5035972029797836284, guid: 571d2f56f203ef24097303525ff5b687,
     type: 3}
   cubeyPlayer: {fileID: 0}
   levelList: {fileID: 11400000, guid: 1776a768de556484283eab4a5fce1512, type: 2}
+  menuZoomLevel: 75
   chapterMapButtonList:
   - {fileID: 4747911228729571419, guid: 571d2f56f203ef24097303525ff5b687, type: 3}
   - {fileID: 4747911229132278641, guid: 571d2f56f203ef24097303525ff5b687, type: 3}

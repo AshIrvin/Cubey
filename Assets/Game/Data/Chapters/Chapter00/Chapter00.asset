@@ -21,7 +21,9 @@ MonoBehaviour:
   lastLevelUnlocked: 0
   chapterMap: {fileID: 7939797506585355753, guid: fbbc67249d1a9ff43bbf7bf14e919cd7,
     type: 3}
+  cubeyPlayer: {fileID: 0}
   levelList: {fileID: 11400000, guid: 9d7a17c323ad5ec4da9f1b148f120b62, type: 2}
+  menuZoomLevel: 0
   chapterMapButtonList:
   - {fileID: 7939797505131494812, guid: fbbc67249d1a9ff43bbf7bf14e919cd7, type: 3}
   - {fileID: 7651464283200398295, guid: fbbc67249d1a9ff43bbf7bf14e919cd7, type: 3}

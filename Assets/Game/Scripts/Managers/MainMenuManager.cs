@@ -24,8 +24,7 @@ public class MainMenuManager : MonoBehaviour
     public GameObject mainMenu;
     public LeanConstrainToBox leanConstrainToBox;
     
-    
-    
+
     // Old
     [Header("Scripts")]
     [SerializeField] private VisualEffects visualEffects;
@@ -59,7 +58,7 @@ public class MainMenuManager : MonoBehaviour
     [SerializeField] private Text goldWon;
 
     // [SerializeField] public bool mapActive;
-    [SerializeField] private bool[] chapterComplete = new bool[5];
+    [SerializeField] private bool[] chapterComplete = new bool[5]; // todo this used or using the new ChapterUnlocked
 
     private Color c1, c2, c2b, c3;
 
@@ -69,14 +68,10 @@ public class MainMenuManager : MonoBehaviour
     private Vector3 scale1 = new Vector3(0.95f, 0.95f, 0.95f);
     private Vector3 scale2 = new Vector3(0.95f, 0.95f, 0.95f);
 
-    // [SerializeField]
-    // private GameObject cam;
-    
     [SerializeField]
     private LeanCameraZoomSmooth leanZoom;
 
     private Animator anim;
-
     
     
     /*private bool NavButtons
@@ -92,8 +87,6 @@ public class MainMenuManager : MonoBehaviour
 
     private void Awake()
     {
-        // gameUiProperty.onValueChanged += SetNavButtons;
-
         SetNavButtons(false);
         
         if (visualEffects == null) visualEffects = GetComponent<VisualEffects>();
@@ -105,34 +98,19 @@ public class MainMenuManager : MonoBehaviour
 
     private void SetNavButtons(bool on)
     {
-        Debug.Log("set nav buttons: " + on);
         navButtons.SetActive(on);
     }
 
     // Start is called before the first frame update
     void Start()
     {
-        // if (cam == null)
-        //     cam = Gam//GameObject.Find("Camera").gameObject;
-        // leanZoom = cam.GetComponent<LeanCameraZoomSmooth>();
-
-        /*if (!mapManager.mapActive)
-            leanZoom.enabled = false;
-        else
-            leanZoom.enabled = true;*/
-
         versionNo.text = "v: " + Application.version;
 
         AddMenuEnvironments();
-
         SetColours();
-
         anim = startButton.GetComponent<Animator>();
         ButtonSizePong();
-
         SetMenuEnvironment(saveMetaData.LastChapterPlayed);
-        
-        
     }
 
     private void SetColours()
@@ -166,6 +144,10 @@ public class MainMenuManager : MonoBehaviour
         DisableMenuEnv();
         
         menuEnvironments[n].SetActive(true);
+        leanZoom.Zoom = allChapters[n].MenuZoomLevel;
+        
+        // leanConstrainToBox.Target = allChapters[saveMetaData.LastChapterPlayed].MenuEnvironment.transform.Find("CollisionMenu").GetComponent<BoxCollider>();
+        // SetCollisionBox("CollisionMenu");
     }
 
     private void DisableMenuEnv()
@@ -178,7 +160,6 @@ public class MainMenuManager : MonoBehaviour
 
     private void OnDestroy()
     {
-        // gameUiProperty.onValueChanged -= SetNavButtons;
         Destroy(menuEnvironmentParent);
     }
 
@@ -205,27 +186,36 @@ public class MainMenuManager : MonoBehaviour
         DisableMaps();
         chapterMaps[chapter]?.SetActive(true);
     }*/
+
+    public void SetCollisionBox(string collisionName)
+    {
+        if (collisionName == "CollisionMenu")
+        {
+            leanConstrainToBox.Target = allChapters[saveMetaData.LastChapterPlayed].MenuEnvironment.transform.Find(collisionName).GetComponent<BoxCollider>();
+        }
+        else if (collisionName == "CollisionMap")
+        {
+            leanConstrainToBox.Target = allChapters[saveMetaData.LastChapterPlayed].ChapterMap.transform.Find(collisionName).GetComponent<BoxCollider>();
+        }
+        else
+            Debug.LogError("ERROR - no Collision box found!");
+    }
     
-    
-    
+    // Used in chapter menu buttons
     public void ShowMap(int n)
     {
         var chapter = saveMetaData.LastChapterPlayed = n;
-        // leanConstrainToBox.Target = null;
 
-        var mapCollider = allChapters[chapter].ChapterMap.GetComponentInChildren<BoxCollider>();
-        leanConstrainToBox.Target = mapCollider;
-        
-        // EditorUtil.ApplyChanges(saveMetaData);
         EditorUtility.SetDirty(saveMetaData);
         
         SetMenuEnvironment(chapter);
         DisableMenuScreens();
 
-        leanZoom.enabled = true;
-        // navButtons.SetActive(true);
-        SetNavButtons(true);
+        // leanConstrainToBox.Target = allChapters[saveMetaData.LastChapterPlayed].ChapterMap.transform.Find("CollisionMap").GetComponent<BoxCollider>();
+        SetCollisionBox("CollisionMap");
         
+        leanZoom.enabled = true;
+        SetNavButtons(true);
         DisableMenuEnv();
 
         mapManager.enabled = true;
@@ -265,10 +255,28 @@ public class MainMenuManager : MonoBehaviour
     {
         mainMenu.SetActive(enable);
     }*/
+
+    public int chapterUnlockedTo;
+    
+    private void CycleThroughUnlockedChapters()
+    {
+        int c = 0;
+        foreach (var chapter in allChapters)
+        {
+            if (chapter.ChapterUnlocked)
+            {
+                c++;
+            }
+        }
+
+        chapterUnlockedTo = c;
+    }
     
     public void LoadChapterScreen(bool enable)
     {
-        leanConstrainToBox.Target = allChapters[saveMetaData.LastChapterPlayed].ChapterMap.GetComponentInChildren<BoxCollider>();
+        CycleThroughUnlockedChapters();
+        
+        // leanConstrainToBox.Target = allChapters[saveMetaData.LastChapterPlayed].ChapterMap.GetComponentInChildren<BoxCollider>();
         
         chapterScreen.SetActive(enable);
         SetNavButtons(enable);
@@ -320,8 +328,10 @@ public class MainMenuManager : MonoBehaviour
     {
         mapManager.DisableMaps();
         SetMenuEnvironment(saveMetaData.LastChapterPlayed);
+        SetCollisionBox("CollisionMenu");
         LoadChapterScreen(false);
         cameraManager.ResetCamPosition();
+        leanZoom.enabled = true;
     }
 
     private void FadeInStartButton()
@@ -341,21 +351,21 @@ public class MainMenuManager : MonoBehaviour
         anim.SetBool("EnablePingPong", true);
     }
 
-    public void PlayEffect(ParticleSystem effect, Vector3 pos, bool loop)
+    /*public void PlayEffect(ParticleSystem effect, Vector3 pos, bool loop)
     {
         effect.gameObject.transform.position = pos;
         var peMain = effect.main;
         peMain.loop = loop;
         effect.Play();
-    }
+    }*/
 
-    public void CancelPe(ParticleSystem effect)
+    /*public void CancelPe(ParticleSystem effect)
     {
         var peMain = effect.main;
         peMain.loop = false;
 
         var peEmit = effect.emission;
         peEmit.enabled = false;
-    }
+    }*/
 
 }

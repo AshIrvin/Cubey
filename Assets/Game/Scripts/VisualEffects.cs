@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using UnityEditor.Rendering;
+using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 
@@ -52,8 +53,8 @@ public class VisualEffects : MonoBehaviour
 
     public bool enableSizeIncrease;
     public bool enableColour;
-    //public bool hintArrow;
-    //public bool powerJump;
+    public bool hintArrow;
+    public bool powerJump;
     
     public Text powerText;
     private Scene currentScene;
@@ -94,35 +95,33 @@ public class VisualEffects : MonoBehaviour
     // Update is called once per frame
     private void Update()
     {
-        /*
-        if (currentScene.name != null && currentScene.name != "Main_Menu")
+        // todo check if game level has loaded
+        if (!gameManager.enabled)
+            return;
+        
+        BlastOffEffect();
+
+        if (powerTextEnable)
         {
-            // BlastOffEffect();
+            timer -= Time.fixedDeltaTime;
 
-            if (powerTextEnable && !GameManager.Instance.allowFlight)
+            var alpha = powerText.color.a;
+            powerText.color = new Color(1, 0.948f, 0, Mathf.Lerp(alpha, 0, Time.fixedDeltaTime));
+            //powerText.color = new Color(1, 0, 0, Mathf.Lerp(alpha, 0, Time.fixedDeltaTime));
+
+            if (timer < 0)
             {
-                timer -= Time.fixedDeltaTime;
-
-                var alpha = powerText.color.a;
-                powerText.color = new Color(1, 0.948f, 0, Mathf.Lerp(alpha, 0, Time.fixedDeltaTime));
-                //powerText.color = new Color(1, 0, 0, Mathf.Lerp(alpha, 0, Time.fixedDeltaTime));
-
-                if (timer < 0)
-                {
-                    timer = 2;
-                    powerText.text = "";
-                    //powerTextEnable = false;
-                }
+                timer = 2;
+                powerText.text = "";
+                //powerTextEnable = false;
             }
-            
-        }*/
+        }
     }
 
     private void BlastOffEffect()
     {
         if (Input.GetMouseButtonUp(0))
         {
-
             StopEffect(pePowerJump);
         }
 
@@ -131,15 +130,15 @@ public class VisualEffects : MonoBehaviour
             var ray = Camera.main.ScreenPointToRay(Input.mousePosition);
 
             // Todo - needs fixed - cam to button erroring out
-            var target = player.transform.position;
-            target.z -= 0.2f;
-            var distance = Vector3.Distance(target, Camera.main.transform.position);
-            var startPoint = ray.GetPoint(distance);
+            var playerPos = player.transform.position;
+            playerPos.z -= 0.2f;
+            var distance = Vector3.Distance(playerPos, Camera.main.transform.position);
+            var fingerPos = ray.GetPoint(distance);
 
-            // Todo - fix start point to keep pe on z 0
-            startPoint.z = angle;
+            // Todo - fix start point to keep PE on z 0
+            fingerPos.z = angle;
 
-            if (Physics.Raycast(ray) && startPoint.y < target.y)
+            if (Physics.Raycast(ray) && fingerPos.y < playerPos.y)
             {
                 audioManager.PlayAudio(audioManager.cubeyPowerUp);
 
@@ -149,20 +148,20 @@ public class VisualEffects : MonoBehaviour
                 var peEmit = pePowerJump.emission;
                 peEmit.enabled = true;
 
-                var direction = target - startPoint;
-
+                var direction = playerPos - fingerPos;
+                    
                 pePowerJump.Play();
 
                 Quaternion rotation = Quaternion.LookRotation(direction, Vector3.up);
                 pePowerJump.transform.rotation = rotation;
 
-                Vector3 offset = startPoint - target;
-                pePowerJump.transform.position = target + Vector3.ClampMagnitude(offset, spawnPeBlastDist);
+                Vector3 offset = fingerPos - playerPos; // startPoint is finger pos. target is player pos
+                pePowerJump.transform.position = playerPos + Vector3.ClampMagnitude(offset, spawnPeBlastDist);
 
 
-                var pePlayerDist = Vector3.Distance(target, pePowerJump.transform.position);
+                var pePlayerDist = Vector3.Distance(playerPos, pePowerJump.transform.position);
 
-                //peMain.startLifetime = pePlayerDist/6;
+                peMain.startLifetime = pePlayerDist/6;
                 peMain.startSpeed = pePlayerDist * peSpeed;
                 if (enableSizeIncrease)
                     peMain.startSize = pePlayerDist / powerLength;
@@ -170,9 +169,8 @@ public class VisualEffects : MonoBehaviour
                 if (enableColour)
                 {
                     peMain.startColor = Color.Lerp(new Color(0.9f, 1f, 0f), new Color(1f, 0.1f, 0f), pePlayerDist/ powerLength);
-                    
+                    // peMain.startColor.colorMin = Color.Lerp(Color.yellow, Color.red, pePlayerDist / 6);
                 }
-                //peMain.startColor.colorMin = Color.Lerp(Color.yellow, Color.red, pePlayerDist / 6);
 
                 /*if (!GameManager.Instance.allowFlight && powerTextEnable)
                 {
@@ -184,26 +182,26 @@ public class VisualEffects : MonoBehaviour
                 }*/
 
                 // Hint Arrow - put it here to get better angle etc
-                //launchRenderArc.velocity = -direction.y * 2.6f * launchRenderArc.extraPower;
+                // launchRenderArc.velocity = -direction.y * 2.6f * launchRenderArc.extraPower;
 
-                //launchRenderArc.angle = Mathf.Abs(angle + launchRenderArc.fixAngle * launchRenderArc.multipleAngle);
+                // launchRenderArc.angle = Mathf.Abs(angle + launchRenderArc.fixAngle * launchRenderArc.multipleAngle);
 
 
-                //PlayEffect(peHintArrow, player.transform.position);
-                //if (hintArrow)
-                //{
-                //    var peMain2 = peHintArrow.main;
-                //    peMain2.loop = true;
-                //    var peEmit2 = peHintArrow.emission;
-                //    peEmit2.enabled = true;
+                /*PlayEffect(peHintArrow, player.transform.position);
+                if (hintArrow)
+                {
+                    var peMain2 = peHintArrow.main;
+                    peMain2.loop = true;
+                    var peEmit2 = peHintArrow.emission;
+                    peEmit2.enabled = true;
 
-                //    peHintArrow.gameObject.transform.position = player.transform.position;
-                //    peHintArrow.Play();
+                    peHintArrow.gameObject.transform.position = player.transform.position;
+                    peHintArrow.Play();
 
-                //    peMain2.startSpeed = pePlayerDist * peSpeed;
-                //    //rotation = new Quaternion(rotation.x, 90, rotation.z, rotation.w);
-                //    peHintArrow.transform.rotation = rotation;
-                //}
+                    peMain2.startSpeed = pePlayerDist * peSpeed;
+                    //rotation = new Quaternion(rotation.x, 90, rotation.z, rotation.w);
+                    peHintArrow.transform.rotation = rotation;
+                }*/
 
             }
         }

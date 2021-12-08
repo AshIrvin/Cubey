@@ -23,6 +23,7 @@ MonoBehaviour:
     type: 3}
   cubeyPlayer: {fileID: 0}
   levelList: {fileID: 11400000, guid: 168e2870586d1ec42aa1f77f4b6910bd, type: 2}
+  menuZoomLevel: 65.7
   chapterMapButtonList:
   - {fileID: 1525343958251369463, guid: 7271a4f8c2113d24d876f236e784ec43, type: 3}
   - {fileID: 1525343958540926143, guid: 7271a4f8c2113d24d876f236e784ec43, type: 3}

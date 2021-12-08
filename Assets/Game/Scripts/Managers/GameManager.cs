@@ -134,7 +134,7 @@ public class GameManager : MonoBehaviour
 
     // [SerializeField] public bool playerStuck;
     [SerializeField] public bool allowMovement;
-    [SerializeField] private bool allowFlight;
+    // [SerializeField] private bool allowFlight;
     [SerializeField] private bool jumpCountIncreases;
     [SerializeField] private bool xagon;
     [SerializeField] private bool onBreakablePlatform;
@@ -212,7 +212,6 @@ public class GameManager : MonoBehaviour
     private void GetLevelInfo()
     {
         levelNo = saveMetaData.LastLevelPlayed;
-        Debug.Log($"Getting level {levelNo} info...");
         chapterNo = saveMetaData.LastChapterPlayed;
         levelMetaData = chapterList[saveMetaData.LastChapterPlayed].LevelList[saveMetaData.LastLevelPlayed];
         
@@ -235,7 +234,7 @@ public class GameManager : MonoBehaviour
 
     private void OnDisable()
     {
-        cubeyPlayer.transform.SetParent(transform);
+        // cubeyPlayer.transform.SetParent(transform);
         cubeyPlayer.SetActive(false);
         leanForceRb.canJump = false;
         SetGameCanvases(false);
@@ -271,6 +270,13 @@ public class GameManager : MonoBehaviour
         FailedScreen(false);
     }
 
+    private void DisableStartPosition()
+    {
+        // levelMetaData.LevelPrefab.transform.GetChild(1);
+        // find PlacementCube, disable
+        mapManager.LevelGameObject.transform.GetChild(1)?.GetChild(1)?.gameObject.SetActive(false);
+    }
+
     private void StartLevel()
     {
         Debug.Log("Starting level");
@@ -291,7 +297,8 @@ public class GameManager : MonoBehaviour
         // FailedScreen(false);
         
         flip = cubeyPlayer.transform.localScale;
-
+        DisableStartPosition();
+        
         UpdateLevelText(levelNo);
 
         //blowingLeaves.Stop();
@@ -348,7 +355,12 @@ public class GameManager : MonoBehaviour
 
     private void ToggleSticky(bool on)
     {
-        if (!on) return;
+        if (!on)
+        {
+            // return everything to normal?
+            playerRb.drag = 0;
+            return;
+        }
         // StickyObject = true;
         
         /*
@@ -360,7 +372,9 @@ public class GameManager : MonoBehaviour
         PlayerAllowedJump(true);
         */
         
-        playerRb.useGravity = false;
+        // slow down gravity or turn on drag?
+        // playerRb.useGravity = false;
+        playerRb.drag = 10;
         playerRb.velocity = Vector3.zero;
         playerRb.angularVelocity = Vector3.zero;
         playerRb.isKinematic = true;
@@ -669,7 +683,7 @@ public class GameManager : MonoBehaviour
 
     public void PlayerVelocity(float n)
     {
-        leanForceRb.VelocityMultiplier = n;
+        leanForceRb.velocityMultiplier = n;
     }
 
     private void GetPlayerSpawn()
@@ -677,7 +691,7 @@ public class GameManager : MonoBehaviour
         cubeyPlayer.transform.SetParent(null);
 
         var pos = levelMetaData.LevelPrefab.transform.GetChild(1).transform.position;
-        // todo - remove temp cube placement
+        DisableStartPosition();
         // levelMetaData.LevelPrefab.transform.GetChild(1)
         cubeyPlayer.gameObject.transform.SetPositionAndRotation(pos, new Quaternion(0, 0, 0, 0));
     }

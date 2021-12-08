@@ -12,12 +12,12 @@ public class LaunchRenderArc : MonoBehaviour
     [SerializeField] private BoolGlobalVariable launchArc;
     
     [Header("Floats")]
-    [SerializeField] private float velocity;
-    [SerializeField] public float angle;
+    public float velocity;
+    public float angle;
     [SerializeField] private float leanAngle;
     [SerializeField] private float extraPower = 1;
     [SerializeField] private float mouseOffset;
-    [SerializeField] private float maxVelocity = 10;
+    [SerializeField] private float maxVelocity = 10.5f;
     [SerializeField] private float arcOffset = 0f;
     [SerializeField] private float distance = 1;
 
@@ -75,8 +75,7 @@ public class LaunchRenderArc : MonoBehaviour
     {
         if (Input.GetMouseButton(0) && renderArcAllowed)
             RenderArc();
-
-        if (Input.GetMouseButtonUp(0) && spriteColours[0].a > 0)
+        else if (Input.GetMouseButtonUp(0) && spriteColours[0].a > 0)
             StartCoroutine(DelayFadeArc());
     }
 
@@ -91,7 +90,7 @@ public class LaunchRenderArc : MonoBehaviour
         if (!on)
             EnableArc(false);
         
-        Debug.Log("launch arc set to: " + on);
+        // Debug.Log("launch arc set to: " + on);
     }
     
     private void RenderArc()
@@ -109,10 +108,8 @@ public class LaunchRenderArc : MonoBehaviour
 
         leanAngle = leanForce.angle;
         
-        Debug.Log("Rendering Arc");
+        // Debug.Log("Rendering Arc");
     }
-
-    
 
     IEnumerator DelayFadeArc()
     {
@@ -165,13 +162,13 @@ public class LaunchRenderArc : MonoBehaviour
 
     public void EnableArc(bool enable)
     {
-        Debug.Log("Enable Arc " + enable);
+        // Debug.Log("Enable Arc " + enable);
         lr.positionCount = 0;
         dottedLineArcGroup.SetActive(enable);
         
         if (!enable)
         {
-            Debug.Log("Settings arc to 0 alpha");
+            // Debug.Log("Settings arc to 0 alpha");
             LoopSpriteColours(0);
         }
     }

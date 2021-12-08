@@ -156,7 +156,6 @@ public class EyesLookingManager : MonoBehaviour
     
     private int ChooseRandomInterest()
     {
-        // Debug.Log("randomNo: " + randomNo);
         randomNo = UnityEngine.Random.Range(0, pointsOfInterestList.Length);
         return randomNo;
     }
@@ -164,10 +163,16 @@ public class EyesLookingManager : MonoBehaviour
     private GameObject RandomlyChoosePoint()
     {
         var n = ChooseRandomInterest();
-        // Debug.Log("interest: " + n);
-        if (pointsOfInterestList[n] != null)
+        
+        if (pointsOfInterestList.Length > 0 && pointsOfInterestList[n] != null)
             return pointsOfInterestList[n];
-        return pointsOfInterestList[ChooseRandomInterest()];
+        else
+        {
+            Debug.LogError("Can't find POI: " + transform.parent.name);
+            return null;
+        }
+        
+        // return pointsOfInterestList[ChooseRandomInterest()];
     }
 }
 

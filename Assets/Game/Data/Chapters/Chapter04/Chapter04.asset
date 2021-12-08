@@ -18,11 +18,13 @@ MonoBehaviour:
   chapterName: Lollypop Land
   pickupIcon: {fileID: 0}
   lastLevelPlayed: 3
-  lastLevelUnlocked: 3
+  lastLevelUnlocked: 25
+  chapterUnlocked: 0
   chapterMap: {fileID: 2700544340622123123, guid: 1ac364481ff145e46922d88694bcc08b,
     type: 3}
   cubeyPlayer: {fileID: 0}
   levelList: {fileID: 11400000, guid: 8e498ea32ea0c8544962ac854450ab1d, type: 2}
+  menuZoomLevel: 67
   chapterMapButtonList:
   - {fileID: 2412494809427563735, guid: 1ac364481ff145e46922d88694bcc08b, type: 3}
   - {fileID: 2412494808700939891, guid: 1ac364481ff145e46922d88694bcc08b, type: 3}

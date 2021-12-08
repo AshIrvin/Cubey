@@ -26,6 +26,8 @@ public class Portal : MonoBehaviour
     
     public Color transparent;
     public Color defaultColour;
+
+    public float time;
     
     private void Awake()
     {
@@ -57,7 +59,10 @@ public class Portal : MonoBehaviour
             {
                 if (objectColour != null)
                 {
-                    objectColour.color = Color.Lerp(objectColour.color, defaultColour, Time.deltaTime / duration);
+                    // time -= Time.deltaTime * duration;
+                    objectColour.color = Color.Lerp(objectColour.color, defaultColour, Single.Epsilon); // i += Time.deltaTime * rate;
+                    // objectColour.color = defaultColour;
+                    // RestartTime();
                 }
                 ScaleObject(false);
             }
@@ -94,8 +99,6 @@ public class Portal : MonoBehaviour
         yield return new WaitForSeconds(delay);
         usePortal.CurrentValue = true;
     }
-
-
     
     private void ScaleObject(bool shrink)
     {
@@ -103,10 +106,21 @@ public class Portal : MonoBehaviour
         objectToTeleport.transform.localScale = Vector3.Slerp(objectToTeleport.transform.localScale, scale, scaleSpeed);
         if (objectColour != null)
         {
-            objectColour.color = Color.Lerp(objectColour.color, transparent, duration);
+            // time -= Time.deltaTime * duration;
+            objectColour.color = Color.Lerp(objectColour.color, transparent, Single.Epsilon); // i += Time.deltaTime * rate;
+            // RestartTime();
+            // objectColour.color = transparent;
         }
     }
 
+    public int startTime = 2;
+    
+    private void RestartTime()
+    {
+        if (time < 0)
+            time = startTime;
+    }
+    
     private void TeleportObject()
     {
         usePortal.CurrentValue = false;
