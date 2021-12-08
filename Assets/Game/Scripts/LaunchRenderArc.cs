@@ -8,7 +8,7 @@ using Lean.Touch;
 public class LaunchRenderArc : MonoBehaviour
 {
     
-    [SerializeField] private LeanForceRigidbody leanForce;
+    [SerializeField] private LeanForceRigidbodyCustom leanForce;
     [SerializeField] private BoolGlobalVariable launchArc;
     
     [Header("Floats")]
@@ -50,7 +50,8 @@ public class LaunchRenderArc : MonoBehaviour
         lr = GetComponent<LineRenderer>();
         g = Mathf.Abs(Physics2D.gravity.y);
         cubey = transform.parent.gameObject;
-        leanForce = transform.GetComponentInParent<LeanForceRigidbody>();
+        if (leanForce == null)
+            leanForce = transform.GetComponentInParent<LeanForceRigidbodyCustom>();
         
         dotSprites.Clear();
         var arc = Instantiate(dottedLineArcGroup);
@@ -106,7 +107,7 @@ public class LaunchRenderArc : MonoBehaviour
         lr.positionCount = resolution + 1;
         SpawnArcSprites(CalculateArcArray());
 
-        leanAngle = leanForce.angle;
+        leanAngle = leanForce.Angle;
         
         // Debug.Log("Rendering Arc");
     }

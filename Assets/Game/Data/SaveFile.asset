@@ -15,5 +15,5 @@ MonoBehaviour:
   saveName: testSave
   playerName: Player1
   lastChapterPlayed: 1
-  lastLevelPlayed: 7
-  levelLoaded: Level08(Clone)
+  lastLevelPlayed: 8
+  levelLoaded: Level09(Clone)

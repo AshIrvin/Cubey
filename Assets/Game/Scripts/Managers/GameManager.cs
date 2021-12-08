@@ -41,7 +41,7 @@ public class GameManager : MonoBehaviour
     [Header("Player")]
     [SerializeField] private GameObject cubeyPlayer;
     [SerializeField] private GameObject cubeyPlayerPrefab;
-    [SerializeField] private LeanForceRigidbody leanForceRb;
+    [SerializeField] private LeanForceRigidbodyCustom leanForceRb;
     
     [Header("Game Screens")]
     [SerializeField] private GameObject pauseMenu;
@@ -190,6 +190,9 @@ public class GameManager : MonoBehaviour
         pickupCountProperty.OnValueChanged += CheckPickupCount;
         exitProperty.OnValueChanged += LoadEndScreen;
         stickyObject.OnValueChanged += ToggleSticky;
+
+        if (leanForceRb == null)
+            leanForceRb = FindObjectOfType<LeanForceRigidbodyCustom>();
         
         GameLevel = false;
 

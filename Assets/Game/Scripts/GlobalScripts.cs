@@ -8,7 +8,7 @@ namespace Game.Scripts
     public class GlobalScripts : MonoBehaviour
     {
 
-        public LeanForceRigidbody leanForce;
+        /*public LeanForceRigidbodyCustom leanForce;
 
         public GameManager gameManager;
         public VisualEffects visualEffects;
@@ -23,6 +23,6 @@ namespace Game.Scripts
 
             if (gameManager == null)
                 gameManager = GameObject.Find("GameManager").GetComponent<GameManager>();
-        }
+        }*/
     }
 }
