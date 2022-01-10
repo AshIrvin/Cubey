@@ -189,6 +189,9 @@ public class MainMenuManager : MonoBehaviour
 
     public void SetCollisionBox(string collisionName)
     {
+        if (leanConstrainToBox.Target != null)
+            leanConstrainToBox.Target.enabled = true;
+        
         if (collisionName == "CollisionMenu")
         {
             leanConstrainToBox.Target = allChapters[saveMetaData.LastChapterPlayed].MenuEnvironment.transform.Find(collisionName).GetComponent<BoxCollider>();
@@ -198,7 +201,14 @@ public class MainMenuManager : MonoBehaviour
             leanConstrainToBox.Target = allChapters[saveMetaData.LastChapterPlayed].ChapterMap.transform.Find(collisionName).GetComponent<BoxCollider>();
         }
         else
-            Debug.LogError("ERROR - no Collision box found!");
+        {
+            if (leanConstrainToBox.Target != null)
+            {
+                leanConstrainToBox.Target.enabled = false;
+                leanConstrainToBox.Target = null;
+            }
+            Debug.Log("No Collision box found!");
+        }
     }
     
     // Used in chapter menu buttons

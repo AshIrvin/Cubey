@@ -23,8 +23,7 @@ public class CameraManager : MonoBehaviour
     [SerializeField] private Vector3 exitPos;
     [SerializeField] private Vector3 endCamPos;
 
-    [SerializeField] private GameObject maps;
-    [SerializeField] private GameObject cubeyPlayer;
+    // [SerializeField] private GameObject maps;
     [SerializeField] private GameObject cubeyOnMap;
     
     [SerializeField] private float speed = 0.1f;
@@ -54,6 +53,9 @@ public class CameraManager : MonoBehaviour
         set => gameLevel.CurrentValue = value;
     }
     
+    private GameObject CubeyPlayer => gameManager.CubeyPlayer;
+    
+    
     private void Awake()
     {
         gameLevel.OnValueChanged += EnteringLevel;
@@ -79,15 +81,19 @@ public class CameraManager : MonoBehaviour
         
         if (!gameManager.CamMovement || startFromExit) return;
 
-        if (gameManager.GameLevel)
+        if (gameManager.GameLevel && CubeyPlayer != null)
         {
-            transform.position = Vector3.SmoothDamp(transform.position, cubeyPlayer.transform.position, ref velocity,
+            transform.position = Vector3.SmoothDamp(transform.position, CubeyPlayer.transform.position, ref velocity,
                 gameCamTime);
         }
         else if (!mapManager.enabled && !gameManager.GameLevel) // menu
         {
             transform.position = Vector3.SmoothDamp(transform.position, cubeyOnMap.transform.position, ref velocity, gameCamTime);
         }
+        /*else
+        {
+            Debug.LogError("CameraManager can't find something...");
+        }*/
     }
 
     private void EnteringLevel(bool enable)
@@ -116,7 +122,7 @@ public class CameraManager : MonoBehaviour
         yield return new WaitWhile(() => gameManager.LevelMetaData == null);
         exitPos = gameManager.LevelMetaData.ExitPosition.transform.position;
         transform.position = exitPos;
-        transform.position = Vector3.SmoothDamp(transform.position, cubeyPlayer.transform.position, ref velocity, gameCamTime);
+        transform.position = Vector3.SmoothDamp(transform.position, CubeyPlayer.transform.position, ref velocity, gameCamTime);
         
         startFromExit = false;
     }
@@ -168,7 +174,8 @@ public class CameraManager : MonoBehaviour
         if (currentLevelNo < currentChapterList.ChapterMapButtonList.Count && currentLevelNo != 0)
         {
             buttonToStartFrom = buttonPos;
-            buttonToEndAt = currentChapterList.ChapterMapButtonList[currentLevelNo + 1].transform.position;
+            var moveToNewLevel = currentLevelNo < 29 ? currentLevelNo + 1 : currentLevelNo;
+            buttonToEndAt = currentChapterList.ChapterMapButtonList[moveToNewLevel].transform.position;
         }
         else
         {

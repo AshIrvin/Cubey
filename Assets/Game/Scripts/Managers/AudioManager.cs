@@ -135,12 +135,16 @@ public class AudioManager : MonoBehaviour
             Debug.Log("No audio clips found");
             return;
         }
-
-        if (!audio[n].isPlaying && allowSounds)
+        else if (!audio[n].isPlaying && allowSounds)
         {
-            //print("play clip: " + audio[n].name);
             audio[n].Play();
         }
+        else
+        {
+            Debug.LogError("Audio issue! - " + audio[n].name);
+        }
+
+
     }
 
     public void StopAudio(AudioSource[] audio)

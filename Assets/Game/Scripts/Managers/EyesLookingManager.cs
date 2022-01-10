@@ -5,6 +5,7 @@ using System;
 
 public class EyesLookingManager : MonoBehaviour
 {
+    [SerializeField] private PointsOfInterestManager pointsOfInterestManager;
     [SerializeField] private Vector3 defaultPos;
     [SerializeField] private Vector3 pupilPosition;
     
@@ -20,7 +21,7 @@ public class EyesLookingManager : MonoBehaviour
     [SerializeField] private GameObject playerTarget;
     [SerializeField] private GameObject pupils;
     [SerializeField] private GameObject pupilCenterTarget;
-    [SerializeField] private GameObject[] pointsOfInterestList;
+    [SerializeField] private List<GameObject> pointsOfInterestList;
     [SerializeField] private float dist;
 
     private Vector3 _target;
@@ -36,6 +37,11 @@ public class EyesLookingManager : MonoBehaviour
     private GameObject target;
 
     private Camera cam;
+
+    private void Awake()
+    {
+        pointsOfInterestManager = FindObjectOfType<PointsOfInterestManager>();
+    }
 
     private void Start()
     {
@@ -57,7 +63,7 @@ public class EyesLookingManager : MonoBehaviour
 
         FindPointsOfInterests();
         SetEyeDelay();
-
+        
         if (!gameObject.CompareTag("Player") && playerTarget == null)
             playerTarget = GameObject.FindWithTag("Player").gameObject;
 
@@ -65,12 +71,15 @@ public class EyesLookingManager : MonoBehaviour
         
         if (target != null)
             EyesMovement(target.transform.position);
-
+        
         showPupilMovement = false;
     }
 
     private void Update()
     {
+        if (!gameObject.activeInHierarchy)
+            return;
+        
         randomEyeMovement -= Time.deltaTime;
 
         if (randomEyeMovement < 0)
@@ -114,10 +123,17 @@ public class EyesLookingManager : MonoBehaviour
     // Look for points of interest active when starting level
     private void FindPointsOfInterests()
     {
-        if (GameObject.FindWithTag("PointOfInterest").activeSelf)
-            pointsOfInterestList = GameObject.FindGameObjectsWithTag("PointOfInterest");
-        else
-            print("ERROR - no points of interest in level");
+        pointsOfInterestList.Clear();
+
+         var arr = GameObject.FindGameObjectsWithTag("PointOfInterest");
+         foreach (var p in arr)
+         {
+             pointsOfInterestList.Add(p);
+         }
+        
+        /*pointsOfInterestList.Clear();
+        if (pointsOfInterestManager.pointsOfInterestList.Count != 0)
+            pointsOfInterestList = pointsOfInterestManager.pointsOfInterestList;*/
     }
 
     private void SetEyeDelay(){
@@ -156,7 +172,7 @@ public class EyesLookingManager : MonoBehaviour
     
     private int ChooseRandomInterest()
     {
-        randomNo = UnityEngine.Random.Range(0, pointsOfInterestList.Length);
+        randomNo = UnityEngine.Random.Range(0, pointsOfInterestList.Count);
         return randomNo;
     }
 
@@ -164,11 +180,11 @@ public class EyesLookingManager : MonoBehaviour
     {
         var n = ChooseRandomInterest();
         
-        if (pointsOfInterestList.Length > 0 && pointsOfInterestList[n] != null)
+        if (pointsOfInterestList.Count > 0 && pointsOfInterestList[n] != null)
             return pointsOfInterestList[n];
         else
         {
-            Debug.LogError("Can't find POI: " + transform.parent.name);
+            // Debug.LogError("Can't find POI: " + transform.parent.name);
             return null;
         }
         

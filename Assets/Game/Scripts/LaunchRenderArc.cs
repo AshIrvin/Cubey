@@ -67,17 +67,15 @@ public class LaunchRenderArc : MonoBehaviour
         {
             spriteColours[i] = dotSprites[i].GetComponent<SpriteRenderer>().color;
         }
-        
-        EnableArc(false);
+
+        EnableLaunchArc(false);
+        // EnableArc(false);
     }
 
 
-    private void FixedUpdate()
+    private void Update()
     {
-        if (Input.GetMouseButton(0) && renderArcAllowed)
-            RenderArc();
-        else if (Input.GetMouseButtonUp(0) && spriteColours[0].a > 0)
-            StartCoroutine(DelayFadeArc());
+        StartCoroutine(DelayBeforeRenderArc());
     }
 
     private void OnDestroy()
@@ -85,13 +83,23 @@ public class LaunchRenderArc : MonoBehaviour
         launchArc.OnValueChanged -= EnableLaunchArc;
     }
 
+    private IEnumerator DelayBeforeRenderArc()
+    {
+        if (Input.GetMouseButton(0))
+        {
+            // Debug.Log("Render Arc. FingerPos.belowPlayer: " + FingerPos.belowPlayer);
+            yield return new WaitUntil(() => FingerPos.belowPlayer);
+            RenderArc();
+        }
+        if (Input.GetMouseButtonUp(0) && spriteColours[0].a > 0)
+            StartCoroutine(DelayFadeArc());
+    }
+    
     private void EnableLaunchArc(bool on)
     {
         renderArcAllowed = on;
         if (!on)
             EnableArc(false);
-        
-        // Debug.Log("launch arc set to: " + on);
     }
     
     private void RenderArc()

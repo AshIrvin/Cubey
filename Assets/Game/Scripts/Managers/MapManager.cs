@@ -166,6 +166,7 @@ public class MapManager : MonoBehaviour
         levelGameObject.SetActive(true);
         EnableGameManager = true;
         enabled = false;
+        
     }
     
     private void LoadLevel(int levelNumber)
@@ -199,20 +200,24 @@ public class MapManager : MonoBehaviour
         levelGameObject.SetActive(true);
         EnableGameManager = true;
         enabled = false;
+        mainMenuManager.SetCollisionBox(null);
     }
 
     public void QuitToMap()
     {
-        DestroyLevels();
+        GameObject cubey = GameObject.FindWithTag("Player").transform.parent.gameObject;
+        cubey.transform.SetParent(null, true);
+        VisualEffects.Instance.peExitSwirl.transform.SetParent(VisualEffects.Instance.ParticleEffectsGo.transform, true);
+        EnableGameManager = false;
         Time.timeScale = 1;
         enabled = true;
-        EnableGameManager = false;
-        
+        DestroyLevels();
         EnableMap(saveMetaData.LastChapterPlayed);
     }
 
     private void DestroyLevels()
     {
+        
         for (int i = 0; i < LevelParent.transform.childCount; i++)
         {
             Destroy(LevelParent.transform.GetChild(i).gameObject);

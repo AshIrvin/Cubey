@@ -17,7 +17,7 @@ MonoBehaviour:
   chapterNumber: 1
   chapterName: Forest
   pickupIcon: {fileID: 0}
-  lastLevelPlayed: 8
+  lastLevelPlayed: 9
   lastLevelUnlocked: 9
   chapterUnlocked: 1
   chapterMap: {fileID: 5035972029797836284, guid: 571d2f56f203ef24097303525ff5b687,

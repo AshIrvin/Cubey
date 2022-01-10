@@ -1,33 +1,38 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Lean.Touch;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
 public class Portal : MonoBehaviour
 {
+    [Header("Scripts")]
     [SerializeField] private VisualEffects visualEffects;
     [SerializeField] private AutoRotation autoRotation;
     
+    [Header("Config")]
     [SerializeField] private GameObject portalExit;
-    [SerializeField] private float delay = 0.3f;
+    [SerializeField] private float portalActDelay = 0.3f;
+    // [SerializeField] private float portalForce = 1f;
     [SerializeField] private BoolGlobalVariable usePortal;
     [SerializeField] private Vector3 velocity = Vector3.zero;
+    [SerializeField] private bool usePortals;
     
-    public Vector3 defaultScale;
+    [Header("Force through Portals")]
+    [SerializeField] private float minVelocityForce = 2f;
+    [SerializeField] private float maxVelocityForce = 8f;
+    [SerializeField] private float cubeyForce;
+
+    [Header("Other")]
     public GameObject objectToTeleport;
 
-    public bool scaleObject;
-    public float scaleSpeed;
-    public float duration;
-    
-    private bool setDefaultScale;
+    [Header("Object colour to change")]
     private SpriteRenderer objectColour;
-    
     public Color transparent;
     public Color defaultColour;
 
-    public float time;
+    public float portalForceMultiply = 0.5f;
     
     private void Awake()
     {
@@ -39,97 +44,82 @@ public class Portal : MonoBehaviour
     private void OnEnable()
     {
         usePortal.CurrentValue = true;
+        usePortals = true;
     }
 
-    private void Update()
+    private void OnDisable()
     {
-        if (scaleObject)
-        {
-            ScaleObject(true);
-            
-            if (objectToTeleport.transform.localScale.y < 0.05f)
-            {
-                scaleObject = false;
-                TeleportObject();
-            }
-        }
-        else
-        {
-            if (objectToTeleport != null && objectToTeleport.transform.localScale != defaultScale)
-            {
-                if (objectColour != null)
-                {
-                    // time -= Time.deltaTime * duration;
-                    objectColour.color = Color.Lerp(objectColour.color, defaultColour, Single.Epsilon); // i += Time.deltaTime * rate;
-                    // objectColour.color = defaultColour;
-                    // RestartTime();
-                }
-                ScaleObject(false);
-            }
-        }
+        usePortals = false;
     }
 
     private void OnTriggerEnter(Collider other)
     {
+        HitPortal(other);
+    }
+
+    private void OnTriggerStay(Collider other)
+    {
+        HitPortal(other);
+    }
+
+    private void HitPortal(Collider other)
+    {
         if (other.CompareTag("Player") && usePortal.CurrentValue)
         {
             objectToTeleport = other.gameObject;
-            if (!setDefaultScale)
-            {
-                autoRotation = objectToTeleport.CompareTag("Player") 
-                    ? objectToTeleport.GetComponent<AutoRotation>() : null;
-                
-                objectColour = objectToTeleport.CompareTag("Player")
-                    ? objectToTeleport.transform.Find("BodySprite").GetComponent<SpriteRenderer>() : null;
-                
-                if (objectColour != null) 
-                    defaultColour = objectColour.color;
-                
-                setDefaultScale = true;
-                defaultScale = objectToTeleport.transform.localScale;
-            }
 
-            scaleObject = true;
-            visualEffects.PlayEffect(visualEffects.pePortalEffects, objectToTeleport.transform.position);
+            autoRotation = objectToTeleport.GetComponent<AutoRotation>();
+                
+            objectColour = objectToTeleport.transform.Find("BodySprite")?.GetComponent<SpriteRenderer>();
+            if (objectColour != null)
+                defaultColour = objectColour.color;
+            
+            TeleportObject();
         }
     }
 
     private IEnumerator DelayPortalActivation()
     {
-        yield return new WaitForSeconds(delay);
+        yield return new WaitForSeconds(portalActDelay);
         usePortal.CurrentValue = true;
-    }
-    
-    private void ScaleObject(bool shrink)
-    {
-        var scale = shrink ? Vector3.zero : defaultScale;
-        objectToTeleport.transform.localScale = Vector3.Slerp(objectToTeleport.transform.localScale, scale, scaleSpeed);
-        if (objectColour != null)
-        {
-            // time -= Time.deltaTime * duration;
-            objectColour.color = Color.Lerp(objectColour.color, transparent, Single.Epsilon); // i += Time.deltaTime * rate;
-            // RestartTime();
-            // objectColour.color = transparent;
-        }
-    }
-
-    public int startTime = 2;
-    
-    private void RestartTime()
-    {
-        if (time < 0)
-            time = startTime;
+        objectToTeleport = null;
     }
     
     private void TeleportObject()
     {
         usePortal.CurrentValue = false;
+        
+        var rb = objectToTeleport.GetComponent<Rigidbody>();
+        var leanForce = objectToTeleport.GetComponent<LeanForceRigidbodyCustom>();
+        
+        visualEffects.PlayEffect(visualEffects.pePortalEffects, objectToTeleport.transform.position, portalExit.transform.rotation);
+        
         objectToTeleport.transform.position = portalExit.transform.position;
         objectToTeleport.transform.rotation = Quaternion.Euler(0,0,Random.Range(0, 360));
-        StartCoroutine(DelayPortalActivation());
-        visualEffects.PlayEffect(visualEffects.pePortalEffectsExit, objectToTeleport.transform.position);
         
+        if (objectColour != null)
+        {
+            objectColour.color = Color.Lerp(objectColour.color, transparent, Single.Epsilon); // i += Time.deltaTime * rate;
+        }
+        
+        visualEffects.PlayEffect(visualEffects.pePortalEffectsExit, objectToTeleport.transform.position, portalExit.transform.rotation);
+
         if (autoRotation != null)
             autoRotation.AddRotation(Random.Range(-4, 4));
+        
+        cubeyForce = 0f;
+        if (leanForce != null)
+        {
+            // get speed of entry
+            cubeyForce = Mathf.Max(leanForce.playerMagnitude, minVelocityForce);
+            cubeyForce = Mathf.Min(cubeyForce, maxVelocityForce);
+            rb.AddForce(portalExit.transform.up * cubeyForce, ForceMode.Impulse); // 6
+        }
+        else
+            rb.AddForce(portalExit.transform.up * portalForceMultiply, ForceMode.Impulse);
+    
+        StartCoroutine(DelayPortalActivation());
     }
+
+
 }

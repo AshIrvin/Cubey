@@ -16,9 +16,9 @@ MonoBehaviour:
   levelName: Level 30
   levelNumber: 30
   timer: 99
-  jumpsForGold: 3
-  jumpsForSilver: 5
-  jumpsForBronze: 8
+  jumpsForGold: 7
+  jumpsForSilver: 8
+  jumpsForBronze: 9
   levelSprite: {fileID: 0}
   levelPrefab: {fileID: 7326525578732712116, guid: 137ee034c32464f4a96d7097c2448397,
     type: 3}
@@ -26,7 +26,7 @@ MonoBehaviour:
     type: 3}
   exitPosition: {fileID: 1956953812867177984, guid: 137ee034c32464f4a96d7097c2448397,
     type: 3}
-  awardsReceived: 0
+  awardsReceived: 1
   portalEnter: []
   portalExit: []
   pathName: Assets/Game/Prefabs/LevelPrefabs/Chapter04

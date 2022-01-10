@@ -19,6 +19,7 @@ MonoBehaviour:
   pickupIcon: {fileID: 0}
   lastLevelPlayed: 4
   lastLevelUnlocked: 4
+  chapterUnlocked: 0
   chapterMap: {fileID: 1237286781212638121, guid: 7271a4f8c2113d24d876f236e784ec43,
     type: 3}
   cubeyPlayer: {fileID: 0}

@@ -15,11 +15,12 @@ namespace Lean.Touch
         [SerializeField] private GameManager gameManager;
         [SerializeField] private AudioManager audioManager;
         [SerializeField] private LaunchRenderArc launchRenderArc;
-
+        [SerializeField] private BoolGlobalVariable stickyObject;
+        
         [SerializeField] private bool useMass;
         [SerializeField] private bool rotateToVelocity;
 
-        [SerializeField] private float playerMagnitude;
+        public float playerMagnitude;
 
         [SerializeField] private Vector3 direction;
         [SerializeField] private Vector3 directionNormalised;
@@ -28,7 +29,8 @@ namespace Lean.Touch
         private Rigidbody cachedBody;
         private float angle;
         public bool canJump;
-
+        public bool moveScreen;
+        
         public float Angle => angle;
         
         private void FixedUpdate()
@@ -40,6 +42,12 @@ namespace Lean.Touch
         protected virtual void OnEnable()
         {
             cachedBody = GetComponent<Rigidbody>();
+            if (gameManager == null)
+                gameManager = FindObjectOfType<GameManager>();
+            if (audioManager == null)
+                audioManager = FindObjectOfType<AudioManager>();
+            if (launchRenderArc == null)
+                launchRenderArc = FindObjectOfType<LaunchRenderArc>();
         }
         
         // still used?
@@ -66,33 +74,25 @@ namespace Lean.Touch
         // comes from leanFingerLine in game
         public void ApplyToOpposite(Vector3 end)
         {
-            if (!cachedBody.gameObject.activeInHierarchy) return;
-            
+            if (cachedBody == null || !cachedBody.gameObject.activeInHierarchy)
+                return;
+
             // check if touch is below player
             if (end.y < cachedBody.transform.position.y)
             {
                 // if within a good distance, allow movement, otherwise move screen
-                gameManager.allowMovement = true;
+                gameManager.allowPlayerMovement = true;
+                gameManager.LaunchArc = true;
             }
             else
             {
-                gameManager.allowMovement = false;
+                gameManager.allowPlayerMovement = false;
+                gameManager.LaunchArc = false;
                 return;
             }
 
             if (canJump)
             {
-                /*if (gameManager.StickyObject)
-                {
-                    Debug.Log("Lean stuck: " + gameManager.StickyObject);
-                    gameManager.playerRb.isKinematic = false;
-                    gameManager.playerRb.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationY | RigidbodyConstraints.FreezePositionZ;
-                    gameManager.playerRb.useGravity = true;
-                    velocityMultiplier = gameManager.cubeyJumpHeight;
-
-                    gameManager.StickyObject = false;
-                }*/
-
                 ApplyBetweenOpposite(transform.position, end);
             }
         }
@@ -103,10 +103,10 @@ namespace Lean.Touch
             if (LeanTouch.Fingers.Count >= 2)
                 return;
             
-            if (gameManager.allowMovement)
+            if (gameManager.allowPlayerMovement)
             {
-                Debug.Log("ping player");
-                gameManager.playerRb.drag = 0;
+                
+                // gameManager.playerRb.drag = 0;
                 launchRenderArc.leanEndPos = fingerPos;
                 fingerPos.z = playerPos.z = transform.position.z;
 
@@ -121,20 +121,22 @@ namespace Lean.Touch
                     transform.rotation = Quaternion.Euler(0.0f, 0.0f, angle);
                 }
                 
+                stickyObject.CurrentValue = false;
                 cachedBody.AddForce(direction * velocityMultiplier, forceMode);
                 
                 gameManager.PlayerFaceDirection(direction.x > 0);
                 // if (!gameManager.useTimer)
                 StartCoroutine(PlayerJumped());
+                
             }
         }
 
 
         private IEnumerator PlayerJumped()
         {
+            
             yield return new WaitForSeconds(0.01f);
             gameManager.PlayerJumped();
-            // launchRenderArc.EnableArc(false);
         }
 
         private void OnCollisionEnter(Collision collision)

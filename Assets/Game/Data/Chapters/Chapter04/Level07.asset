@@ -26,7 +26,7 @@ MonoBehaviour:
     type: 3}
   exitPosition: {fileID: 1956953812867177984, guid: 38ba7d64ce26570428a57d2736c2aa51,
     type: 3}
-  awardsReceived: 0
+  awardsReceived: 1
   portalEnter: []
   portalExit: []
   pathName: Assets/Game/Prefabs/LevelPrefabs/Chapter04

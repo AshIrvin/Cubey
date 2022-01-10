@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-
 public class PlatformManager : MonoBehaviour
 {
     [Header("Scripts")]
@@ -37,6 +36,8 @@ public class PlatformManager : MonoBehaviour
     [SerializeField] private float playerDragThruCloud = 25f;
     [SerializeField] private SpriteRenderer sprite;
 
+    private Rigidbody platformRb;
+    
     private Vector3 startPos;
     private GameObject spawnedArrow;
 
@@ -44,8 +45,6 @@ public class PlatformManager : MonoBehaviour
     private bool verticalMovingPlatform;
     private bool moveRight;
     private bool moveUp;
-    
-
 
     private void Start()
     {
@@ -67,6 +66,8 @@ public class PlatformManager : MonoBehaviour
 
         targetPos = new Vector3(startPos.x + horPlatformDistance, startPos.y + vertPlatformDistance);
         playerDragThruCloud = 25f;
+        
+        platformRb = GetComponent<Rigidbody>();
     }
 
     private void FixedUpdate()
@@ -107,7 +108,7 @@ public class PlatformManager : MonoBehaviour
     }
 
     // for moving vertical platforms
-    void VerticalPlatforms()
+    private void VerticalPlatforms()
     {
         if (verticalMovingPlatform && !moveHor && !fixedObject)
         {
@@ -192,26 +193,30 @@ public class PlatformManager : MonoBehaviour
         }
     }
 
+    public float peOffset = 1;
     // Play PE when platform falls
     private IEnumerator WaitForPlatform(float timer)
     {
-        // visualEffects.PlayEffect(VisualEffects.Instance.pePlatformDust, transform.position);
-        VisualEffects.Instance.PlayEffect(VisualEffects.Instance.pePlatformDust, transform.position);
-        
+        Vector3 pos = transform.position;
+        pos.y += peOffset;
+        VisualEffects.Instance.PlayEffect(VisualEffects.Instance.pePlatformRockDust, pos);
         yield return new WaitForSeconds(timer);
+        platformRb.isKinematic = false;
+        yield return new WaitForSeconds(1);
         FallingPlatform();
     }
 
     private void FallingPlatform() 
     {
-        Rigidbody rb = gameObject.GetComponent<Rigidbody>() ? gameObject.GetComponent<Rigidbody>() : gameObject.AddComponent<Rigidbody>();
+        // platformRb = gameObject.GetComponent<Rigidbody>() ? gameObject.GetComponent<Rigidbody>() : gameObject.AddComponent<Rigidbody>();
 
         /*if (rb == null)
         {
             gameObject.AddComponent<Rigidbody>();
         }*/
         
-        rb.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationY;
+        // platformRb.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationY;
+        
         DestroyObject();
     }
 
@@ -230,11 +235,21 @@ public class PlatformManager : MonoBehaviour
 
     private void PlatformEnable(bool enable)
     {
-        var col = transform.GetChild(1).GetComponent<BoxCollider>();
-        var sprite = transform.GetChild(0).GetComponent<SpriteRenderer>();
-        col.enabled = enable;
-        sprite.enabled = enable;
-
+        if (transform.childCount > 0)
+        {
+            // Todo - xmas falling platform need fixed? GetChild(1)
+            var col = transform.GetChild(0).GetComponent<BoxCollider>();
+            var sprite = transform.GetChild(0).GetComponent<SpriteRenderer>();
+            col.enabled = enable;
+            sprite.enabled = enable;
+        }
+        else
+        {
+            var col = transform.GetComponent<BoxCollider>();
+            var sprite = transform.GetComponent<SpriteRenderer>();
+            col.enabled = enable;
+            sprite.enabled = enable;
+        }
     }
 
     private IEnumerator RespawnPlatform(float timer)
@@ -242,18 +257,20 @@ public class PlatformManager : MonoBehaviour
         yield return new WaitForSeconds(timer);
         // VisualEffects.Instance.pePlatformExplode2.Play();
         VisualEffects.Instance.PlayEffect(VisualEffects.Instance.pePlatformExplode2, transform.position);
-        
+        platformRb.isKinematic = true;
         PlatformEnable(true);
     }
 
+    private Rigidbody playerRb;
     private void OnTriggerEnter(Collider other)
     {
         if (other.CompareTag("Player"))
         {
             other.transform.parent = transform;
-
-            Rigidbody rb = other.GetComponent<Rigidbody>();
-            rb.drag = playerDragThruCloud;
+            
+            if (playerRb == null)
+                playerRb = other.GetComponent<Rigidbody>();
+            playerRb.drag = playerDragThruCloud;
 
             /*GameManager.Instance.forceJump = true;
             GameManager.Instance.PlayerAllowedJump(true);*/
@@ -269,8 +286,9 @@ public class PlatformManager : MonoBehaviour
 
             other.transform.parent = null;
 
-            Rigidbody rb = other.GetComponent<Rigidbody>();
-            rb.drag = 0f;
+            if (playerRb == null)
+                playerRb = other.GetComponent<Rigidbody>();
+            playerRb.drag = 0f;
         }
     }
 }

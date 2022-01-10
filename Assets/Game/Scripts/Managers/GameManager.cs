@@ -16,6 +16,7 @@ public class GameManager : MonoBehaviour
     [SerializeField] private LevelMetaData levelMetaData;
     [SerializeField] private ChapterList chapterList;
     
+    [Header("Scriptable Objects")]
     [SerializeField] private BoolGlobalVariable gameLevel;
     [SerializeField] private IntGlobalVariable pickupCountProperty;
     [SerializeField] private BoolGlobalVariable exitProperty;
@@ -27,8 +28,16 @@ public class GameManager : MonoBehaviour
     [SerializeField] private MainMenuManager mainMenuManager;
     [SerializeField] private VisualEffects visualEffects;
 
+    [Header("Player")]
+    [SerializeField] private GameObject cubeyPlayer;
+    [SerializeField] private GameObject cubeyPlayerPrefab;
+    [SerializeField] private LeanForceRigidbodyCustom leanForceRb;
     
-    
+    [Header("Audio")]
+    [SerializeField] private AudioManager audioManager;
+    [SerializeField] private AudioSource levelMusic;
+
+    public static Transform gameFolder;
     private float timer;
     private string levelName;
 
@@ -38,11 +47,7 @@ public class GameManager : MonoBehaviour
 
     private int levelNo;
     private int chapterNo;
-    [Header("Player")]
-    [SerializeField] private GameObject cubeyPlayer;
-    [SerializeField] private GameObject cubeyPlayerPrefab;
-    [SerializeField] private LeanForceRigidbodyCustom leanForceRb;
-    
+
     [Header("Game Screens")]
     [SerializeField] private GameObject pauseMenu;
     [SerializeField] private GameObject endScreen;
@@ -55,7 +60,7 @@ public class GameManager : MonoBehaviour
     
     [SerializeField] private GameObject deathWalls;
 
-    [Header("Text")]
+    [Header("UI Text")]
     [SerializeField] private Text levelText;
     [SerializeField] private Text itemText;
     [SerializeField] private Text jumpText;
@@ -68,8 +73,7 @@ public class GameManager : MonoBehaviour
     [SerializeField] public float cubeyJumpHeight = 2.6f;
     [SerializeField] public bool useTimer;
 
-    [SerializeField] private AudioManager audioManager;
-    [SerializeField] private AudioSource levelMusic;
+
     [SerializeField] private bool camMovement;
 
     private ParticleSystem pe;
@@ -77,6 +81,7 @@ public class GameManager : MonoBehaviour
     public Rigidbody playerRb;
     
     [SerializeField] private bool gameLevelEnabled;
+    [SerializeField] private float playerGooDrag = 35f;
     
     public bool GameLevel
     {
@@ -115,15 +120,20 @@ public class GameManager : MonoBehaviour
         get => launchArc;
         set => launchArc.CurrentValue = value;
     }
+    
+    public GameObject GetLevelExit
+    {
+        get => exitObject;
+    }
+
+    public GameObject CubeyPlayer
+    {
+        get => cubeyPlayer;
+        set => cubeyPlayer = value;
+    }
 
     public LevelMetaData LevelMetaData => levelMetaData;
     public SaveMetaData SaveMetaData => saveMetaData;
-
-    public bool StickyObject
-    {
-        get => stickyObject;
-        set => stickyObject.CurrentValue = value;
-    }
 
     public bool playSingleLevel = false;
 
@@ -131,16 +141,13 @@ public class GameManager : MonoBehaviour
     // [SerializeField] private GameObject treeRight;
     // [SerializeField] private GameObject levelsGrp;
 
-
-    // [SerializeField] public bool playerStuck;
-    [SerializeField] public bool allowMovement;
+    [SerializeField] public bool allowPlayerMovement;
     // [SerializeField] private bool allowFlight;
     [SerializeField] private bool jumpCountIncreases;
     [SerializeField] private bool xagon;
     [SerializeField] private bool onBreakablePlatform;
     [SerializeField] private bool onMovingPlatform;
     [SerializeField] private bool forceJump;
-
 
     // [SerializeField] private Text jumpsText;
     // [SerializeField] private Text youLasted;
@@ -155,8 +162,6 @@ public class GameManager : MonoBehaviour
     private int time;
     private int countdown = 60;
 
-    // [SerializeField] private int pickupsLeft;
-    // [SerializeField] private int maxSweets;
     [SerializeField] private int award;
 
     [Header("Animation")]
@@ -165,16 +170,14 @@ public class GameManager : MonoBehaviour
     [SerializeField] private Animator starBronze_anim;
 
     [Header("Star Colours")]
-    [SerializeField] private Color starGold = new Color(0.95f, 0.95f, 0, 1);
-    [SerializeField] private Color starSilver = new Color(1, 0.86f, 0, 1);
-    [SerializeField] private Color starBronze = new Color(1, 0.5f, 0, 1);
-    [SerializeField] private Color starDefault = new Color(1, 1, 1, 0.3f);
+    private Color starGold = new Color(0.95f, 0.95f, 0, 1);
+    private Color starSilver = new Color(1, 0.86f, 0, 1);
+    private Color starBronze = new Color(1, 0.5f, 0, 1);
+    private Color starDefault = new Color(1, 1, 1, 0.3f);
 
     [Header("Other")]
-    [SerializeField] private Vector3 cubeyPosition;
-    
-    public float CubeyMagnitude;
-
+    private Vector3 cubeyPosition;
+    public float cubeyMagnitude;
     private string pickupName = " Pickups";
     private int stat_Jumps;
     private Vector3 flip;
@@ -183,7 +186,7 @@ public class GameManager : MonoBehaviour
     private bool isPlayerCubeNotNull;
 
 
-    
+
     private void Awake()
     {
         gameLevel.OnValueChanged += LoadGameLevel;
@@ -193,6 +196,9 @@ public class GameManager : MonoBehaviour
 
         if (leanForceRb == null)
             leanForceRb = FindObjectOfType<LeanForceRigidbodyCustom>();
+
+        if (gameFolder == null)
+            gameFolder = GameObject.Find("Game").transform;
         
         GameLevel = false;
 
@@ -203,13 +209,13 @@ public class GameManager : MonoBehaviour
 
         SetGameCanvases(false);
     }
-    
+
     private void OnDestroy()
     {
         gameLevel.OnValueChanged -= LoadGameLevel;
         pickupCountProperty.OnValueChanged -= CheckPickupCount;
         exitProperty.OnValueChanged -= LoadEndScreen;
-        // launchArc.onValueChanged -= EnableLaunchArc;
+        stickyObject.OnValueChanged -= ToggleSticky;
     }
     
     private void GetLevelInfo()
@@ -223,6 +229,8 @@ public class GameManager : MonoBehaviour
         silver = levelMetaData.JumpsForSilver;
         gold = levelMetaData.JumpsForGold;
         levelName = levelMetaData.LevelName;
+        
+        // pointsOfInterestManager.LevelInit();
         Debug.Log($"Level {levelNo}s info received.");
     }
 
@@ -232,42 +240,40 @@ public class GameManager : MonoBehaviour
         exitProperty.CurrentValue = false;
         GetLevelInfo();
         StartLevel();
-        StartCoroutine(LoadingScene(false));
+        // StartCoroutine(LoadingScene(false));
+        // StickyObject = false;
     }
 
     private void OnDisable()
     {
         // cubeyPlayer.transform.SetParent(transform);
-        cubeyPlayer.SetActive(false);
+        if (cubeyPlayer != null)
+            cubeyPlayer.SetActive(false);
         leanForceRb.canJump = false;
         SetGameCanvases(false);
         // mapManager.enabled = true;
         
         starGold_anim.Play("mapStarGoldBounce");
     }
-
-    // private void EnableLaunchArc(bool on)
-    // {
-    //     
-    // }
     
     private void LoadGameLevel(bool enable)
     {
         enabled = enable;
+        ResetCubeyPlayer(!enable);
         launchArc.CurrentValue = enable;
-        
+
         mainMenuManager.mainMenu.SetActive(!enable);
         mainMenuManager.enabled = !enable;
         exitObject.SetActive(!enable);
 
-        ResetCubeyPlayer(!enable);
         SetGameCanvases(enable);
-        visualEffects.ParticleEffectsGo = enable;
+        visualEffects.ParticleEffectsGo.SetActive(enable);
     }
 
     private void SetGameCanvases(bool enable)
     {
-        topUi.SetActive(enable);
+        if (topUi != null)
+            topUi.SetActive(enable);
         PauseGame(false);
         EndScreen(false);
         FailedScreen(false);
@@ -277,14 +283,21 @@ public class GameManager : MonoBehaviour
     {
         // levelMetaData.LevelPrefab.transform.GetChild(1);
         // find PlacementCube, disable
-        mapManager.LevelGameObject.transform.GetChild(1)?.GetChild(1)?.gameObject.SetActive(false);
+        if (mapManager.LevelGameObject.transform.GetChild(1).name.Contains("Start"))
+            mapManager.LevelGameObject.transform.GetChild(1)?.GetChild(1)?.gameObject.SetActive(false);
+        else if (mapManager.LevelGameObject.transform.GetChild(0).name.Contains("Start"))
+        {
+            mapManager.LevelGameObject.transform.GetChild(0)?.GetChild(1)?.gameObject.SetActive(false);
+        }
+        else
+        {
+            Debug.LogError("Can't find Start position");
+        }
     }
 
     private void StartLevel()
     {
-        Debug.Log("Starting level");
-        
-        visualEffects.player = cubeyPlayer;
+        // visualEffects.player = cubeyPlayer;
 
         // timer = GetComponent<Timer>();
         if (deathWalls != null)
@@ -299,31 +312,36 @@ public class GameManager : MonoBehaviour
         // EndScreen(false);
         // FailedScreen(false);
         
-        flip = cubeyPlayer.transform.localScale;
+        if (cubeyPlayer != null)
+            flip = cubeyPlayer.transform.localScale;
+        else
+            Debug.LogError("Can't find Cubey!!");
+        
         DisableStartPosition();
         
         UpdateLevelText(levelNo);
 
         //blowingLeaves.Stop();
 
-        /*if (chapterNo == 0)
+        if (chapterNo == 0)
         {
             pickupName = " Sweets";
             // setup game music
-            // levelMusic = GameObject.Find("XmasMusic").GetComponent<AudioSource>();
-            // audioManager.levelMusic = levelMusic;
+            levelMusic = GameObject.Find("XmasMusic").GetComponent<AudioSource>();
+            audioManager.levelMusic = levelMusic;
         }
         else
         {
             pickupName = " Pickups";
-            // levelMusic = GameObject.Find("LevelMusic").GetComponent<AudioSource>();
-            // audioManager.levelMusic = levelMusic;
-        }*/
+            levelMusic = GameObject.Find("LevelMusic").GetComponent<AudioSource>();
+            audioManager.levelMusic = levelMusic;
+        }
 
         JumpCount = 10;
         CountSweetsForLevel();
+        ReParentExitSwirl(false);
         SetupExit();
-        
+
         if (audioManager != null)
             audioManager.menuMusic = null;
 
@@ -348,55 +366,39 @@ public class GameManager : MonoBehaviour
             PlayerAllowedJump(true);
 
         if (isPlayerRbNotNull)
-            CubeyMagnitude = playerRb.velocity.magnitude;
+            cubeyMagnitude = playerRb.velocity.magnitude;
 
         CheckJumpCount();
 
         if (isPlayerCubeNotNull)
             cubeyPosition = cubeyPlayer.transform.position;
     }
-
-    private void ToggleSticky(bool on)
+    
+    public void ToggleSticky(bool on)
     {
         if (!on)
         {
             // return everything to normal?
             playerRb.drag = 0;
+            stickyObject.CurrentValue = false;
+            playerRb.isKinematic = false;
+            // playerRb.useGravity = true;
+            // playerRb.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationY | RigidbodyConstraints.FreezePositionZ;
+            cubeyPlayer.transform.SetParent(gameFolder, true);
             return;
         }
-        // StickyObject = true;
-        
-        /*
-        playerRb.useGravity = false;
-        playerRb.velocity = Vector3.zero;
-        playerRb.angularVelocity = Vector3.zero;
-        playerRb.isKinematic = true;
-        PlayerVelocity(0);
-        PlayerAllowedJump(true);
-        */
         
         // slow down gravity or turn on drag?
-        // playerRb.useGravity = false;
-        playerRb.drag = 10;
+        playerRb.drag = playerGooDrag;
         playerRb.velocity = Vector3.zero;
         playerRb.angularVelocity = Vector3.zero;
-        playerRb.isKinematic = true;
-        PlayerVelocity(0);
+        // playerRb.isKinematic = true;
+        // playerRb.useGravity = false;
+        // PlayerVelocity(0);
         PlayerAllowedJump(true);
         
-        /*playerStuck = on;
+        // playerRb.constraints = RigidbodyConstraints.FreezePosition | RigidbodyConstraints.FreezeRotation;
         
-        playerRb.useGravity = !on;
-        playerRb.velocity = Vector3.zero;
-        playerRb.angularVelocity = Vector3.zero;
-        playerRb.isKinematic = on;
-        PlayerVelocity(0);
-        PlayerAllowedJump(on);*/
-        
-        playerRb.constraints = RigidbodyConstraints.FreezePosition | RigidbodyConstraints.FreezeRotation;
-        
-        
-        Debug.Log("Toggle sticky " + on);
     }
     
     public void LoadHelpScreen(bool on)
@@ -452,12 +454,13 @@ public class GameManager : MonoBehaviour
 
     public void RestartLevel()
     {
-        StartCoroutine(LoadingScene(true));
+        playerRb.drag = 0;
+        stickyObject.CurrentValue = false;
+        playerRb.isKinematic = false;
         HideScreens();
         enabled = false;
         mapManager.enabled = true;
         mapManager.RestartLevel();
-        
     }
 
     // Used as failed screen button
@@ -476,38 +479,22 @@ public class GameManager : MonoBehaviour
         {
             // Time hits 0 - did not finish
             FailedScreen(true);
-            /*if (allowFlight)
-            {
-                // youLasted.text = "You lasted\n" + GetStopwatchCount() + " seconds!";
-                // load continue button
-                // UiManager.continueButton.SetActive(true);
-            }*/
         }
         else
         {
-            // change end text to COMPLETED 
-            // PE_Stars();
+            // Todo change end text to COMPLETED? 
             // play audio
-            // audioManager.PlayAudio(audioManager.cubeyCelebtration);
-
+            audioManager.PlayAudio(audioManager.cubeyCelebtration);
+            ReParentExitSwirl(false);
             EndScreen(true);
             ShowStarsAchieved();
         }
     }
-
-    /*private int GetStopwatchCount()
-    {
-        // var stopwatch = GetComponent<Timer>().stopwatch;
-        return (int)stopwatch;
-    }*/
-
-    private void PE_Stars()
-    {
-        pe.Play();
-    }
-
+    
     private void ResetCubeyPlayer(bool disable)
     {
+        Debug.Log("Reseting Cubey");
+        
         if (disable)
         {
             playerRb.useGravity = false;
@@ -517,11 +504,13 @@ public class GameManager : MonoBehaviour
         
         if (cubeyPlayer == null && cubeyPlayerPrefab != null)
         {
-            GameObject cubey = Instantiate(cubeyPlayerPrefab);
-            playerRb = cubey.GetComponent<Rigidbody>();
+            cubeyPlayer = Instantiate(cubeyPlayerPrefab);
+            playerRb = cubeyPlayer.GetComponent<Rigidbody>();
         }
         
         cubeyPlayer.SetActive(true);
+        cubeyPlayer.transform.SetParent(gameFolder, true);
+        // ReParentExitSwirl(false);
         GetPlayerSpawn();
         playerRb = cubeyPlayer.gameObject.GetComponent<Rigidbody>();
         playerRb.freezeRotation = true;
@@ -530,32 +519,18 @@ public class GameManager : MonoBehaviour
         playerRb.useGravity = true;
 
         playerRb.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationY | RigidbodyConstraints.FreezePositionZ;
-
-        leanForceRb.canJump = true;
-
-        /*if (allowFlight)
-        {
-            playerRb.constraints = RigidbodyConstraints.FreezePositionX | RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationY | RigidbodyConstraints.FreezePositionZ;
-            /*for(int i = 0; i < ScrollingHorizontalLevel.Instance.spawnedPlatforms.Count; i++)
-            {
-                Destroy(ScrollingHorizontalLevel.Instance.spawnedPlatforms[i].gameObject);
-            }
-            ScrollingHorizontalLevel.Instance.spawnedPlatforms.Clear();#1#
-        }*/
+        if (leanForceRb == null)
+            leanForceRb = cubeyPlayer.GetComponent<LeanForceRigidbodyCustom>();
+        else
+            leanForceRb.canJump = true;
 
         RestartTimer();
     }
 
     private void UpdateLevelText(int n)
     {
-        levelText.text = "Level " + n;
+        levelText.text = "Level " + (n+1);
     }
-
-    /*public void UpdateLevelString(string n)
-    {
-        levelText.text = n;
-        print("l: " + n);
-    }*/
 
     private void CheckPickupCount(int count)
     {
@@ -623,12 +598,27 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    // Need to get actual in game object
+    // Need to get actual in game object.
+    // 1st child in level for the exit, or find it under the spindle
     private GameObject FindExit()
     {
-        return mapManager.LevelGameObject.transform.GetChild(0).name.Contains("Exit")
-            ? mapManager.LevelGameObject.transform.GetChild(0).gameObject
-            : mapManager.LevelGameObject.transform.Find("Exit").gameObject;
+        if (mapManager.LevelGameObject.transform.GetChild(0).name.Contains("Exit"))
+        {
+            return mapManager.LevelGameObject.transform.GetChild(0).gameObject;
+        }
+        else if (mapManager.LevelGameObject.transform.Find("Exit"))
+        {
+            return mapManager.LevelGameObject.transform.Find("Exit").gameObject;
+        }
+        else if (mapManager.LevelGameObject.transform.Find("Spindle"))
+        {
+            return mapManager.LevelGameObject.transform.Find("Spindle").GetChild(0).gameObject;
+        }
+        else
+        {
+            Debug.LogError("Can't find the exit in: " + mapManager.LevelGameObject.name);
+            return null;
+        }
     }
     
     private void SetupExit()
@@ -640,10 +630,32 @@ public class GameManager : MonoBehaviour
         var pePos = exitObject.transform.position;
         pePos.y += 0.65f;
         visualEffects.peExitSwirl.transform.position = pePos;
+
+        if (exitObject.transform.parent.name.Contains("Spindle"))
+        {
+            ReParentExitSwirl(true);
+        }
         
         exitObject.SetActive(false);
     }
 
+    private void ReParentExitSwirl(bool move)
+    {
+        if (move)
+        {
+            visualEffects.peExitSwirl.transform.SetParent(exitObject.transform.parent);
+        }
+        else
+        {
+            visualEffects.peExitSwirl.transform.SetParent(visualEffects.ParticleEffectsGo.transform);
+        }
+    }
+
+    /// <summary>
+    /// Find the exit in the xmas levels
+    /// </summary>
+    /// <param name="closed">Present hiding exit</param>
+    /// <param name="open">Flattened present with exit open</param>
     private void SetupExitXmas(bool closed, bool open)
     {
         exitPrezzie = FindExit();
@@ -691,32 +703,15 @@ public class GameManager : MonoBehaviour
 
     private void GetPlayerSpawn()
     {
-        cubeyPlayer.transform.SetParent(null);
+        cubeyPlayer.transform.SetParent(gameFolder.transform);
 
         var pos = levelMetaData.LevelPrefab.transform.GetChild(1).transform.position;
         DisableStartPosition();
-        // levelMetaData.LevelPrefab.transform.GetChild(1)
         cubeyPlayer.gameObject.transform.SetPositionAndRotation(pos, new Quaternion(0, 0, 0, 0));
     }
 
-    /// <summary>
-    /// LOAD MAP AFTER EACH LEVEL
-    /// </summary>
-    /*private void LoadMapInMenu()
-    {
-        // Set map depending on chapterNothat player is on
-        // PlayerPrefs.SetInt("loadMap", ChaptersAndLevels.chapterNo);
-
-        // saveMetaData.ReturnToMap = true;
-        saveMetaData.LastLevelPlayed = levelNo;
-        // PlayerPrefs.SetInt("lastLevel", levelNo);
-
-        // SceneManager.LoadScene("Main_Menu");
-    }*/
-
     private int StarsGiven()
     {
-        
         var jumps = jumpsToStartWith - jumpCount;
 
         print("jumps: " + jumps + ", jumpsToStartWith: " + jumpsToStartWith);
@@ -727,7 +722,6 @@ public class GameManager : MonoBehaviour
             return 2;
         else if (jumps <= bronze)
             return 1;
-            
 
         return 0;
     }
@@ -798,20 +792,6 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    private void SaveLevelStats()
-    {
-        /*levelNo--;
-        var time_ = timer.countdown;
-        var star = StarsGiven();
-        var items = GetFriendsFound();
-        var jumped = jumpCount;
-        var restarted = 0;
-        var score = award;
-        print("award: " + award);
-
-        levelStats.SaveLevel(levelNo, time_, star, items, jumped, restarted, score);*/
-    }
-
     IEnumerator LoadingScene(bool on)
     {
         if (loadingScreen != null)
@@ -822,45 +802,10 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    private void SaveLevel()
-    {
-        /*var chapterLevel = int.Parse(ChaptersAndLevels.chapterNo.ToString("0") + levelNo.ToString("00"));
-
-        // is it more than the savedLevel?
-        // is the savedLevel showing up as another chapter?
-        // need to get savedLevel for this chapter
-        if (levelNo > GetSavedLevel())
-            PlayerPrefs.SetInt(ChaptersAndLevels.chapterNo + "level", chapterLevel);
-
-        print("SaveLevel: Chapter+Level: " + chapterLevel);*/
-    }
-
-    // When leaving game level
-    private int GetSavedLevel()
-    {
-        // saving correct 3 digit number
-        /*if (PlayerPrefs.HasKey(ChaptersAndLevels.chapterNo + "level"))
-        {
-            var chapterLevel = PlayerPrefs.GetInt(ChaptersAndLevels.chapterNo + "level"); // returns 3
-            print("1. chapter and level saved previously: " + savedLevel);
-            
-            //savedLevel = chapterLevel;
-            savedLevel = saveMetaData.LastLevelPlayed; // returns 2 digits
-
-            print("2. level saved previously: " + savedLevel);
-
-            return savedLevel;
-        }
-        else
-        {
-            print("no saved level found");
-        }*/
-        return 0;
-    }
-
+    // Todo 2 pause menus?
     private void PauseMenu(bool on)
     {
-        //audioManager.MuteAudio(audioManager.levelMusic, on);
+        audioManager.MuteAudio(audioManager.levelMusic, on);
         pauseMenu.SetActive(on);
         Time.timeScale = on ? 0f : 1f;
     }
@@ -871,7 +816,7 @@ public class GameManager : MonoBehaviour
         Time.timeScale = on ? 0.1f : 1f;
     }
 
-    private void FailedScreen(bool on)
+    public void FailedScreen(bool on)
     {
         failedScreen.SetActive(on);
         Time.timeScale = on ? 0f : 1f;
@@ -896,8 +841,6 @@ public class GameManager : MonoBehaviour
         // jumpAmountText.text = jumpCount.ToString();
         JumpCount = jumpCount;
     }
-    
-    
 
     /*public void AddJump()
     {
@@ -918,7 +861,7 @@ public class GameManager : MonoBehaviour
         playerRb.gameObject.transform.localScale = flip;
     }
 
-    private void Stats_Load()
+    /*private void Stats_Load()
     {
         if (PlayerPrefs.HasKey("stat_Jumps"))
         {
@@ -932,7 +875,7 @@ public class GameManager : MonoBehaviour
         {
             PlayerPrefs.SetInt("stat_Jumps", stat_Jumps);
         }
-    }
+    }*/
 
     public void HideGameObject(GameObject go)
     {
@@ -944,29 +887,4 @@ public class GameManager : MonoBehaviour
         yield return new WaitForSeconds(3);
     }
     
-    private void BasicLevelSetup(int c, int n)
-    {
-        // set exit up
-        if (ChaptersAndLevels.levelsList[n].transform.Find("Exit"))
-        {
-            // exitObject = ChaptersAndLevels.levelsList[n].transform.Find("Exit").transform.GetChild(0).gameObject;
-        }
-        else if (ChaptersAndLevels.levelsList[n].transform.Find("MovingExitPlatform"))
-        {
-            // exitObject = ChaptersAndLevels.levelsList[n].transform.Find("MovingExitPlatform").Find("Exit").transform.GetChild(0).gameObject;
-            // visualEffects.peExitSwirl.transform.parent = ChaptersAndLevels.levelsList[n].transform.Find("MovingExitPlatform").transform;
-        }
-        else
-        {
-            print("missing exit");
-        }
-
-        // enable exit swirl
-        visualEffects.peExitSwirl.SetActive(true);
-        // var pePos = exitObject.transform.position;
-        // pePos.y += 0.65f;
-        // visualEffects.peExitSwirl.transform.position = pePos;
-
-        // exitObject.SetActive(false);
-    }
 }

@@ -12,7 +12,7 @@ public class VisualEffects : MonoBehaviour
     [SerializeField] private GameManager gameManager;
     [SerializeField] private GameObject particleEffectsGo;
     
-    [Header("Particle Effects")]
+    [Header("Particle Effects")] // keep as public
     public ParticleSystem pePowerJump;
     public ParticleSystem peLandingDust;
     public ParticleSystem pePlayerTrail;
@@ -23,7 +23,8 @@ public class VisualEffects : MonoBehaviour
     public ParticleSystem peSnowClose;
     public ParticleSystem peLeaves;
     public ParticleSystem peSweetPickup;
-    public ParticleSystem pePlatformDust;
+    public ParticleSystem pePlatformIceDust;
+    public ParticleSystem pePlatformRockDust;
     public ParticleSystem pePlatformExplode1;
     public ParticleSystem pePlatformExplode2;
     public ParticleSystem peExitOpened;
@@ -39,14 +40,14 @@ public class VisualEffects : MonoBehaviour
     public LaunchRenderArc launchRenderArc;
 
     [Header("Players Object")]
-    public GameObject player;
+    // public GameObject player;
 
     [Header("Floats")]
-    public float spawnPeBlastDist;
-    public float timer = 2;
-    public float peSpeed;
-    public float angle;
-    public float powerLength;
+    [SerializeField] private float spawnPeBlastDist;
+    [SerializeField] private float timer = 2;
+    [SerializeField] private float peSpeed;
+    [SerializeField] private float angle;
+    [SerializeField] private float powerLength;
 
     [Header("Bools")]
     public bool powerTextEnable;
@@ -59,8 +60,9 @@ public class VisualEffects : MonoBehaviour
     public Text powerText;
     private Scene currentScene;
 
-    public bool ParticleEffectsGo
+    public GameObject ParticleEffectsGo
     {
+        get => particleEffectsGo;
         set => particleEffectsGo.SetActive(value);
     }
     
@@ -68,28 +70,8 @@ public class VisualEffects : MonoBehaviour
     {
         Instance = this;
         
-        // peExitSwirl.SetActive(false);
-        // if (particleEffectsGo.activeInHierarchy)
-        //     ParticleEffectsGo = false;
-        
         if (powerText != null)
             powerText.gameObject.SetActive(false);
-    }
-    
-
-    // Start is called before the first frame update
-    private void Start() {
-
-        /*currentScene = SceneManager.GetActiveScene();
-
-        if (currentScene.name != "Main_Menu")
-        {
-            if (player == null)
-                player = GameObject.Find("PlayerCharacter");
-
-            if (powerText != null)
-                powerText.gameObject.SetActive(false);
-        }*/
     }
 
     // Update is called once per frame
@@ -130,15 +112,15 @@ public class VisualEffects : MonoBehaviour
             var ray = Camera.main.ScreenPointToRay(Input.mousePosition);
 
             // Todo - needs fixed - cam to button erroring out
-            var playerPos = player.transform.position;
+            var playerPos = gameManager.CubeyPlayer.transform.position;
             playerPos.z -= 0.2f;
-            var distance = Vector3.Distance(playerPos, Camera.main.transform.position);
-            var fingerPos = ray.GetPoint(distance);
+            var distance = FingerPos.GetCameraPlayerDistance()/*Vector3.Distance(playerPos, Camera.main.transform.position)*/;
+            var fingerPos = FingerPos.FingerPosition/*ray.GetPoint(distance)*/;
 
             // Todo - fix start point to keep PE on z 0
             fingerPos.z = angle;
 
-            if (Physics.Raycast(ray) && fingerPos.y < playerPos.y)
+            if (Physics.Raycast(ray) && FingerPos.belowPlayer/*fingerPos.y < playerPos.y*/)
             {
                 audioManager.PlayAudio(audioManager.cubeyPowerUp);
 
@@ -148,7 +130,7 @@ public class VisualEffects : MonoBehaviour
                 var peEmit = pePowerJump.emission;
                 peEmit.enabled = true;
 
-                var direction = playerPos - fingerPos;
+                var direction = FingerPos.FingerPlayerDirection/*playerPos - fingerPos*/;
                     
                 pePowerJump.Play();
 
@@ -230,21 +212,21 @@ public class VisualEffects : MonoBehaviour
     {
         peLandingDust.gameObject.SetActive(true);
         peLandingDust.Play();
-        peLandingDust.gameObject.transform.position = player.transform.position;
+        peLandingDust.gameObject.transform.position = gameManager.CubeyPlayer.transform.position;
     }
 
     public void PlayerTrail()
     {
         pePlayerTrail.gameObject.SetActive(true);
         pePlayerTrail.Play();
-        pePlayerTrail.gameObject.transform.position = player.transform.position;
+        pePlayerTrail.gameObject.transform.position = gameManager.CubeyPlayer.transform.position;
     }
 
     public void ExitCompletion()
     {
-        var exitGo = gameManager.LevelMetaData.LevelPrefab.transform.GetChild(0);
+        var exitGo = gameManager.GetLevelExit;
         
-        peExitStars.transform.position = exitGo.position;
+        peExitStars.transform.position = exitGo.transform.position;
         peExitStars.Play();
     }
 
@@ -255,14 +237,18 @@ public class VisualEffects : MonoBehaviour
         effect.Play();
     }
 
-    public void PlayEffectOverScreen(ParticleSystem effect)
+    public void PlayEffect(ParticleSystem effect)
     {
         effect.gameObject.SetActive(true);
-        //var pe = effect.main;
-        //effect.gameObject.transform.position = pos;
-        //effect.Stop();
         effect.Play();
     }
 
-
+    public void PlayEffect(ParticleSystem effect, Vector3 pos, Quaternion rot)
+    {
+        effect.gameObject.SetActive(true);
+        effect.gameObject.transform.position = pos;
+        effect.gameObject.transform.rotation = rot;
+        effect.gameObject.transform.localScale = Vector3.one;
+        effect.Play();
+    }
 }

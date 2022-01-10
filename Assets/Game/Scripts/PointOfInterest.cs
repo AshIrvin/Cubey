@@ -7,6 +7,7 @@ using Random = UnityEngine.Random;
 
 public class PointOfInterest : MonoBehaviour
 {
+    // currently for the Alien eyes only
     [SerializeField] private Transform transformToMove;
     [SerializeField] private Transform[] pointOfInterests;
 
