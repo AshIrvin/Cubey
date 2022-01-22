@@ -174,4 +174,14 @@ public class ChapterMetaData : ScriptableObject
         }
 #endif
     }
+
+    public void DeleteAwardsForChapter()
+    {
+#if UNITY_EDITOR
+        for (int i = 0; i < levelList.Count; i++)
+        {
+            levelList[i].AwardsReceived = 0;
+        }
+#endif
+    }
 }

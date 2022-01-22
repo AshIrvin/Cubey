@@ -11,47 +11,49 @@ public class VisualEffects : MonoBehaviour
     [SerializeField] private AudioManager audioManager;
     [SerializeField] private GameManager gameManager;
     [SerializeField] private GameObject particleEffectsGo;
-    
+
     [Header("Particle Effects")] // keep as public
     public ParticleSystem pePowerJump;
-    public ParticleSystem peLandingDust;
-    public ParticleSystem pePlayerTrail;
-    public ParticleSystem peExitStars;
+
     public ParticleSystem peAirBoom;
+    public ParticleSystem peCloudPoof;
+    public ParticleSystem peExitStars;
+    public ParticleSystem peExitOpened;
+    public ParticleSystem peExitExplosion;
     public ParticleSystem peHintArrow;
-    public ParticleSystem peSnow;
-    public ParticleSystem peSnowClose;
+    public ParticleSystem peLandingDust;
     public ParticleSystem peLeaves;
-    public ParticleSystem peSweetPickup;
+    public ParticleSystem peNewLevel;
+    public ParticleSystem pePlayerTrail;
     public ParticleSystem pePlatformIceDust;
     public ParticleSystem pePlatformRockDust;
     public ParticleSystem pePlatformExplode1;
     public ParticleSystem pePlatformExplode2;
-    public ParticleSystem peExitOpened;
-    public ParticleSystem peExitExplosion;
-    public ParticleSystem peNewLevel;
     public ParticleSystem pePortalEffects;
     public ParticleSystem pePortalEffectsExit;
+    public ParticleSystem peRockBreakage;
+    public ParticleSystem peSnow;
+    public ParticleSystem peSnowClose;
+    public ParticleSystem peSweetPickup;
 
     [Header("Exit object")]
     public GameObject peExitSwirl;
 
-    [Header("Used?")]
-    public LaunchRenderArc launchRenderArc;
+    // [Header("Used?")]
+    // public LaunchRenderArc launchRenderArc;
 
-    [Header("Players Object")]
+    // [Header("Players Object")]
     // public GameObject player;
 
     [Header("Floats")]
-    [SerializeField] private float spawnPeBlastDist;
+    [SerializeField] private float spawnPeBlastDist = 3;
     [SerializeField] private float timer = 2;
-    [SerializeField] private float peSpeed;
-    [SerializeField] private float angle;
-    [SerializeField] private float powerLength;
+    [SerializeField] private float peSpeed = 1.8f;
+    [SerializeField] private float angle = 0;
+    [SerializeField] private float powerLength = 7;
 
     [Header("Bools")]
     public bool powerTextEnable;
-
     public bool enableSizeIncrease;
     public bool enableColour;
     public bool hintArrow;
@@ -250,5 +252,18 @@ public class VisualEffects : MonoBehaviour
         effect.gameObject.transform.rotation = rot;
         effect.gameObject.transform.localScale = Vector3.one;
         effect.Play();
+    }
+
+    /// <summary>
+    /// Used for creating a single PE within a loop
+    /// </summary>
+    public void PlayEffectOnce(ParticleSystem effect, Vector3 pos)
+    {
+        if (!effect.isPlaying)
+        {
+            effect.gameObject.SetActive(true);
+            effect.gameObject.transform.position = pos;
+            effect.Play();
+        }
     }
 }

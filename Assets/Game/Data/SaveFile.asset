@@ -14,6 +14,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   saveName: testSave
   playerName: Player1
-  lastChapterPlayed: 3
-  lastLevelPlayed: 3
-  levelLoaded: Level04(Clone)
+  lastChapterPlayed: 2
+  lastLevelPlayed: 7
+  levelLoaded: Level08(Clone)

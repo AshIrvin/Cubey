@@ -17,8 +17,8 @@ MonoBehaviour:
   chapterNumber: 1
   chapterName: Forest
   pickupIcon: {fileID: 0}
-  lastLevelPlayed: 9
-  lastLevelUnlocked: 9
+  lastLevelPlayed: 8
+  lastLevelUnlocked: 29
   chapterUnlocked: 1
   chapterMap: {fileID: 5035972029797836284, guid: 571d2f56f203ef24097303525ff5b687,
     type: 3}
@@ -87,7 +87,7 @@ MonoBehaviour:
   - {fileID: 0}
   - {fileID: 0}
   - {fileID: 0}
-  awardsBronze: 0
-  awardsSilver: 0
-  awardsGold: 0
+  awardsBronze: 32
+  awardsSilver: 3
+  awardsGold: 2
   fullPathName: Assets/Src_Images/MainMenu/MapLevelImages/Chapter01/

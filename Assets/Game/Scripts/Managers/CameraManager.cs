@@ -71,12 +71,13 @@ public class CameraManager : MonoBehaviour
         panToLevel = false;
     }
 
+    // todo fix this mess
     private void Update()
     {
         if (!playedIntroOnce && !mapManager.mapActive)
             StartCoroutine(PlayStartCameraSweep());
 
-        if (mapManager.mapActive && !panToLevel)
+        if (mapManager.mapActive && !panToLevel && !reachedEndButton)
             StartCoroutine(PanToLevelButton());
         
         if (!gameManager.CamMovement || startFromExit) return;
@@ -181,15 +182,9 @@ public class CameraManager : MonoBehaviour
         {
             buttonToStartFrom = buttonPos;
             buttonToEndAt = buttonPos;
+            
         }
-        
-        // nextOpenLevel = currentLevelNo == 0 ? 
-        //     buttonPos :
-        //     currentChapterList.ChapterMapButtonList[currentLevelNo + 1].transform.position;
-        
-        
-        nextOpenLevel = currentChapterList.ChapterMapButtonList[currentChapterList.LastLevelUnlocked].transform.position; 
-        
+        nextOpenLevel = currentChapterList.ChapterMapButtonList[currentChapterList.LastLevelUnlocked].transform.position;
         nextOpenLevel.z -= 0.5f;
         
         distanceFromStartButton = Vector3.Distance(transform.position, buttonToStartFrom);
@@ -214,7 +209,6 @@ public class CameraManager : MonoBehaviour
         
         buttonToStartFrom = Vector3.zero;
         buttonToEndAt = Vector3.zero;
-
 
         panToLevel = true;
     }

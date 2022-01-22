@@ -4,18 +4,22 @@ using UnityEngine;
 
 public class WindManager : MonoBehaviour {
 
-    public float windForce;
+    [SerializeField] private float windForce;
     private Rigidbody playerRb;
 
-    public float smoothTime = 0.3F;     // how it takes to get there
-    public float distanceToFlow = 2f;   // distance to go
-    public float offset;
+    [SerializeField] private float smoothTime = 0.3F;     // how it takes to get there
+    [SerializeField] private float distanceToFlow = 2f;   // distance to go
+    [SerializeField] private float offset;
 
-    //public Transform target;
     private Vector3 velocity = Vector3.zero;
-    public Vector3 targetPosition, startPos;
+    [SerializeField] private Vector3 targetPosition;
+    [SerializeField] private Vector3 startPos;
 
-    public bool moveRight;
+    private bool moveRight;
+    
+    [Header("Wind objects")]
+    [SerializeField] private bool tree;
+    [SerializeField] private bool windZone;
 
     private void Start()
     {
@@ -24,21 +28,16 @@ public class WindManager : MonoBehaviour {
         startPos = transform.position;
 
         targetPosition = new Vector3(pos.x + distanceToFlow, pos.y, pos.z);
-
-        // if (transform.GetChild(0).name.Contains("PlaceHolder"))
-        //     transform.GetChild(0).gameObject.SetActive(false);
     }
-
+    
+    private void LateUpdate()
+    {
+        if (tree)
+            TreeWindMotion();
+    }
+    
     void TreeWindMotion()
     {
-        // Define a target position above and behind the target transform
-
-        // Smoothly move the camera towards that target position
-
-        //print("transform.position.x: " + transform.position.x + ", targetPosition.x: " + targetPosition.x + ", startPos: " + startPos);
-
-        //moveRight = (transform.position.x < startPos.x);
-
         if (moveRight)
         {
             transform.position = Vector3.SmoothDamp(transform.position, targetPosition, ref velocity, smoothTime);
@@ -51,45 +50,17 @@ public class WindManager : MonoBehaviour {
             if (transform.position.x <= (startPos.x + offset))
                 moveRight = true;
         }
-
-        //moveRight = true ? (transform.position.x < (startPos.x + offset)) : (transform.position.x > (targetPosition.x - offset));
-
-        //if (movingPlatform && moveHor && !fixedObject)
-        //{
-        //    if (moveRight)
-        //    {
-        //        transform.position += (velocity * Time.deltaTime);
-        //    }
-        //    else
-        //        transform.position -= (velocity * Time.deltaTime);
-
-        //    // checks against start pos on how far to move
-        //    if (transform.position.x > (startPos.x + horPlatformDistance))
-        //    {
-        //        moveRight = false;
-        //    }
-        //    else if (transform.position.x < startPos.x)
-        //    {
-        //        moveRight = true;
-        //    }
-
-        //}
     }
 
-    private void LateUpdate()
-    {
-        TreeWindMotion();
-    }
 
-    private void OnTriggerEnter(Collider other)
+    private void OnTriggerStay(Collider other)
     {
-        if (other.CompareTag("Player"))
+        if (other.CompareTag("Player") && windZone)
         {
-            print("WIND WIND WIND IS OFF");
-            // when player enters trigger, they get thrown in that direction
-            //playerRb = other.gameObject.GetComponent<Rigidbody>();
-            //playerRb.AddForce(transform.right * windForce, ForceMode.Impulse);
+            if (playerRb == null)
+                playerRb = other.gameObject.GetComponent<Rigidbody>();
 
+            playerRb.AddForce(transform.right * windForce, ForceMode.Force);
         }
     }
 

@@ -114,12 +114,14 @@ public class MapManager : MonoBehaviour
         chapterMaps[chapter]?.SetActive(true);
         
         CycleButtonLocks();
+        mainMenuManager.EnableGoldAwardsButton(true);
     }
     
     public void DisableMaps()
     {
         for (int i = 0; i < chapterMaps.Count; i++)
             chapterMaps[i].SetActive(false);
+        mainMenuManager.EnableGoldAwardsButton(false);
     }
     
     /// <summary>
@@ -205,7 +207,7 @@ public class MapManager : MonoBehaviour
 
     public void QuitToMap()
     {
-        GameObject cubey = GameObject.FindWithTag("Player").transform.parent.gameObject;
+        GameObject cubey = GameObject.FindWithTag("Player").transform.gameObject;
         cubey.transform.SetParent(null, true);
         VisualEffects.Instance.peExitSwirl.transform.SetParent(VisualEffects.Instance.ParticleEffectsGo.transform, true);
         EnableGameManager = false;
@@ -213,6 +215,7 @@ public class MapManager : MonoBehaviour
         enabled = true;
         DestroyLevels();
         EnableMap(saveMetaData.LastChapterPlayed);
+        mainMenuManager.TryChapterFinishScreen();
     }
 
     private void DestroyLevels()
@@ -226,6 +229,7 @@ public class MapManager : MonoBehaviour
 
     #region Button Level Locking
 
+    // No longer applicable
     public void UnlockAllLevels(bool revert)
     {
         // revert to previous level/chapter state
@@ -252,7 +256,7 @@ public class MapManager : MonoBehaviour
         SetCubeyMapPosition(false);
     }
     
-    private void SetUnlockGold(int count)
+    /*private void SetUnlockGold(int count)
     {
         for (int i = 0; i < count+1; i++)
         {
@@ -270,7 +274,7 @@ public class MapManager : MonoBehaviour
             allChapters[saveMetaData.LastChapterPlayed].AwardsGold += 1;
         
         EditorUtility.SetDirty(allChapters[saveMetaData.LastChapterPlayed]);
-    }
+    }*/
     
     // Check which levels are unlocked inside the chapter
     private void CycleButtonLocks()

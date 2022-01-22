@@ -378,27 +378,17 @@ public class GameManager : MonoBehaviour
     {
         if (!on)
         {
-            // return everything to normal?
             playerRb.drag = 0;
             stickyObject.CurrentValue = false;
             playerRb.isKinematic = false;
-            // playerRb.useGravity = true;
-            // playerRb.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationY | RigidbodyConstraints.FreezePositionZ;
             cubeyPlayer.transform.SetParent(gameFolder, true);
             return;
         }
         
-        // slow down gravity or turn on drag?
         playerRb.drag = playerGooDrag;
         playerRb.velocity = Vector3.zero;
         playerRb.angularVelocity = Vector3.zero;
-        // playerRb.isKinematic = true;
-        // playerRb.useGravity = false;
-        // PlayerVelocity(0);
         PlayerAllowedJump(true);
-        
-        // playerRb.constraints = RigidbodyConstraints.FreezePosition | RigidbodyConstraints.FreezeRotation;
-        
     }
     
     public void LoadHelpScreen(bool on)
@@ -602,11 +592,15 @@ public class GameManager : MonoBehaviour
     // 1st child in level for the exit, or find it under the spindle
     private GameObject FindExit()
     {
-        if (mapManager.LevelGameObject.transform.GetChild(0).name.Contains("Exit"))
+        if (mapManager.LevelGameObject.transform.GetChild(0).name.Contains("MovingExitPlatform"))
+        {
+            return mapManager.LevelGameObject.transform.GetChild(0).transform.Find("Exit").gameObject;
+        }
+        else if (mapManager.LevelGameObject.transform.GetChild(0).name.Contains("Exit")) // default position
         {
             return mapManager.LevelGameObject.transform.GetChild(0).gameObject;
         }
-        else if (mapManager.LevelGameObject.transform.Find("Exit"))
+        else if (mapManager.LevelGameObject.transform.Find("Exit")) 
         {
             return mapManager.LevelGameObject.transform.Find("Exit").gameObject;
         }
@@ -631,7 +625,7 @@ public class GameManager : MonoBehaviour
         pePos.y += 0.65f;
         visualEffects.peExitSwirl.transform.position = pePos;
 
-        if (exitObject.transform.parent.name.Contains("Spindle"))
+        if (exitObject.transform.parent.name.Contains("Spindle") || exitObject.transform.parent.name.Contains("MovingExitPlatform"))
         {
             ReParentExitSwirl(true);
         }
@@ -678,7 +672,8 @@ public class GameManager : MonoBehaviour
 
     public void PauseGame(bool enable)
     {
-        pauseMenu.SetActive(enable);
+        if (pauseMenu != null)
+            pauseMenu.SetActive(enable);
         Time.timeScale = enable ? 0 : 1;
     }
     
@@ -731,7 +726,22 @@ public class GameManager : MonoBehaviour
         if (n > levelMetaData.AwardsReceived)
             levelMetaData.AwardsReceived = n;
         
+        if (n == 1 && chapterList[saveMetaData.LastChapterPlayed].AwardsBronze < 3)
+            chapterList[saveMetaData.LastChapterPlayed].AwardsBronze += 1;
+        else if (n == 2 && chapterList[saveMetaData.LastChapterPlayed].AwardsSilver < 3)
+        {
+            chapterList[saveMetaData.LastChapterPlayed].AwardsBronze += 1;
+            chapterList[saveMetaData.LastChapterPlayed].AwardsSilver += 1;
+        }
+        else if (n == 3 && chapterList[saveMetaData.LastChapterPlayed].AwardsGold < 3)
+        {
+            chapterList[saveMetaData.LastChapterPlayed].AwardsBronze += 1;
+            chapterList[saveMetaData.LastChapterPlayed].AwardsSilver += 1;
+            chapterList[saveMetaData.LastChapterPlayed].AwardsGold += 1;
+        }
+        
         EditorUtility.SetDirty(levelMetaData);
+        EditorUtility.SetDirty(chapterList[saveMetaData.LastChapterPlayed]);
     }
 
     // Shows stars on finished screen
@@ -812,7 +822,8 @@ public class GameManager : MonoBehaviour
 
     private void EndScreen(bool on)
     {
-        endScreen.SetActive(on);
+        if (endScreen != null)
+            endScreen.SetActive(on);
         Time.timeScale = on ? 0.1f : 1f;
     }
 
