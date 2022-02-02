@@ -39,6 +39,10 @@ public class ChapterMapButtonMetaDataEditor : Editor
             }            
             if (GUILayout.Button("DELETE AWARDS", GUILayout.Width(200)))
             {
+                PlayerPrefs.DeleteKey("chapterFinishScreenBronze");
+                PlayerPrefs.DeleteKey("chapterFinishScreenSilver");
+                PlayerPrefs.DeleteKey("chapterFinishScreenGold");
+                
                 metadata.DeleteAwardsForChapter();
                 metadata.AwardsBronze = 0;
                 metadata.AwardsSilver = 0;

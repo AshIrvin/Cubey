@@ -65,24 +65,20 @@ public class GameManager : MonoBehaviour
     [SerializeField] private Text itemText;
     [SerializeField] private Text jumpText;
     [SerializeField] private Text jumpAmountText;
+    [SerializeField] private Text awardToGet;
     
     [Header("Level Exit")]
     private GameObject exitPrezzie;
     [SerializeField] private GameObject exitObject;
-    
     [SerializeField] public float cubeyJumpHeight = 2.6f;
     [SerializeField] public bool useTimer;
-
-
     [SerializeField] private bool camMovement;
-
-    private ParticleSystem pe;
-    
-    public Rigidbody playerRb;
-    
     [SerializeField] private bool gameLevelEnabled;
     [SerializeField] private float playerGooDrag = 35f;
-    
+
+    private ParticleSystem pe;
+    public Rigidbody playerRb;
+
     public bool GameLevel
     {
         get
@@ -107,11 +103,11 @@ public class GameManager : MonoBehaviour
 
     public int JumpCount
     {
-        get => jumpCount;
+        get => jumpLeft;
         set
         {
-            jumpCount = value;
-            jumpAmountText.text = jumpCount.ToString();
+            jumpLeft = value;
+            jumpAmountText.text = jumpLeft.ToString();
         }
     }
 
@@ -149,15 +145,8 @@ public class GameManager : MonoBehaviour
     [SerializeField] private bool onMovingPlatform;
     [SerializeField] private bool forceJump;
 
-    // [SerializeField] private Text jumpsText;
-    // [SerializeField] private Text youLasted;
-    // [SerializeField] private Text bestTime;
-
     [Header("ints")]
-    // private int chapterAndLevelNo;
-    // private int savedLevel;
-    // private int itemCount;
-    private int jumpCount;
+    private int jumpLeft;
     private int jumpsToStartWith = 10;
     private int time;
     private int countdown = 60;
@@ -186,7 +175,6 @@ public class GameManager : MonoBehaviour
     private bool isPlayerCubeNotNull;
 
 
-
     private void Awake()
     {
         gameLevel.OnValueChanged += LoadGameLevel;
@@ -204,8 +192,8 @@ public class GameManager : MonoBehaviour
 
         visualEffects.peExitSwirl.SetActive(false);
 
-        jumpCount = jumpsToStartWith;
-        jumpAmountText.text = jumpCount.ToString();
+        jumpLeft = jumpsToStartWith;
+        jumpAmountText.text = jumpLeft.ToString();
 
         SetGameCanvases(false);
     }
@@ -230,7 +218,6 @@ public class GameManager : MonoBehaviour
         gold = levelMetaData.JumpsForGold;
         levelName = levelMetaData.LevelName;
         
-        // pointsOfInterestManager.LevelInit();
         Debug.Log($"Level {levelNo}s info received.");
     }
 
@@ -240,19 +227,14 @@ public class GameManager : MonoBehaviour
         exitProperty.CurrentValue = false;
         GetLevelInfo();
         StartLevel();
-        // StartCoroutine(LoadingScene(false));
-        // StickyObject = false;
     }
 
     private void OnDisable()
     {
-        // cubeyPlayer.transform.SetParent(transform);
         if (cubeyPlayer != null)
             cubeyPlayer.SetActive(false);
         leanForceRb.canJump = false;
         SetGameCanvases(false);
-        // mapManager.enabled = true;
-        
         starGold_anim.Play("mapStarGoldBounce");
     }
     
@@ -281,8 +263,6 @@ public class GameManager : MonoBehaviour
 
     private void DisableStartPosition()
     {
-        // levelMetaData.LevelPrefab.transform.GetChild(1);
-        // find PlacementCube, disable
         if (mapManager.LevelGameObject.transform.GetChild(1).name.Contains("Start"))
             mapManager.LevelGameObject.transform.GetChild(1)?.GetChild(1)?.gameObject.SetActive(false);
         else if (mapManager.LevelGameObject.transform.GetChild(0).name.Contains("Start"))
@@ -341,7 +321,8 @@ public class GameManager : MonoBehaviour
         CountSweetsForLevel();
         ReParentExitSwirl(false);
         SetupExit();
-
+        StartCoroutine(UpdateAwardsNeeded());
+        
         if (audioManager != null)
             audioManager.menuMusic = null;
 
@@ -368,10 +349,32 @@ public class GameManager : MonoBehaviour
         if (isPlayerRbNotNull)
             cubeyMagnitude = playerRb.velocity.magnitude;
 
-        CheckJumpCount();
+        // CheckJumpCount();
 
         if (isPlayerCubeNotNull)
             cubeyPosition = cubeyPlayer.transform.position;
+    }
+
+    private IEnumerator UpdateAwardsNeeded()
+    {
+        yield return new WaitUntil(() => levelMetaData != null);
+        
+        if (jumpsToStartWith - jumpLeft <= levelMetaData.JumpsForGold) // 10 - 8 < 3
+        {
+            awardToGet.text = levelMetaData.JumpsForGold + " jumps for gold";
+        }
+        else if (jumpsToStartWith - jumpLeft <= levelMetaData.JumpsForSilver)
+        {
+            awardToGet.text = levelMetaData.JumpsForSilver + " jumps for silver";
+        }
+        else if (jumpsToStartWith - jumpLeft <= levelMetaData.JumpsForBronze) // 9 - 9 <= 9
+        {
+            awardToGet.text = levelMetaData.JumpsForBronze + " jumps for bronze";
+        }
+        else
+        {
+            awardToGet.text = "Need bronze for next level";
+        }
     }
     
     public void ToggleSticky(bool on)
@@ -411,13 +414,14 @@ public class GameManager : MonoBehaviour
 
     private void CheckJumpCount() 
     {
-        // checks when jumpcount has reached 0 and not on a breakable platform
-        if (jumpCountIncreases && jumpCount == 0 && leanForceRb.canJump && !onBreakablePlatform && !CheckJumpMagnitude())
+        if (jumpCountIncreases && jumpLeft == 0 && leanForceRb.canJump && !onBreakablePlatform && !CheckJumpMagnitude())
         {
             FailedScreen(true);
         }
-        else if (jumpCountIncreases && jumpCount == 0 && leanForceRb.canJump && onBreakablePlatform)
+        else if (jumpCountIncreases && jumpLeft == 0 && leanForceRb.canJump && onBreakablePlatform)
+        {
             StartCoroutine(DelayFailedScreen());
+        }
         
     }
 
@@ -438,8 +442,6 @@ public class GameManager : MonoBehaviour
         PauseMenu(false);
         FailedScreen(false);
         EndScreen(false);
-        
-        // UiManager.Instance.Tutorial(false, "", "");
     }
 
     public void RestartLevel()
@@ -707,7 +709,7 @@ public class GameManager : MonoBehaviour
 
     private int StarsGiven()
     {
-        var jumps = jumpsToStartWith - jumpCount;
+        var jumps = jumpsToStartWith - jumpLeft;
 
         print("jumps: " + jumps + ", jumpsToStartWith: " + jumpsToStartWith);
 
@@ -839,18 +841,21 @@ public class GameManager : MonoBehaviour
 
         if (!jumpCountIncreases)
         {
-            if (jumpCount == 0)
-                jumpCount = 0;
+            if (jumpLeft == 0)
+                jumpLeft = 0;
             else
-                jumpCount--;
+                jumpLeft--;
         }
         else
         {
-            jumpCount++;
+            jumpLeft++;
         }
 
         // jumpAmountText.text = jumpCount.ToString();
-        JumpCount = jumpCount;
+        JumpCount = jumpLeft;
+        
+        StartCoroutine(UpdateAwardsNeeded());
+        CheckJumpCount();
     }
 
     /*public void AddJump()

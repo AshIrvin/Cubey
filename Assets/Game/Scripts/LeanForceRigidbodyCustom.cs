@@ -125,12 +125,9 @@ namespace Lean.Touch
                 cachedBody.AddForce(direction * velocityMultiplier, forceMode);
                 
                 gameManager.PlayerFaceDirection(direction.x > 0);
-                // if (!gameManager.useTimer)
                 StartCoroutine(PlayerJumped());
-                
             }
         }
-
 
         private IEnumerator PlayerJumped()
         {

@@ -17,8 +17,8 @@ MonoBehaviour:
   chapterNumber: 2
   chapterName: On The Beach
   pickupIcon: {fileID: 0}
-  lastLevelPlayed: 7
-  lastLevelUnlocked: 7
+  lastLevelPlayed: 29
+  lastLevelUnlocked: 28
   chapterUnlocked: 1
   chapterMap: {fileID: 1237286781212638121, guid: 7271a4f8c2113d24d876f236e784ec43,
     type: 3}
@@ -87,7 +87,7 @@ MonoBehaviour:
   - {fileID: 0}
   - {fileID: 0}
   - {fileID: 0}
-  awardsBronze: 2
-  awardsSilver: 1
+  awardsBronze: 30
+  awardsSilver: 3
   awardsGold: 3
   fullPathName: Assets/Src_Images/MainMenu/MapLevelImages/Chapter02/

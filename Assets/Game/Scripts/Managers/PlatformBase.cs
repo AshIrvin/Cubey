@@ -8,18 +8,25 @@ public class PlatformBase : MonoBehaviour
     [Header("Start offsets")]
     [SerializeField] private protected float startXOffset;
     [SerializeField] private protected float startYOffset;
+    
     [Header("Distance to target")]
     [SerializeField] private protected float horPlatformDistance;
     [SerializeField] private protected float vertPlatformDistance;
+    
     [Header("Speed")]
     [SerializeField] private protected float smoothTime = 5f;
     [SerializeField] private protected float smoothScaleDownTime = 3;
+    // [SerializeField] private protected float smoothScaleDownTime2 = 3;
     [SerializeField] private protected float smoothScaleUpTime = 1;
+    // [SerializeField] private protected float smoothScaleUpTime2 = 1;
+    
     [Header("Distance from object to activate")]
     [SerializeField] private protected float distanceOffset = 5f;
+    
     [Header("Other")]
     private protected Vector3 velocity;
     private protected Vector3 velocityScale;
+    private protected Vector3 velocityScale2;
     private protected Vector3 targetPos;
     private protected Collider playerCol;
     

@@ -53,7 +53,7 @@ public class MapManager : MonoBehaviour
         EnableMap(saveMetaData.LastChapterPlayed);
         mapActive = true;
         SetCubeyMapPosition(false);
-        
+        VisualEffects.Instance.PlayEffect(VisualEffects.Instance.peNewLevel);
     }
 
     /// <summary>
@@ -114,13 +114,18 @@ public class MapManager : MonoBehaviour
         chapterMaps[chapter]?.SetActive(true);
         
         CycleButtonLocks();
+        
         mainMenuManager.EnableGoldAwardsButton(true);
+        mainMenuManager.TryChapterFinishScreen();
     }
     
     public void DisableMaps()
     {
         for (int i = 0; i < chapterMaps.Count; i++)
-            chapterMaps[i].SetActive(false);
+        {
+            if (chapterMaps[i] != null)
+                chapterMaps[i].SetActive(false);
+        }
         mainMenuManager.EnableGoldAwardsButton(false);
     }
     
@@ -215,7 +220,7 @@ public class MapManager : MonoBehaviour
         enabled = true;
         DestroyLevels();
         EnableMap(saveMetaData.LastChapterPlayed);
-        mainMenuManager.TryChapterFinishScreen();
+        // mainMenuManager.TryChapterFinishScreen();
     }
 
     private void DestroyLevels()

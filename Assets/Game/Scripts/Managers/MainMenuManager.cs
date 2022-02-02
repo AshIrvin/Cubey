@@ -11,11 +11,8 @@ public class MainMenuManager : MonoBehaviour
 {
     [SerializeField] private MapManager mapManager;
     [SerializeField] private CameraManager cameraManager;
-    
     [SerializeField] private SaveMetaData saveMetaData;
-    [SerializeField] private ChapterList allChapters;
-    // [SerializeField] private BoolGlobalVariable gameUiProperty;
-    
+    [SerializeField] private ChapterList chapterList;
     [SerializeField] private GameObject menuEnvironmentParent;
     [SerializeField] private List<GameObject> menuEnvironments;
     [SerializeField] private GameObject mapsParent;
@@ -26,6 +23,7 @@ public class MainMenuManager : MonoBehaviour
     
     [Header("Extra screens")]
     [SerializeField] private GameObject chapterFinishScreen;
+    [SerializeField] private bool deleteLastChapterFinishScreenData;
 
     // Old
     [Header("Scripts")]
@@ -103,6 +101,13 @@ public class MainMenuManager : MonoBehaviour
         {
             Debug.LogError("Assign chapter buttons to list!");
         }
+
+        if (deleteLastChapterFinishScreenData)
+        {
+            PlayerPrefs.DeleteKey("chapterFinishScreenBronze" + saveMetaData.LastChapterPlayed);
+            PlayerPrefs.DeleteKey("chapterFinishScreenSilver" + saveMetaData.LastChapterPlayed);
+            PlayerPrefs.DeleteKey("chapterFinishScreenGold" + saveMetaData.LastChapterPlayed);
+        }
     }
 
     private void SetNavButtons(bool on)
@@ -133,17 +138,17 @@ public class MainMenuManager : MonoBehaviour
     
     private void UpdateMenuEnvironments()
     {
-        for (int i = 0; i < allChapters.Count; i++)
+        for (int i = 0; i < chapterList.Count; i++)
         {
-            menuEnvironmentParent = Instantiate(allChapters[saveMetaData.LastChapterPlayed].MenuEnvironment);
+            menuEnvironmentParent = Instantiate(chapterList[saveMetaData.LastChapterPlayed].MenuEnvironment);
         }
     }
     
     private void AddMenuEnvironments()
     {
-        for (int i = 0; i < allChapters.Count; i++)
+        for (int i = 0; i < chapterList.Count; i++)
         {
-            var menu = Instantiate(allChapters[i].MenuEnvironment, menuEnvironmentParent.transform);
+            var menu = Instantiate(chapterList[i].MenuEnvironment, menuEnvironmentParent.transform);
             menuEnvironments.Add(menu);
             menu.SetActive(false);
         }
@@ -154,7 +159,7 @@ public class MainMenuManager : MonoBehaviour
         DisableMenuEnv();
         
         menuEnvironments[n].SetActive(true);
-        leanZoom.Zoom = allChapters[n].MenuZoomLevel;
+        leanZoom.Zoom = chapterList[n].MenuZoomLevel;
     }
 
     private void DisableMenuEnv()
@@ -201,11 +206,11 @@ public class MainMenuManager : MonoBehaviour
         
         if (collisionName == "CollisionMenu")
         {
-            leanConstrainToBox.Target = allChapters[saveMetaData.LastChapterPlayed].MenuEnvironment.transform.Find(collisionName).GetComponent<BoxCollider>();
+            leanConstrainToBox.Target = chapterList[saveMetaData.LastChapterPlayed].MenuEnvironment.transform.Find(collisionName).GetComponent<BoxCollider>();
         }
         else if (collisionName == "CollisionMap")
         {
-            leanConstrainToBox.Target = allChapters[saveMetaData.LastChapterPlayed].ChapterMap.transform.Find(collisionName).GetComponent<BoxCollider>();
+            leanConstrainToBox.Target = chapterList[saveMetaData.LastChapterPlayed].ChapterMap.transform.Find(collisionName).GetComponent<BoxCollider>();
         }
         else
         {
@@ -250,12 +255,12 @@ public class MainMenuManager : MonoBehaviour
     {
         int c = 0;
 
-        for (int i = 0; i < allChapters.Count; i++)
+        for (int i = 0; i < chapterList.Count; i++)
         {
-            if (allChapters[i].ChapterUnlocked)
+            if (chapterList[i].ChapterUnlocked)
             {
-                c++;
-                chapterButtons[i].GetComponent<Button>().interactable = true;
+                c = i;
+                chapterButtons[c].GetComponent<Button>().interactable = true;
                 var image = chapterButtons[i].transform.GetChild(0).GetChild(0).GetComponent<Image>();
                 image.color = unlockedButton;
             }
@@ -267,7 +272,6 @@ public class MainMenuManager : MonoBehaviour
             }
         }
         
-        Debug.Log("Chapter " + c + " is unlocked");
         chapterUnlockedTo = c;
     }
     
@@ -307,11 +311,11 @@ public class MainMenuManager : MonoBehaviour
         mapManager.DisableMaps();
         SetMenuEnvironment(saveMetaData.LastChapterPlayed);
         SetCollisionBox("CollisionMenu");
-        // LoadChapterScreen(false); // todo Loop???
+        chapterFinishScreen.SetActive(false);
         chapterScreen.SetActive(false);
         SetNavButtons(false);
         mainMenuUi.SetActive(true);
-        
+
         cameraManager.ResetCamPosition();
         leanZoom.enabled = true;
     }
@@ -335,43 +339,51 @@ public class MainMenuManager : MonoBehaviour
     
     public void TryChapterFinishScreen()
     {
-        var bronze = PlayerPrefs.GetInt("chapterFinishScreenBronze", 0);
-        var silver = PlayerPrefs.GetInt("chapterFinishScreenSilver", 0);
-        var gold = PlayerPrefs.GetInt("chapterFinishScreenGold", 0);
+        var chapterBronze = PlayerPrefs.GetInt("chapterFinishScreenBronze" + saveMetaData.LastChapterPlayed, 0);
+        var chapterSilver = PlayerPrefs.GetInt("chapterFinishScreenSilver" + saveMetaData.LastChapterPlayed, 0);
+        var chapterGold = PlayerPrefs.GetInt("chapterFinishScreenGold" + saveMetaData.LastChapterPlayed , 0);
+        
+        Debug.Log("bronze fin screen: " + chapterBronze);
+        Debug.Log("silver fin screen: " + chapterSilver);
+        Debug.Log("gold fin screen: " + chapterGold);
         
         // if all levels have been unlocked or at least bronze won, check for how many awards
-        if (allChapters[saveMetaData.LastChapterPlayed].AwardsBronze > 29 && bronze == 0)
+        if (chapterList[saveMetaData.LastChapterPlayed].AwardsBronze == 29 && chapterBronze == 0)
         {
-            chapterFinishScreen.SetActive(true);
-            if (saveMetaData.LastChapterPlayed < allChapters.Count)
+            // chapterFinishScreen.SetActive(true);
+            chapterFinishScreen.GetComponent<ChapterComplete>().TogglePopup();
+            
+            if (saveMetaData.LastChapterPlayed < chapterList.Count)
             {
-                allChapters[saveMetaData.LastChapterPlayed + 1].ChapterUnlocked = true;
-                EditorUtility.SetDirty(allChapters[saveMetaData.LastChapterPlayed]);
+                Debug.Log("CHAPTER " + (saveMetaData.LastChapterPlayed + 1) + " UNLOCKED!");
+                chapterList[saveMetaData.LastChapterPlayed + 1].ChapterUnlocked = true;
+                EditorUtility.SetDirty(chapterList[saveMetaData.LastChapterPlayed]);
                 // popup for next chapter?
             }
             else
             {
                 Debug.LogError("Anomaly detected with last chapter / allChapters");
             }
-            PlayerPrefs.SetInt("chapterFinishScreenBronze", 1);
+            PlayerPrefs.SetInt("chapterFinishScreenBronze" + saveMetaData.LastChapterPlayed, 1);
         }
-        else if (allChapters[saveMetaData.LastChapterPlayed].AwardsSilver > 29 && silver == 0)
+        else if (chapterList[saveMetaData.LastChapterPlayed].AwardsSilver == 29 && chapterSilver == 0)
         {
             chapterFinishScreen.SetActive(true);
             
-            PlayerPrefs.SetInt("chapterFinishScreenSilver", 1);
+            PlayerPrefs.SetInt("chapterFinishScreenSilver" + saveMetaData.LastChapterPlayed, 1);
         }
-        else if (allChapters[saveMetaData.LastChapterPlayed].AwardsGold > 29 && gold == 0)
+        else if (chapterList[saveMetaData.LastChapterPlayed].AwardsGold == 29 && chapterGold == 0)
         {
             chapterFinishScreen.SetActive(true);
 
-            PlayerPrefs.SetInt("chapterFinishScreenGold", 1);
+            PlayerPrefs.SetInt("chapterFinishScreenGold" + saveMetaData.LastChapterPlayed, 1);
         }
     }
 
     public void EnableGoldAwardsButton(bool state)
     {
-        chapterFinishScreen.SetActive(true);
+        chapterFinishScreen.GetComponent<ChapterComplete>().UpdateButtonAward();
+        chapterFinishScreen.SetActive(state);
         // chapterFinishScreen.GetComponent<ChapterComplete>().goldStarButton.SetActive(state);
     }
     
@@ -379,14 +391,14 @@ public class MainMenuManager : MonoBehaviour
     {
         screenDeleteSaveData.SetActive(false);
 
-        for (int i = 0; i < allChapters.Count; i++)
+        for (int i = 0; i < chapterList.Count; i++)
         {
-            allChapters[i].AwardsBronze = 0;
-            allChapters[i].AwardsSilver = 0;
-            allChapters[i].AwardsGold = 0;
-            for (int j = 0; j < allChapters[i].LevelList.Count; j++)
+            chapterList[i].AwardsBronze = 0;
+            chapterList[i].AwardsSilver = 0;
+            chapterList[i].AwardsGold = 0;
+            for (int j = 0; j < chapterList[i].LevelList.Count; j++)
             {
-                allChapters[i].LevelList[j].AwardsReceived = 0;
+                chapterList[i].LevelList[j].AwardsReceived = 0;
             }
         }
 

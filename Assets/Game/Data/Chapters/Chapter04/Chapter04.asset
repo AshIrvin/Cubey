@@ -17,9 +17,9 @@ MonoBehaviour:
   chapterNumber: 4
   chapterName: Lollypop Land
   pickupIcon: {fileID: 0}
-  lastLevelPlayed: 29
+  lastLevelPlayed: 5
   lastLevelUnlocked: 28
-  chapterUnlocked: 0
+  chapterUnlocked: 1
   chapterMap: {fileID: 2700544340622123123, guid: 1ac364481ff145e46922d88694bcc08b,
     type: 3}
   cubeyPlayer: {fileID: 0}
@@ -87,7 +87,7 @@ MonoBehaviour:
   - {fileID: 0}
   - {fileID: 0}
   - {fileID: 0}
-  awardsBronze: 0
-  awardsSilver: 0
+  awardsBronze: 29
+  awardsSilver: 1
   awardsGold: 0
   fullPathName: Assets/Src_Images/MainMenu/MapLevelImages/Chapter04/

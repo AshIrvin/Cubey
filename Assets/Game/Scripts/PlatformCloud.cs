@@ -1,24 +1,28 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Lean.Touch;
 using UnityEngine;
 using UnityEngine.UIElements;
 
 public class PlatformCloud : PlatformBase
 {
-    public float playerDragThruCloud = 25f;
+    [SerializeField] private BoolGlobalVariable stickyObject;
+    
+    [SerializeField] private float playerDragThruCloud = 25f;
+    [SerializeField] private SpriteRenderer sprite;
+    [SerializeField] private BoxCollider collider;
+    [SerializeField] private bool allowCloudMovement;
+    
     private float cloudScaleOffset = 0.3f;
-    public SpriteRenderer sprite;
-    public BoxCollider collider;
     private Vector3 defaultColScale;
+    
     
     private void Awake()
     {
         platformRb = GetComponent<Rigidbody>();
         sprite = GetComponentInChildren<SpriteRenderer>();
-        collider = GetComponent<BoxCollider>();
-        
-        
+        collider = GetComponentInChildren<BoxCollider>();
     }
 
     private void Start()
@@ -30,7 +34,6 @@ public class PlatformCloud : PlatformBase
         targetScale = Vector3.zero;
         
         targetPos = new Vector3(startPos.x + horPlatformDistance, startPos.y + vertPlatformDistance);
-        // playerDragThruCloud = 25f;
 
         defaultColScale = collider.size;
     }
@@ -42,39 +45,47 @@ public class PlatformCloud : PlatformBase
 
     private void MoveCloudPlatform()
     {
+        if (!allowCloudMovement) return;
+        
         if (moveCloud)
         {
             transform.position = Vector3.SmoothDamp(transform.position, targetPos, ref velocity, smoothTime);
             
             if (Vector3.Distance(transform.position, targetPos) < distanceOffset)
             {
+                StartCoroutine(ScaleCollider(true));
                 StartCoroutine(ScaleCloudPlatform(true));
             }
         }
         else if (Vector3.Distance(transform.position, startPos) < distanceOffset)
         {
             StartCoroutine(ScaleCloudPlatform(false));
+            StartCoroutine(ScaleCollider(false));
         }
     }
 
+    private IEnumerator ScaleCollider(bool reduceSize)
+    {
+        collider.size = Vector3.SmoothDamp(collider.size, reduceSize ? Vector3.zero : defaultColScale, 
+            ref velocityScale2, reduceSize ? smoothScaleDownTime : smoothScaleUpTime);
+        
+        yield return null;
+    }
+    
     private IEnumerator ScaleCloudPlatform(bool reduceSize)
     {
         bool reachedTargetScale = false;
         sprite.transform.localScale = Vector3.SmoothDamp(sprite.transform.localScale, reduceSize ? Vector3.zero : Vector3.one, 
             ref velocityScale, reduceSize ? smoothScaleDownTime : smoothScaleUpTime);     
         
-        collider.size = Vector3.SmoothDamp(collider.size, reduceSize ? Vector3.zero : defaultColScale, 
-            ref velocityScale, reduceSize ? smoothScaleDownTime : smoothScaleUpTime);
-        
-        sprite.transform.localScale = Vector3.SmoothDamp(sprite.transform.localScale, reduceSize ? Vector3.zero : Vector3.one, 
-            ref velocityScale, reduceSize ? smoothScaleDownTime : smoothScaleUpTime);
-        
-        if (sprite.transform.localScale.x < cloudScaleOffset && reduceSize)
+        // reduce the scale of the object
+        if (sprite.transform.localScale.x < cloudScaleOffset && reduceSize /*&& collider.size.x < 1.5f*/)
         {
             sprite.transform.localScale = collider.size = Vector3.zero;
             reachedTargetScale = true;
         }
-        else if (sprite.transform.localScale.x > 0.99f && !reduceSize)
+        // increase/return scale
+        else if (sprite.transform.localScale.x > 0.99f && !reduceSize /*&& collider.size.x > 3*/)
         {
             sprite.transform.localScale = Vector3.one;
             collider.size = defaultColScale;
@@ -82,12 +93,20 @@ public class PlatformCloud : PlatformBase
         }
 
         yield return new WaitUntil(() => reachedTargetScale);
-        transform.position = startPos;
+
         moveCloud = false;
-        
+
         if (sprite.transform.localScale.x > 0.8f)
             moveCloud = true;
+        else
+        {
+            if (playerRb != null)
+                playerRb.transform.parent = null;
+        }
+
+        transform.position = startPos;
     }
+
     
     private void OnTriggerEnter(Collider other)
     {
@@ -98,6 +117,8 @@ public class PlatformCloud : PlatformBase
             if (playerRb == null)
                 playerRb = other.GetComponent<Rigidbody>();
             playerRb.drag = playerDragThruCloud;
+            
+            stickyObject.CurrentValue = true;
         }
     }
 

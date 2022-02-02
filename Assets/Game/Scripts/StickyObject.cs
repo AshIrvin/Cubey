@@ -15,8 +15,6 @@ public class StickyObject : MonoBehaviour
     [SerializeField] private bool spindle;
     private Rigidbody drawBridgeRb;
     private Rigidbody playerRb;
-    // [SerializeField] private float playerDrag = 1f;
-    // private float savedPlayerDrag;
     private HingeJoint hinge;
     [SerializeField] private float massEnter;
     [SerializeField] private float massExit;
