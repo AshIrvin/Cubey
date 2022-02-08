@@ -20,17 +20,17 @@ public class LevelMetaData : ScriptableObject
     [SerializeField] private GameObject levelPrefab;
     [SerializeField] private GameObject startPosition;
     [SerializeField] private GameObject exitPosition;
-    [SerializeField] private int awardsReceived;
+    // [SerializeField] private int awardsReceived;
     [SerializeField] private List<GameObject> portalEnter;
     [SerializeField] private List<GameObject> portalExit;
 
     public string pathName = "Assets/Game/Prefabs/LevelPrefabs/Chapter0";
 
-    public int AwardsReceived
+    /*public int AwardsReceived
     {
         get => awardsReceived;
         set => awardsReceived = value;
-    }
+    }*/
 
     public string LevelName
     {
@@ -58,30 +58,33 @@ public class LevelMetaData : ScriptableObject
     public List<GameObject> PortalExit => portalExit;
 
 
+    public void UnityEditorAssignData()
+    {
+#if UNITY_EDITOR
+        GetLevelInfo();
+
+        EditorUtil.ApplyChanges(this);
+#endif
+    }
+
     private void OnValidate()
     {
 
     }
 
-    public void UnityEditorAssignData()
-    {
-        // AssignPath();
-        GetLevelInfo();
-        EditorUtil.ApplyChanges(this);
-    }
-    
     public void AssignPath(int chapter)
     {
-        // if (pathName.Contains("Chapters") || pathName.EndsWith("Chapter0"))
-        // {
-            pathName = "Assets/Game/Prefabs/LevelPrefabs/Chapter0" + chapter;
-            Debug.Log("path updated to: " + pathName);
-            EditorUtil.ApplyChanges(this);
-        // }
+#if UNITY_EDITOR
+        pathName = "Assets/Game/Prefabs/LevelPrefabs/Chapter0" + chapter;
+        Debug.Log("path updated to: " + pathName);
+
+        EditorUtil.ApplyChanges(this);
+#endif
     }
 
     private void GetLevelInfo()
     {
+#if UNITY_EDITOR
         var pathList = EditorUtil.GetAssetsAtPath<GameObject>(pathName);
 
         foreach (var item in pathList)
@@ -130,6 +133,7 @@ public class LevelMetaData : ScriptableObject
                 portalExit.Add(portalCount[i].gameObject);
             }
         }
+#endif
     }
     
 }

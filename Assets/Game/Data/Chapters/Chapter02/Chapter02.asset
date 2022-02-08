@@ -17,7 +17,7 @@ MonoBehaviour:
   chapterNumber: 2
   chapterName: On The Beach
   pickupIcon: {fileID: 0}
-  lastLevelPlayed: 29
+  lastLevelPlayed: 24
   lastLevelUnlocked: 28
   chapterUnlocked: 1
   chapterMap: {fileID: 1237286781212638121, guid: 7271a4f8c2113d24d876f236e784ec43,

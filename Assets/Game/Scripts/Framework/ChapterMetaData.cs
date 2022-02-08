@@ -12,18 +12,18 @@ public class ChapterMetaData : ScriptableObject
     [SerializeField] private int chapterNumber;
     [SerializeField] private string chapterName;
     [SerializeField] private GameObject pickupIcon;
-    [SerializeField] private int lastLevelPlayed;
-    [SerializeField] private int lastLevelUnlocked;
-    [SerializeField] private bool chapterUnlocked;
+    // [SerializeField] private int lastLevelPlayed;
+    // [SerializeField] private int lastLevelUnlocked;
+    // [SerializeField] private bool chapterUnlocked;
     [SerializeField] private GameObject chapterMap;
     [SerializeField] private GameObject cubeyPlayer;
     [SerializeField] private LevelList levelList;
     [SerializeField] private float menuZoomLevel;
     [SerializeField] private List<GameObject> chapterMapButtonList;
     [SerializeField] private List<GameObject> inGameMapButtonList;
-    [SerializeField] private int awardsBronze;
-    [SerializeField] private int awardsSilver;
-    [SerializeField] private int awardsGold;
+    // [SerializeField] private int awardsBronze;
+    // [SerializeField] private int awardsSilver;
+    // [SerializeField] private int awardsGold;
     [SerializeField] private string fullPathName = "Assets/Src_Images/MainMenu/MapLevelImages/Chapter";
     
     private readonly string levelButton = "Leveln_button";
@@ -41,7 +41,7 @@ public class ChapterMetaData : ScriptableObject
         set => inGameMapButtonList = value;
     }
 
-    public int LastLevelPlayed
+    /*public int LastLevelPlayed
     {
         get => lastLevelPlayed;
         set => lastLevelPlayed = value;
@@ -75,7 +75,7 @@ public class ChapterMetaData : ScriptableObject
     {
         get => awardsGold;
         set => awardsGold = value;
-    }
+    }*/
 
     public float MenuZoomLevel
     {
@@ -88,6 +88,7 @@ public class ChapterMetaData : ScriptableObject
     /// </summary>
     public void UnityEditorAssignData()
     {
+#if UNITY_EDITOR
         Debug.Log("Assigning buttons from game to list");
         
         var buttonParent = chapterMap.transform.Find("Canvas_Map").Find("Map_buttons").gameObject;
@@ -100,6 +101,7 @@ public class ChapterMetaData : ScriptableObject
                 chapterMapButtonList.Add(buttonParent.transform.GetChild(i).gameObject);
             }
         }
+#endif
     }
     
     /// <summary>
@@ -146,6 +148,7 @@ public class ChapterMetaData : ScriptableObject
             ChapterMapButtonList[i].GetComponentInChildren<Text>()
                 .text = (i + 1).ToString();
         }
+        
         EditorUtil.ApplyChanges(this);
 #endif
     }
@@ -175,13 +178,16 @@ public class ChapterMetaData : ScriptableObject
 #endif
     }
 
-    public void DeleteAwardsForChapter()
+    /*public void DeleteAwardsForChapter()
     {
-#if UNITY_EDITOR
+        // TODO - delete all level awards in each chapter 
+/*#if UNITY_EDITOR
         for (int i = 0; i < levelList.Count; i++)
         {
-            levelList[i].AwardsReceived = 0;
+            // levelList[i].AwardsReceived = 0;
+            
+            SaveLoadManager.SetAward(i, 0);
         }
-#endif
-    }
+#endif#1#
+    }*/
 }

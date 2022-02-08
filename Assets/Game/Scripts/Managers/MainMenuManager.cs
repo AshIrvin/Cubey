@@ -6,6 +6,7 @@ using UnityEngine.UI;
 using Lean.Touch;
 using UnityEditor;
 using UnityEngine.Advertisements;
+using UnityEngine.SceneManagement;
 
 public class MainMenuManager : MonoBehaviour
 {
@@ -104,9 +105,9 @@ public class MainMenuManager : MonoBehaviour
 
         if (deleteLastChapterFinishScreenData)
         {
-            PlayerPrefs.DeleteKey("chapterFinishScreenBronze" + saveMetaData.LastChapterPlayed);
-            PlayerPrefs.DeleteKey("chapterFinishScreenSilver" + saveMetaData.LastChapterPlayed);
-            PlayerPrefs.DeleteKey("chapterFinishScreenGold" + saveMetaData.LastChapterPlayed);
+            PlayerPrefs.DeleteKey("chapterFinishScreenBronze" + SaveLoadManager.LastChapterPlayed);
+            PlayerPrefs.DeleteKey("chapterFinishScreenSilver" + SaveLoadManager.LastChapterPlayed);
+            PlayerPrefs.DeleteKey("chapterFinishScreenGold" + SaveLoadManager.LastChapterPlayed);
         }
     }
 
@@ -124,7 +125,7 @@ public class MainMenuManager : MonoBehaviour
         SetColours();
         anim = startButton.GetComponent<Animator>();
         ButtonSizePong();
-        SetMenuEnvironment(saveMetaData.LastChapterPlayed);
+        SetMenuEnvironment(SaveLoadManager.LastChapterPlayed);
         chapterFinishScreen.SetActive(false);
     }
 
@@ -140,7 +141,7 @@ public class MainMenuManager : MonoBehaviour
     {
         for (int i = 0; i < chapterList.Count; i++)
         {
-            menuEnvironmentParent = Instantiate(chapterList[saveMetaData.LastChapterPlayed].MenuEnvironment);
+            menuEnvironmentParent = Instantiate(chapterList[SaveLoadManager.LastChapterPlayed].MenuEnvironment);
         }
     }
     
@@ -180,7 +181,7 @@ public class MainMenuManager : MonoBehaviour
         go.SetActive(!go.activeInHierarchy);
     }
 
-    private void EnableMap(bool on)
+    /*private void EnableMap(bool on)
     {
         /*if (on)
         {
@@ -190,8 +191,8 @@ public class MainMenuManager : MonoBehaviour
         {
             CancelPe(peSnowThrow1);
             CancelPe(peSnowThrow2);
-        }*/
-    }
+        }#1#
+    }*/
 
     /*private void LoadMap(int chapter)
     {
@@ -206,11 +207,11 @@ public class MainMenuManager : MonoBehaviour
         
         if (collisionName == "CollisionMenu")
         {
-            leanConstrainToBox.Target = chapterList[saveMetaData.LastChapterPlayed].MenuEnvironment.transform.Find(collisionName).GetComponent<BoxCollider>();
+            leanConstrainToBox.Target = chapterList[SaveLoadManager.LastChapterPlayed].MenuEnvironment.transform.Find(collisionName).GetComponent<BoxCollider>();
         }
         else if (collisionName == "CollisionMap")
         {
-            leanConstrainToBox.Target = chapterList[saveMetaData.LastChapterPlayed].ChapterMap.transform.Find(collisionName).GetComponent<BoxCollider>();
+            leanConstrainToBox.Target = chapterList[SaveLoadManager.LastChapterPlayed].ChapterMap.transform.Find(collisionName).GetComponent<BoxCollider>();
         }
         else
         {
@@ -226,14 +227,12 @@ public class MainMenuManager : MonoBehaviour
     // Used in chapter menu buttons
     public void ShowMap(int n)
     {
-        var chapter = saveMetaData.LastChapterPlayed = n;
+        int chapter = -1;
 
-        EditorUtility.SetDirty(saveMetaData);
+        chapter = SaveLoadManager.LastChapterPlayed = n;
         
         SetMenuEnvironment(chapter);
         DisableMenuScreens();
-
-        // leanConstrainToBox.Target = allChapters[saveMetaData.LastChapterPlayed].ChapterMap.transform.Find("CollisionMap").GetComponent<BoxCollider>();
         SetCollisionBox("CollisionMap");
         
         leanZoom.enabled = true;
@@ -242,6 +241,7 @@ public class MainMenuManager : MonoBehaviour
 
         mapManager.enabled = true;
         
+        backButton.gameObject.SetActive(true);
         backButton.onClick.AddListener(() => LoadChapterScreen(true));
     }
 
@@ -257,7 +257,7 @@ public class MainMenuManager : MonoBehaviour
 
         for (int i = 0; i < chapterList.Count; i++)
         {
-            if (chapterList[i].ChapterUnlocked)
+            if (SaveLoadManager.GetChapterUnlocked(i))
             {
                 c = i;
                 chapterButtons[c].GetComponent<Button>().interactable = true;
@@ -309,7 +309,7 @@ public class MainMenuManager : MonoBehaviour
     private void MainMenuScreen()
     {
         mapManager.DisableMaps();
-        SetMenuEnvironment(saveMetaData.LastChapterPlayed);
+        SetMenuEnvironment(SaveLoadManager.LastChapterPlayed);
         SetCollisionBox("CollisionMenu");
         chapterFinishScreen.SetActive(false);
         chapterScreen.SetActive(false);
@@ -339,44 +339,44 @@ public class MainMenuManager : MonoBehaviour
     
     public void TryChapterFinishScreen()
     {
-        var chapterBronze = PlayerPrefs.GetInt("chapterFinishScreenBronze" + saveMetaData.LastChapterPlayed, 0);
-        var chapterSilver = PlayerPrefs.GetInt("chapterFinishScreenSilver" + saveMetaData.LastChapterPlayed, 0);
-        var chapterGold = PlayerPrefs.GetInt("chapterFinishScreenGold" + saveMetaData.LastChapterPlayed , 0);
+        var bronzeFinishScreen = PlayerPrefs.GetInt("chapterFinishScreenBronze" + SaveLoadManager.LastChapterPlayed, 0);
+        var silverFinishScreen = PlayerPrefs.GetInt("chapterFinishScreenSilver" + SaveLoadManager.LastChapterPlayed, 0);
+        var goldFinishScreen = PlayerPrefs.GetInt("chapterFinishScreenGold" + SaveLoadManager.LastChapterPlayed , 0);
         
-        Debug.Log("bronze fin screen: " + chapterBronze);
-        Debug.Log("silver fin screen: " + chapterSilver);
-        Debug.Log("gold fin screen: " + chapterGold);
+        // Debug.Log("bronze fin screen: " + bronzeFinishScreen);
+        // Debug.Log("silver fin screen: " + silverFinishScreen);
+        // Debug.Log("gold fin screen: " + goldFinishScreen);
         
         // if all levels have been unlocked or at least bronze won, check for how many awards
-        if (chapterList[saveMetaData.LastChapterPlayed].AwardsBronze == 29 && chapterBronze == 0)
+        // what if the user gets 29 awards in bronze, silver and gold???
+        if (SaveLoadManager.GetChapterAward(SaveLoadManager.LastChapterPlayed, SaveLoadManager.Awards.Bronze) == 29 && bronzeFinishScreen == 0)
         {
-            // chapterFinishScreen.SetActive(true);
+            Debug.Log("Enable Finish Screen");
             chapterFinishScreen.GetComponent<ChapterComplete>().TogglePopup();
             
-            if (saveMetaData.LastChapterPlayed < chapterList.Count)
+            if (SaveLoadManager.LastChapterPlayed < chapterList.Count)
             {
-                Debug.Log("CHAPTER " + (saveMetaData.LastChapterPlayed + 1) + " UNLOCKED!");
-                chapterList[saveMetaData.LastChapterPlayed + 1].ChapterUnlocked = true;
-                EditorUtility.SetDirty(chapterList[saveMetaData.LastChapterPlayed]);
+                Debug.Log("CHAPTER " + (SaveLoadManager.LastChapterPlayed + 1) + " UNLOCKED!");
+                SaveLoadManager.UnlockChapter(SaveLoadManager.LastChapterPlayed + 1); // [SaveLoadManager.LastChapterPlayed + 1]
                 // popup for next chapter?
             }
             else
             {
                 Debug.LogError("Anomaly detected with last chapter / allChapters");
             }
-            PlayerPrefs.SetInt("chapterFinishScreenBronze" + saveMetaData.LastChapterPlayed, 1);
+            PlayerPrefs.SetInt("chapterFinishScreenBronze" + SaveLoadManager.LastChapterPlayed, 1);
         }
-        else if (chapterList[saveMetaData.LastChapterPlayed].AwardsSilver == 29 && chapterSilver == 0)
+        else if (SaveLoadManager.GetChapterAward(SaveLoadManager.LastChapterPlayed, SaveLoadManager.Awards.Silver) == 29 && silverFinishScreen == 0)
         {
-            chapterFinishScreen.SetActive(true);
+            chapterFinishScreen.GetComponent<ChapterComplete>().TogglePopup();
             
-            PlayerPrefs.SetInt("chapterFinishScreenSilver" + saveMetaData.LastChapterPlayed, 1);
+            PlayerPrefs.SetInt("chapterFinishScreenSilver" + SaveLoadManager.LastChapterPlayed, 1);
         }
-        else if (chapterList[saveMetaData.LastChapterPlayed].AwardsGold == 29 && chapterGold == 0)
+        else if (SaveLoadManager.GetChapterAward(SaveLoadManager.LastChapterPlayed, SaveLoadManager.Awards.Gold) == 29 && goldFinishScreen == 0)
         {
-            chapterFinishScreen.SetActive(true);
+            chapterFinishScreen.GetComponent<ChapterComplete>().TogglePopup();
 
-            PlayerPrefs.SetInt("chapterFinishScreenGold" + saveMetaData.LastChapterPlayed, 1);
+            PlayerPrefs.SetInt("chapterFinishScreenGold" + SaveLoadManager.LastChapterPlayed, 1);
         }
     }
 
@@ -387,21 +387,13 @@ public class MainMenuManager : MonoBehaviour
         // chapterFinishScreen.GetComponent<ChapterComplete>().goldStarButton.SetActive(state);
     }
     
+    // TODO - Finish reset saves
     public void ResetSaves()
     {
         screenDeleteSaveData.SetActive(false);
+        
+        SaveLoadManager.ResetSaves();
 
-        for (int i = 0; i < chapterList.Count; i++)
-        {
-            chapterList[i].AwardsBronze = 0;
-            chapterList[i].AwardsSilver = 0;
-            chapterList[i].AwardsGold = 0;
-            for (int j = 0; j < chapterList[i].LevelList.Count; j++)
-            {
-                chapterList[i].LevelList[j].AwardsReceived = 0;
-            }
-        }
-
-        MainMenuScreen();
+        SceneManager.LoadScene("CubeyGame");
     }
 }

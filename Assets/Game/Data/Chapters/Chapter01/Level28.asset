@@ -16,9 +16,9 @@ MonoBehaviour:
   levelName: Level 28
   levelNumber: 28
   timer: 99
-  jumpsForGold: 3
-  jumpsForSilver: 5
-  jumpsForBronze: 8
+  jumpsForGold: 4
+  jumpsForSilver: 6
+  jumpsForBronze: 9
   levelSprite: {fileID: 0}
   levelPrefab: {fileID: 5248666024161123352, guid: 0c59c5fcad13a1044af1197a3257003b,
     type: 3}
@@ -26,7 +26,6 @@ MonoBehaviour:
     type: 3}
   exitPosition: {fileID: 1489062554349969012, guid: 0c59c5fcad13a1044af1197a3257003b,
     type: 3}
-  awardsReceived: 2
   portalEnter: []
   portalExit: []
   pathName: Assets/Game/Prefabs/LevelPrefabs/Chapter01

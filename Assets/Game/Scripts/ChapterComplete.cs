@@ -48,13 +48,14 @@ public class ChapterComplete : MonoBehaviour
         {
             return;
         }
-        var chapter = gameManager.SaveMetaData.LastChapterPlayed;
+
+        var chapter = SaveLoadManager.LastChapterPlayed;
         
         chapterNumberText.text = "Chapter " + chapter.ToString();
 
-        var bronze = chapterList[chapter].AwardsBronze;
-        var silver = chapterList[chapter].AwardsSilver;
-        var gold = chapterList[chapter].AwardsGold;
+        var bronze = SaveLoadManager.GetChapterAward(chapter, SaveLoadManager.Awards.Bronze); 
+        var silver = SaveLoadManager.GetChapterAward(chapter, SaveLoadManager.Awards.Silver);
+        var gold = SaveLoadManager.GetChapterAward(chapter, SaveLoadManager.Awards.Gold);
 
         bronzeCollected.text = bronze.ToString();
         silverCollected.text = silver.ToString();

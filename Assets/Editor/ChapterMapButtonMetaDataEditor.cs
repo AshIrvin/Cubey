@@ -37,20 +37,20 @@ public class ChapterMapButtonMetaDataEditor : Editor
                 metadata.UnityEditorAssignPathToLevelMetaData();
                 EditorUtility.SetDirty(metadata);
             }            
-            if (GUILayout.Button("DELETE AWARDS", GUILayout.Width(200)))
+            /*if (GUILayout.Button("DELETE AWARDS", GUILayout.Width(200)))
             {
                 PlayerPrefs.DeleteKey("chapterFinishScreenBronze");
                 PlayerPrefs.DeleteKey("chapterFinishScreenSilver");
                 PlayerPrefs.DeleteKey("chapterFinishScreenGold");
                 
                 metadata.DeleteAwardsForChapter();
-                metadata.AwardsBronze = 0;
-                metadata.AwardsSilver = 0;
-                metadata.AwardsGold = 0;
-                metadata.LastLevelPlayed = 0;
-                metadata.LastLevelUnlocked = 0;
+                // metadata.AwardsBronze = 0;
+                // metadata.AwardsSilver = 0;
+                // metadata.AwardsGold = 0;
+                // metadata.LastLevelPlayed = 0;
+                // metadata.LastLevelUnlocked = 0;
                 EditorUtility.SetDirty(metadata);
-            }
+            }*/
         }
     }
 }

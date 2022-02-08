@@ -18,7 +18,7 @@ MonoBehaviour:
   timer: 99
   jumpsForGold: 3
   jumpsForSilver: 5
-  jumpsForBronze: 8
+  jumpsForBronze: 9
   levelSprite: {fileID: 0}
   levelPrefab: {fileID: 5596667648520493791, guid: ef332f8addadcb545895ad90fcdf767b,
     type: 3}
@@ -26,7 +26,6 @@ MonoBehaviour:
     type: 3}
   exitPosition: {fileID: 1285334465467572501, guid: ef332f8addadcb545895ad90fcdf767b,
     type: 3}
-  awardsReceived: 3
   portalEnter: []
   portalExit: []
   pathName: Assets/Game/Prefabs/LevelPrefabs/Chapter01

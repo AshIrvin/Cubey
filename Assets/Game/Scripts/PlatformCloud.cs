@@ -47,7 +47,7 @@ public class PlatformCloud : PlatformBase
     {
         if (!allowCloudMovement) return;
         
-        if (moveCloud)
+        if (moveRight)
         {
             transform.position = Vector3.SmoothDamp(transform.position, targetPos, ref velocity, smoothTime);
             
@@ -94,10 +94,10 @@ public class PlatformCloud : PlatformBase
 
         yield return new WaitUntil(() => reachedTargetScale);
 
-        moveCloud = false;
+        moveRight = false;
 
         if (sprite.transform.localScale.x > 0.8f)
-            moveCloud = true;
+            moveRight = true;
         else
         {
             if (playerRb != null)

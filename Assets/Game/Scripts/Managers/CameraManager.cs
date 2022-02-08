@@ -66,6 +66,13 @@ public class CameraManager : MonoBehaviour
         gameLevel.OnValueChanged -= EnteringLevel;
     }
 
+    private void OnDisable()
+    {
+        // VisualEffects.Instance.PlayEffect(VisualEffects.Instance.peNewLevel, nextOpenLevel);
+        nextOpenLevel = chapterList[SaveLoadManager.LastChapterPlayed].ChapterMapButtonList[SaveLoadManager.LastLevelUnlocked].transform.position;
+        
+    }
+
     private void Start()
     {
         panToLevel = false;
@@ -123,6 +130,7 @@ public class CameraManager : MonoBehaviour
         yield return new WaitWhile(() => gameManager.LevelMetaData == null);
         exitPos = gameManager.LevelMetaData.ExitPosition.transform.position;
         transform.position = exitPos;
+        yield return new WaitForSeconds(0.5f);
         transform.position = Vector3.SmoothDamp(transform.position, CubeyPlayer.transform.position, ref velocity, gameCamTime);
         
         startFromExit = false;
@@ -158,7 +166,7 @@ public class CameraManager : MonoBehaviour
         playedIntroOnce = true;
     }
 
-    private Vector3 nextOpenLevel;
+    [SerializeField] private Vector3 nextOpenLevel;
     
     private IEnumerator PanToLevelButton()
     {
@@ -168,8 +176,9 @@ public class CameraManager : MonoBehaviour
             disableAutoPanMapCam = true;
         }
 
-        var currentChapterList = chapterList[saveMetaData.LastChapterPlayed];
-        var currentLevelNo = currentChapterList.LastLevelPlayed;
+        // TODO - SO
+        var currentChapterList = chapterList[SaveLoadManager.LastChapterPlayed];
+        var currentLevelNo = SaveLoadManager.LastLevelPlayed;
         var buttonPos = currentChapterList.ChapterMapButtonList[currentLevelNo].transform.position;
 
         if (currentLevelNo < currentChapterList.ChapterMapButtonList.Count && currentLevelNo != 0)
@@ -182,9 +191,9 @@ public class CameraManager : MonoBehaviour
         {
             buttonToStartFrom = buttonPos;
             buttonToEndAt = buttonPos;
-            
         }
-        nextOpenLevel = currentChapterList.ChapterMapButtonList[currentChapterList.LastLevelUnlocked].transform.position;
+        
+        nextOpenLevel = currentChapterList.ChapterMapButtonList[SaveLoadManager.LastLevelUnlocked].transform.position;
         nextOpenLevel.z -= 0.5f;
         
         distanceFromStartButton = Vector3.Distance(transform.position, buttonToStartFrom);

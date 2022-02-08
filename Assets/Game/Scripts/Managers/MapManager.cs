@@ -28,6 +28,11 @@ public class MapManager : MonoBehaviour
     
     private List<GameObject> levelButtons;
 
+
+    private GameObject mapPickup;
+    private Vector3 lerpPos1 = new Vector3(0.9f, 0.9f, 0.9f);
+    private Vector3 lerpPos2 = new Vector3(1f, 1f, 1f);
+    
     private bool EnableGameManager
     {
         set => enableGameManager.CurrentValue = value;
@@ -50,7 +55,7 @@ public class MapManager : MonoBehaviour
 
     private void OnEnable()
     {
-        EnableMap(saveMetaData.LastChapterPlayed);
+        EnableMap(SaveLoadManager.LastChapterPlayed);
         mapActive = true;
         SetCubeyMapPosition(false);
         VisualEffects.Instance.PlayEffect(VisualEffects.Instance.peNewLevel);
@@ -64,8 +69,8 @@ public class MapManager : MonoBehaviour
     {
         cubeyOnMap.SetActive(!reset);
         
-        var chapter = allChapters[saveMetaData.LastChapterPlayed];
-        var currentLevelNo = chapter.LastLevelPlayed;
+        var chapter = allChapters[SaveLoadManager.LastChapterPlayed];
+        var currentLevelNo = SaveLoadManager.LastLevelPlayed;
         var pos = chapter.ChapterMapButtonList[currentLevelNo].transform.position;
         
         pos.x -= 1.1f;
@@ -169,7 +174,7 @@ public class MapManager : MonoBehaviour
         Debug.Log("Restarting Level");
         EnableGameManager = false;
         Destroy(levelGameObject);    
-        LevelGameObject = Instantiate(allChapters[saveMetaData.LastChapterPlayed].LevelList[saveMetaData.LastLevelPlayed].LevelPrefab, levelParent.transform);
+        LevelGameObject = Instantiate(allChapters[SaveLoadManager.LastChapterPlayed].LevelList[SaveLoadManager.LastLevelPlayed].LevelPrefab, levelParent.transform);
         levelGameObject.SetActive(true);
         EnableGameManager = true;
         enabled = false;
@@ -190,20 +195,15 @@ public class MapManager : MonoBehaviour
         if (l.Length > 2)
         {
             var levelString = l[1].ToString() + l[2].ToString();
-            saveMetaData.LastLevelPlayed = allChapters[saveMetaData.LastChapterPlayed].LastLevelPlayed = int.Parse(levelString);
+            SaveLoadManager.LastLevelPlayed = int.Parse(levelString);
         } else
         {
-            saveMetaData.LastLevelPlayed = allChapters[saveMetaData.LastChapterPlayed].LastLevelPlayed = levelNumber;
+            SaveLoadManager.LastLevelPlayed = levelNumber;
         }
-        
-        EditorUtility.SetDirty(saveMetaData);
-        EditorUtility.SetDirty(allChapters[saveMetaData.LastChapterPlayed]);
-        
-        // EditorUtil.ApplyChanges(saveMetaData);
-        // EditorUtil.ApplyChanges(allChapters[saveMetaData.LastChapterPlayed]);
             
-        LevelGameObject = Instantiate(allChapters[saveMetaData.LastChapterPlayed].LevelList[saveMetaData.LastLevelPlayed].LevelPrefab, levelParent.transform);
-        saveMetaData.LevelLoaded = levelGameObject.name;
+        LevelGameObject = Instantiate(allChapters[SaveLoadManager.LastChapterPlayed].LevelList[SaveLoadManager.LastLevelPlayed].LevelPrefab, levelParent.transform);
+        // TODO - SO - NOT USED?
+        // saveMetaData.LevelLoaded = levelGameObject.name;
         levelGameObject.SetActive(true);
         EnableGameManager = true;
         enabled = false;
@@ -219,7 +219,7 @@ public class MapManager : MonoBehaviour
         Time.timeScale = 1;
         enabled = true;
         DestroyLevels();
-        EnableMap(saveMetaData.LastChapterPlayed);
+        EnableMap(SaveLoadManager.LastChapterPlayed);
         // mainMenuManager.TryChapterFinishScreen();
     }
 
@@ -235,31 +235,31 @@ public class MapManager : MonoBehaviour
     #region Button Level Locking
 
     // No longer applicable
-    public void UnlockAllLevels(bool revert)
+    /*public void UnlockAllLevels(bool revert)
     {
         // revert to previous level/chapter state
         if (revert)
         {
-            saveMetaData.LastLevelPlayed = PlayerPrefs.GetInt("lastLevelPlayed");
-            saveMetaData.LastChapterPlayed = PlayerPrefs.GetInt("lastChapterPlayed");
+            SaveLoadManager.LastLevelPlayed = PlayerPrefs.GetInt("lastLevelPlayed");
+            SaveLoadManager.LastChapterPlayed = PlayerPrefs.GetInt("lastChapterPlayed");
             // todo need to cycle through all the chapters and set each last level unlocked for each
             int levelBeforeUnlock = PlayerPrefs.GetInt("levelBeforeUnlock");
             mainMenuManager.chapterUnlockedTo = PlayerPrefs.GetInt("chapterBeforeUnlock");
             return;
         }
         
-        PlayerPrefs.SetInt("lastLevelPlayed", allChapters[saveMetaData.LastChapterPlayed].LastLevelPlayed);
-        PlayerPrefs.SetInt("lastChapterPlayed", saveMetaData.LastChapterPlayed);
-        PlayerPrefs.SetInt("levelBeforeUnlock", allChapters[saveMetaData.LastChapterPlayed].LastLevelUnlocked);
+        PlayerPrefs.SetInt("lastLevelPlayed", allChapters[SaveLoadManager.LastChapterPlayed].LastLevelPlayed);
+        PlayerPrefs.SetInt("lastChapterPlayed", SaveLoadManager.LastChapterPlayed);
+        PlayerPrefs.SetInt("levelBeforeUnlock", allChapters[SaveLoadManager.LastChapterPlayed].LastLevelUnlocked);
         PlayerPrefs.SetInt("chapterBeforeUnlock", mainMenuManager.chapterUnlockedTo);
         
-        levelButtons = allChapters[saveMetaData.LastChapterPlayed].ChapterMapButtonList;
+        levelButtons = allChapters[SaveLoadManager.LastChapterPlayed].ChapterMapButtonList;
             
-        saveMetaData.LastChapterPlayed = allChapters.Count;
-        saveMetaData.LastLevelPlayed = allChapters[saveMetaData.LastChapterPlayed].ChapterMapButtonList.Count;
+        SaveLoadManager.LastChapterPlayed = allChapters.Count;
+        SaveLoadManager.LastLevelPlayed = allChapters[SaveLoadManager.LastChapterPlayed].ChapterMapButtonList.Count;
             
         SetCubeyMapPosition(false);
-    }
+    }*/
     
     /*private void SetUnlockGold(int count)
     {
@@ -272,20 +272,20 @@ public class MapManager : MonoBehaviour
     private void AssignAwards(int s)
     {
         if (s == 1)
-            allChapters[saveMetaData.LastChapterPlayed].AwardsBronze += 1;
+            allChapters[SaveLoadManager.LastChapterPlayed].AwardsBronze += 1;
         else if (s == 2)
-            allChapters[saveMetaData.LastChapterPlayed].AwardsSilver += 1;
+            allChapters[SaveLoadManager.LastChapterPlayed].AwardsSilver += 1;
         else if (s == 3)
-            allChapters[saveMetaData.LastChapterPlayed].AwardsGold += 1;
+            allChapters[SaveLoadManager.LastChapterPlayed].AwardsGold += 1;
         
-        EditorUtility.SetDirty(allChapters[saveMetaData.LastChapterPlayed]);
+        EditorUtility.SetDirty(allChapters[SaveLoadManager.LastChapterPlayed]);
     }*/
     
     // Check which levels are unlocked inside the chapter
     private void CycleButtonLocks()
     {
         bool levelUnlocked = false;
-        var lastChapter = allChapters[saveMetaData.LastChapterPlayed];
+        var lastChapter = allChapters[SaveLoadManager.LastChapterPlayed];
 
         var buttons = lastChapter.InGameMapButtonList;
         levelButtons = buttons;
@@ -293,27 +293,25 @@ public class MapManager : MonoBehaviour
         for (int i = 0; i < buttons.Count; i++)
         {
             var button = buttons[i].GetComponent<Button>();
-            var screenShot = button.transform.Find("Mask").transform.Find("Screenshot").gameObject;
+            var screenShot = button.transform.Find("Mask").GetChild(0).gameObject;
             
+            // set all level 1 buttons unlocked - needed?
             button.interactable = i == 0;
             
             if (i > 0)
             {
-                if (lastChapter.LevelList[i - 1].AwardsReceived > 0)
+                if (SaveLoadManager.SaveStaticList[SaveLoadManager.LastChapterPlayed].levels[i].levelUnlocked)
                 {
-                    // Debug.Log($"AwardsReceived for level {i}/({i-1}): " + lastChapter.LevelList[i - 1].AwardsReceived);
                     button.interactable = true;
                 }
                 else
                 {
                     button.interactable = false;
 
-                    if (lastChapter.LastLevelUnlocked < i && !levelUnlocked)
+                    if (SaveLoadManager.LastLevelUnlocked < i && !levelUnlocked)
                     {
                         levelUnlocked = true;
-                        lastChapter.LastLevelUnlocked = i-1;
-                        // Debug.Log($"level {i}/({i-1}) unlocked. Metadata save: {lastChapter.LastLevelUnlocked}");
-                        EditorUtility.SetDirty(allChapters[saveMetaData.LastChapterPlayed]);
+                        SaveLoadManager.LastLevelUnlocked = i-1;
                     }
                 }
             }
@@ -335,33 +333,27 @@ public class MapManager : MonoBehaviour
 
         SetStarsForEachLevel();
     }
-
-
-
-    [Header("Star Colours")]
-    private Color starGold = new Color(0.95f, 0.95f, 0, 1);
-    private Color starSilver = new Color(1, 0.86f, 0, 1);
-    private Color starBronze = new Color(1, 0.5f, 0, 1);
-    private Color starDefault = new Color(1, 1, 1, 0.3f);
-    private GameObject mapPickup;
-    private Vector3 lerpPos1 = new Vector3(0.9f, 0.9f, 0.9f);
-    private Vector3 lerpPos2 = new Vector3(1f, 1f, 1f);
+    
+    List<SpriteRenderer> starImages = new (3);
     
     // Set stars for each level button
     private void SetStarsForEachLevel()
     {
-        var level = allChapters[saveMetaData.LastChapterPlayed].LastLevelPlayed;
+        // var level = allChapters[SaveLoadManager.LastChapterPlayed].LastLevelPlayed;
+        var level = SaveLoadManager.LastLevelPlayed;
 
         for (int i = 0; i < levelButtons.Count; i++)
         {
             var b = levelButtons[i].GetComponent<Button>();
-            // var sGrp = levelButtons[i].transform.Find("StarsGrp");
             var sGrp = levelButtons[i].transform.GetChild(4);
-            var scoreForLevel = allChapters[saveMetaData.LastChapterPlayed].LevelList[i].AwardsReceived;
-            var starImages = new List<SpriteRenderer>();
+            // var scoreForLevel = allChapters[SaveLoadManager.LastChapterPlayed].LevelList[i].AwardsReceived;
+
+            var awardForLevel = SaveLoadManager.GetAwards(i);
+            // var starImages = new List<SpriteRenderer>();
+            starImages.Clear();
             
             // Todo get pickup from save
-            /*if (saveMetaData.LastChapterPlayed == 0)
+            /*if (SaveLoadManager.LastChapterPlayed == 0)
             {
                 mapPickup = levelButtons[i].transform.Find("LevelSweet(Clone)").gameObject;
             }
@@ -376,31 +368,26 @@ public class MapManager : MonoBehaviour
             {
                 mapPickup.SetActive(true);
             }*/
-
             
-            // CheckAwards(scoreForLevel);
-
-            
-
             for (int j = 0; j < 3; j++)
             {
                 starImages.Add(sGrp.transform.GetChild(j).GetComponent<SpriteRenderer>());
-                starImages[j].color = starDefault;
+                starImages[j].color = ColourManager.starDefault;
             }
 
-            switch (scoreForLevel)
+            switch (awardForLevel)
             {
                 case 1:
-                    starImages[0].color = starBronze;
+                    starImages[0].color = ColourManager.starBronze;
                     break;
                 case 2:
-                    starImages[0].color = starBronze;
-                    starImages[1].color = starSilver;
+                    starImages[0].color = ColourManager.starBronze;
+                    starImages[1].color = ColourManager.starSilver;
                     break;
                 case 3:
-                    starImages[0].color = starBronze;
-                    starImages[1].color = starSilver;
-                    starImages[2].color = starGold;
+                    starImages[0].color = ColourManager.starBronze;
+                    starImages[1].color = ColourManager.starSilver;
+                    starImages[2].color = ColourManager.starGold;
                     if (level == i)
                         starImages[2].transform.localScale = Vector3.Lerp(lerpPos1, lerpPos2, Mathf.PingPong(Time.time, 1));
                     break;

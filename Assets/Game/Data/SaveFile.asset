@@ -12,8 +12,3 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b7dd10e2b33d4c547a8e0d3d25c15277, type: 3}
   m_Name: SaveFile
   m_EditorClassIdentifier: 
-  saveName: testSave
-  playerName: Player1
-  lastChapterPlayed: 5
-  lastLevelPlayed: 15
-  levelLoaded: Level16(Clone)

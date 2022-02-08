@@ -16,9 +16,11 @@ public class PlatformBase : MonoBehaviour
     [Header("Speed")]
     [SerializeField] private protected float smoothTime = 5f;
     [SerializeField] private protected float smoothScaleDownTime = 3;
-    // [SerializeField] private protected float smoothScaleDownTime2 = 3;
     [SerializeField] private protected float smoothScaleUpTime = 1;
-    // [SerializeField] private protected float smoothScaleUpTime2 = 1;
+
+    [Header("Bools")] 
+    [SerializeField] private protected bool allowPlatformMovement;
+    // [SerializeField] private protected bool moveVertically;
     
     [Header("Distance from object to activate")]
     [SerializeField] private protected float distanceOffset = 5f;
@@ -31,7 +33,8 @@ public class PlatformBase : MonoBehaviour
     private protected Collider playerCol;
     
     public float peOffset = 1;
-    private protected bool moveCloud;
+    private protected bool moveRight;
+    private protected bool movePlatform;
     private protected bool moveUp;
 
     private protected Rigidbody platformRb;

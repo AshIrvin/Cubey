@@ -4,7 +4,6 @@ using UnityEngine;
 
 public class PlatformMoving : PlatformBase
 {
-
     private void Start()
     {
         startPos = transform.position;
@@ -20,63 +19,38 @@ public class PlatformMoving : PlatformBase
 
     private void Update()
     {
-        HorizontalPlatforms();
-        VerticalPlatforms();
+        if (allowPlatformMovement)
+            MovePlatform();
     }
 
-    private void HorizontalPlatforms()
+    private void MovePlatform()
     {
-        if (moveCloud)
-        {
-            transform.position = Vector3.SmoothDamp(transform.position, targetPos, ref velocity, smoothTime);
+        if (!allowPlatformMovement) return;
 
-            if (transform.position.x > (targetPos.x - distanceOffset))
+        transform.position = Vector3.SmoothDamp(transform.position, movePlatform ? targetPos : startPos, ref velocity,
+            smoothTime);
+
+        if (movePlatform)
+        {
+            if (Vector3.Distance(transform.position, targetPos) < distanceOffset)
             {
-                moveCloud = false;
+                movePlatform = false;
             }
         }
-        else
+        else if (Vector3.Distance(transform.position, startPos) < distanceOffset)
         {
-            transform.position = Vector3.SmoothDamp(transform.position, startPos, ref velocity, smoothTime);
-            if (transform.position.x < (startPos.x + distanceOffset))
-            {
-                moveCloud = true;
-            }
+            movePlatform = true;
         }
     }
 
+    private void OnCollisionEnter(Collision other)
+    {
+        if (other.collider.CompareTag("Player"))
+        {
+            other.transform.parent = transform;
+        }
+    }
     
-    // for moving vertical platforms
-    private void VerticalPlatforms()
-    {
-        if (moveUp)
-        {
-            transform.position = Vector3.SmoothDamp(transform.position, targetPos, ref velocity, smoothTime);
-            if (transform.position.y > (targetPos.y - distanceOffset))
-            {
-                moveUp = false;
-            }
-        }
-        else
-        {
-            transform.position = Vector3.SmoothDamp(transform.position, startPos, ref velocity, smoothTime);
-            if (transform.position.y < (startPos.y + distanceOffset))
-            {
-                moveUp = true;
-            }
-        }
-
-        // checks against start pos on how far to move
-        if (transform.position.y > (startPos.y + vertPlatformDistance))
-        {
-            moveUp = false;
-        }
-        else if (transform.position.y < startPos.y)
-        {
-            moveUp = true;
-        }
-    }
-
     // Player cant jump in the air
     private void OnCollisionExit(Collision collision)
     {

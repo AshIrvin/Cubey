@@ -9,6 +9,7 @@ using Object = UnityEngine.Object;
 
 public static class EditorUtil
 {
+#if UNITY_EDITOR
     public static List<T> GetAllAssets<T>(bool includeBundleAssets, string pathName) where T : ScriptableObject
     {
         string[] guidList = AssetDatabase.FindAssets(string.Format("t:{0}", typeof(T)), new[] {pathName});
@@ -64,6 +65,7 @@ public static class EditorUtil
 
         return returnList.OrderBy(x => x.name).ToArray();
     }
+#endif
 }
     
 

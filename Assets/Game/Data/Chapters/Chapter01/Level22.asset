@@ -16,9 +16,9 @@ MonoBehaviour:
   levelName: Level 22
   levelNumber: 22
   timer: 99
-  jumpsForGold: 3
-  jumpsForSilver: 5
-  jumpsForBronze: 8
+  jumpsForGold: 4
+  jumpsForSilver: 6
+  jumpsForBronze: 9
   levelSprite: {fileID: 0}
   levelPrefab: {fileID: 5248666024161123352, guid: 4fbe435c164b5e94bbc62cb1a2e17197,
     type: 3}
@@ -26,7 +26,6 @@ MonoBehaviour:
     type: 3}
   exitPosition: {fileID: 1489062554349969012, guid: 4fbe435c164b5e94bbc62cb1a2e17197,
     type: 3}
-  awardsReceived: 1
   portalEnter: []
   portalExit: []
   pathName: Assets/Game/Prefabs/LevelPrefabs/Chapter01
