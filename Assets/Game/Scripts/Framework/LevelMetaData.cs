@@ -20,17 +20,11 @@ public class LevelMetaData : ScriptableObject
     [SerializeField] private GameObject levelPrefab;
     [SerializeField] private GameObject startPosition;
     [SerializeField] private GameObject exitPosition;
-    // [SerializeField] private int awardsReceived;
     [SerializeField] private List<GameObject> portalEnter;
     [SerializeField] private List<GameObject> portalExit;
 
     public string pathName = "Assets/Game/Prefabs/LevelPrefabs/Chapter0";
-
-    /*public int AwardsReceived
-    {
-        get => awardsReceived;
-        set => awardsReceived = value;
-    }*/
+    public string mapSpritePathName = "Assets/Src_Images/MainMenu/MapLevelImages/Chapter0";
 
     public string LevelName
     {
@@ -48,8 +42,13 @@ public class LevelMetaData : ScriptableObject
     public int JumpsForBronze => jumpsForBronze;
     public int JumpsForSilver => jumpsForSilver;
     public int JumpsForGold => jumpsForGold;
-    
-    public Sprite LevelSprite => levelSprite;
+
+    public Sprite LevelSprite
+    {
+        get => levelSprite;
+        set => levelSprite = value;
+    }
+
     public GameObject LevelPrefab => levelPrefab;
     public GameObject StartPosition => startPosition;
     public GameObject ExitPosition => exitPosition;
@@ -76,6 +75,7 @@ public class LevelMetaData : ScriptableObject
     {
 #if UNITY_EDITOR
         pathName = "Assets/Game/Prefabs/LevelPrefabs/Chapter0" + chapter;
+        mapSpritePathName = "Assets/Src_Images/MainMenu/MapLevelImages/Chapter0" + chapter;
         Debug.Log("path updated to: " + pathName);
 
         EditorUtil.ApplyChanges(this);
@@ -86,7 +86,28 @@ public class LevelMetaData : ScriptableObject
     {
 #if UNITY_EDITOR
         var pathList = EditorUtil.GetAssetsAtPath<GameObject>(pathName);
+        var mapButtonImages = EditorUtil.GetAssetsAtPath<Sprite>(mapSpritePathName);
 
+        #region folder sprites to level data
+        foreach (var item in mapButtonImages)
+        {
+            var itemName = item.name.Replace("Level0", "Level ");
+            var itemName2 = item.name.Replace("Level ", "Level");
+            
+            Debug.Log("item.name: " + item.name + ", name: " + name + ", itemName2: " + itemName2); // level 11, level11 <- S.O
+            
+            if (item.name == name || itemName == name || itemName2 == name) // checks against name of Scriptable Object
+            {
+                LevelSprite = item;
+            }
+            else
+            {
+                Debug.Log("Wrong sprite name: " + item.name);
+            }
+        }
+        #endregion
+
+        #region Assign level data
         foreach (var item in pathList)
         {
             var itemName = item.name.Replace("Level0", "Level ");
@@ -106,7 +127,9 @@ public class LevelMetaData : ScriptableObject
             Debug.Log("Issue with prefab: " + name);
             return;
         }
-        
+        #endregion
+
+        #region Start/End
         // get start and end positions of level
         startPosition = levelPrefab.transform.GetChild(1).name.Contains("Start") ? 
             levelPrefab.transform.GetChild(1).gameObject :
@@ -118,10 +141,14 @@ public class LevelMetaData : ScriptableObject
             levelPrefab.transform.Find("Spindle") ?
                 levelPrefab.transform.Find("Spindle").GetChild(0).gameObject :
                 levelPrefab.transform.Find("Exit").gameObject;
-
+        #endregion
+        
+        #region Portals
         var portalCount = levelPrefab.transform.GetComponentsInChildren<PortalManager>();
+
         portalEnter.Clear();
         portalExit.Clear();
+
         for (int i = 0; i < portalCount.Length; i++)
         {
             if (portalCount[i].CompareTag("PortalEnter"))
@@ -133,6 +160,9 @@ public class LevelMetaData : ScriptableObject
                 portalExit.Add(portalCount[i].gameObject);
             }
         }
+
+        #endregion
+
 #endif
     }
     

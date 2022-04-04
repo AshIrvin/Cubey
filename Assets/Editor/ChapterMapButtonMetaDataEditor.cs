@@ -20,12 +20,15 @@ public class ChapterMapButtonMetaDataEditor : Editor
             if (GUILayout.Button("Assign Images to Buttons", GUILayout.Width(200)))
             {
                 metadata.UnityEditorAutoAssignSprite();
-                EditorUtility.SetDirty(metadata);
+                // EditorUtility.SetDirty(metadata);
+                EditorUtil.ApplyChanges(metadata);
+                Debug.Log("Levels to buttons Does Not Work");
             }            
             if (GUILayout.Button("Assign Numbers to Buttons", GUILayout.Width(200)))
             {
                 metadata.UnityEditorAssignLevelNumbers();
                 EditorUtility.SetDirty(metadata);
+                Debug.Log("Levels numbers Does Not Work");
             }            
             if (GUILayout.Button("Assign Data to Level metadata", GUILayout.Width(200)))
             {

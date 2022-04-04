@@ -36,7 +36,9 @@ public class Portal : MonoBehaviour
     
     private void Awake()
     {
-        if (visualEffects == null) visualEffects = GameObject.Find("VisualEffectsManager").GetComponent<VisualEffects>();
+        if (visualEffects == null) 
+            visualEffects = FindObjectOfType<VisualEffects>();
+        
         
         transparent = new Color(1,1,1,0);
     }
@@ -68,7 +70,8 @@ public class Portal : MonoBehaviour
         {
             objectToTeleport = other.gameObject;
 
-            autoRotation = objectToTeleport.GetComponent<AutoRotation>();
+            if (autoRotation == null)
+                autoRotation = objectToTeleport.GetComponent<AutoRotation>();
                 
             objectColour = objectToTeleport.transform.Find("BodySprite")?.GetComponent<SpriteRenderer>();
             if (objectColour != null)
@@ -90,17 +93,31 @@ public class Portal : MonoBehaviour
         usePortal.CurrentValue = false;
         
         var rb = objectToTeleport.GetComponent<Rigidbody>();
-        var leanForce = objectToTeleport.GetComponent<LeanForceRigidbodyCustom>();
+        LeanForceRigidbodyCustom leanForce = objectToTeleport.GetComponent<LeanForceRigidbodyCustom>();
         
         visualEffects.PlayEffect(visualEffects.pePortalEffects, objectToTeleport.transform.position, portalExit.transform.rotation);
-        
+
+        objectToTeleport.transform.localScale = Vector3.zero;
         objectToTeleport.transform.position = portalExit.transform.position;
         objectToTeleport.transform.rotation = Quaternion.Euler(0,0,Random.Range(0, 360));
+        rb.isKinematic = true;
         
-        if (objectColour != null)
+        StartCoroutine(DelayTeleport(leanForce, rb));
+    }
+
+    private float delayTeleportTime = 0.7f;
+    
+    private IEnumerator DelayTeleport(LeanForceRigidbodyCustom leanForce, Rigidbody rb)
+    {
+        yield return new WaitForSeconds(delayTeleportTime);
+        
+        objectToTeleport.transform.localScale = Vector3.one;
+        rb.isKinematic = false;
+        
+        /*if (objectColour != null)
         {
             objectColour.color = Color.Lerp(objectColour.color, transparent, Single.Epsilon); // i += Time.deltaTime * rate;
-        }
+        }*/
         
         visualEffects.PlayEffect(visualEffects.pePortalEffectsExit, objectToTeleport.transform.position, portalExit.transform.rotation);
 
@@ -110,16 +127,19 @@ public class Portal : MonoBehaviour
         cubeyForce = 0f;
         if (leanForce != null)
         {
+            Debug.Log("cubey force capped");
             // get speed of entry
             cubeyForce = Mathf.Max(leanForce.playerMagnitude, minVelocityForce);
             cubeyForce = Mathf.Min(cubeyForce, maxVelocityForce);
             rb.AddForce(portalExit.transform.up * cubeyForce, ForceMode.Impulse); // 6
         }
         else
+        {
+            Debug.Log("menu cubey portal");
             rb.AddForce(portalExit.transform.up * portalForceMultiply, ForceMode.Impulse);
+        }
     
         StartCoroutine(DelayPortalActivation());
     }
-
 
 }

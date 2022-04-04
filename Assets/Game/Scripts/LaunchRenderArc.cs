@@ -7,19 +7,22 @@ using Lean.Touch;
 [RequireComponent(typeof(LineRenderer))]
 public class LaunchRenderArc : MonoBehaviour
 {
-    
     [SerializeField] private LeanForceRigidbodyCustom leanForce;
+    [SerializeField] private GameManager gameManager;
     [SerializeField] private BoolGlobalVariable launchArc;
     
-    [Header("Floats")]
+    public float extraPower = 2f; // controls the distance of Cubey's power
+    public static float DefaultExtraPower = 2f; 
+    
+    [Header("Public Floats")]
     public float velocity;
     public float angle;
-    [SerializeField] private float leanAngle;
-    [SerializeField] private float extraPower = 1;
-    [SerializeField] private float mouseOffset;
+
+    [Header("Floats")]
+    [SerializeField] private float mouseOffset = 1;
     [SerializeField] private float maxVelocity = 10.5f;
     [SerializeField] private float arcOffset = 0f;
-    [SerializeField] private float distance = 1;
+    [SerializeField] private float distance = 18;
 
     [Header("Other")]
     [SerializeField] private int resolution = 15;
@@ -32,10 +35,12 @@ public class LaunchRenderArc : MonoBehaviour
 
     [Header("Sprites")]
     [SerializeField] private Sprite spriteImage;
+
     [SerializeField] private List<GameObject> dotSprites = new List<GameObject>();
     [SerializeField] private GameObject dottedLineArcGroup;
     [SerializeField] private Color[] spriteColours;
 
+    private float leanAngle;
     private LineRenderer lr;
     private List<LeanTouch> lt;
     private float g;
@@ -46,7 +51,10 @@ public class LaunchRenderArc : MonoBehaviour
     private void Awake()
     {
         launchArc.OnValueChanged += EnableLaunchArc;
-        
+    }
+
+    private void Start()
+    {
         lr = GetComponent<LineRenderer>();
         g = Mathf.Abs(Physics2D.gravity.y);
         cubey = transform.parent.gameObject;
@@ -69,13 +77,15 @@ public class LaunchRenderArc : MonoBehaviour
         }
 
         EnableLaunchArc(false);
-        // EnableArc(false);
     }
-
 
     private void Update()
     {
-        StartCoroutine(DelayBeforeRenderArc());
+        if (Time.timeScale > 0.2f)
+        {
+            // StartCoroutine(DelayBeforeRenderArc());
+            DelayBeforeRenderArc();
+        }
     }
 
     private void OnDestroy()
@@ -83,23 +93,27 @@ public class LaunchRenderArc : MonoBehaviour
         launchArc.OnValueChanged -= EnableLaunchArc;
     }
 
-    private IEnumerator DelayBeforeRenderArc()
+    private void DelayBeforeRenderArc()
     {
-        if (Input.GetMouseButton(0))
+        if (Input.GetMouseButton(0) && launchArc.CurrentValue && FingerPos.belowPlayer)
         {
-            // Debug.Log("Render Arc. FingerPos.belowPlayer: " + FingerPos.belowPlayer);
-            yield return new WaitUntil(() => FingerPos.belowPlayer);
             RenderArc();
         }
+        
         if (Input.GetMouseButtonUp(0) && spriteColours[0].a > 0)
+        {
             StartCoroutine(DelayFadeArc());
+        }
     }
     
     private void EnableLaunchArc(bool on)
     {
         renderArcAllowed = on;
+        gameManager.LaunchArc = on;
         if (!on)
+        {
             EnableArc(false);
+        }
     }
     
     private void RenderArc()
@@ -107,17 +121,21 @@ public class LaunchRenderArc : MonoBehaviour
         ResetArc();
         
         if (!lr.enabled)
+        {
             lr.enabled = false;
+        }
 
         if (!dottedLineArcGroup.activeSelf)
+        {
             dottedLineArcGroup.SetActive(true);
+        }
 
         lr.positionCount = resolution + 1;
         SpawnArcSprites(CalculateArcArray());
 
         leanAngle = leanForce.Angle;
         
-        // Debug.Log("Rendering Arc");
+        // Debug.Log("Rendering Arc: " + leanAngle);
     }
 
     IEnumerator DelayFadeArc()
@@ -171,13 +189,11 @@ public class LaunchRenderArc : MonoBehaviour
 
     public void EnableArc(bool enable)
     {
-        // Debug.Log("Enable Arc " + enable);
         lr.positionCount = 0;
         dottedLineArcGroup.SetActive(enable);
         
         if (!enable)
         {
-            // Debug.Log("Settings arc to 0 alpha");
             LoopSpriteColours(0);
         }
     }
@@ -224,6 +240,8 @@ public class LaunchRenderArc : MonoBehaviour
         return angle2;
     }
 
+    public Vector3 firstPosition;
+    
     private Vector3[] CalculateArcArray()
     {
         Vector3[] arcArray = new Vector3[resolution + 1];
@@ -231,9 +249,7 @@ public class LaunchRenderArc : MonoBehaviour
         angle = CalculateMouseAngle();
 
         radianAngle = Mathf.Deg2Rad * angle;
-
         float maxDistance = (velocity * velocity * Mathf.Sin(2 * radianAngle)) / g;
-
         arcArray[0] = cubey.transform.position + groundOffset;
 
         for (int i = 1; i <= resolution; i++)
@@ -242,6 +258,7 @@ public class LaunchRenderArc : MonoBehaviour
             arcArray[i] = CalculateArcPoint(t, maxDistance) + arcArray[0]; 
         }
 
+        firstPosition = arcArray[2];
         return arcArray;
     }
 

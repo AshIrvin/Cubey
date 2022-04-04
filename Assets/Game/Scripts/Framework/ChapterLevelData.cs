@@ -12,7 +12,7 @@ public class ChapterLevelData
     
     public int allBronze;
     public int allSilver;
-    public int allGold;
+    public int allStars;
 
     public List<LevelInfo> levels;
 
@@ -21,9 +21,11 @@ public class ChapterLevelData
     {
         public bool levelUnlocked;
         
-        public int awardsReceived;
+        public int starsReceived;
         public int bronze;
         public int silver;
-        public int gold;
+        public int stars;
+        public float timeTaken;
+        public int jumpsUsed;
     }
 }

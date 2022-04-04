@@ -16,17 +16,17 @@ MonoBehaviour:
   levelName: Level 10
   levelNumber: 10
   timer: 99
-  jumpsForGold: 3
+  jumpsForGold: 2
   jumpsForSilver: 5
-  jumpsForBronze: 8
-  levelSprite: {fileID: 0}
+  jumpsForBronze: 9
+  levelSprite: {fileID: 21300000, guid: 714c11695f1018f4181e5523fc859931, type: 3}
   levelPrefab: {fileID: 2773513578227277460, guid: e17244b64a64e2445bedf7049d28b7fa,
     type: 3}
   startPosition: {fileID: 4580405444287105448, guid: e17244b64a64e2445bedf7049d28b7fa,
     type: 3}
   exitPosition: {fileID: 8791106288599585231, guid: e17244b64a64e2445bedf7049d28b7fa,
     type: 3}
-  awardsReceived: 3
   portalEnter: []
   portalExit: []
   pathName: Assets/Game/Prefabs/LevelPrefabs/Chapter02
+  mapSpritePathName: Assets/Src_Images/MainMenu/MapLevelImages/Chapter02

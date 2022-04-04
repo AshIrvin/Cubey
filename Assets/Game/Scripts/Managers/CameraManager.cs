@@ -22,15 +22,14 @@ public class CameraManager : MonoBehaviour
     [SerializeField] private Camera cam;
     [SerializeField] private Vector3 exitPos;
     [SerializeField] private Vector3 endCamPos;
-
-    // [SerializeField] private GameObject maps;
     [SerializeField] private GameObject cubeyOnMap;
     
+    [Header("Floats")]
     [SerializeField] private float speed = 0.1f;
     [SerializeField] private float camTime = 1f;
     [SerializeField] private float camToLevelButtonTime = 1.4f;
     [SerializeField] private float gameCamTime = 1f;//0.3f;
-    [SerializeField] private float camMapDragTime = 0.3f;
+    // [SerializeField] private float camMapDragTime = 0.3f;
     [SerializeField] private Vector3 velocity = Vector3.zero;
     [SerializeField] private bool startFromExit;
     
@@ -70,7 +69,6 @@ public class CameraManager : MonoBehaviour
     {
         // VisualEffects.Instance.PlayEffect(VisualEffects.Instance.peNewLevel, nextOpenLevel);
         nextOpenLevel = chapterList[SaveLoadManager.LastChapterPlayed].ChapterMapButtonList[SaveLoadManager.LastLevelUnlocked].transform.position;
-        
     }
 
     private void Start()
@@ -98,14 +96,12 @@ public class CameraManager : MonoBehaviour
         {
             transform.position = Vector3.SmoothDamp(transform.position, cubeyOnMap.transform.position, ref velocity, gameCamTime);
         }
-        /*else
-        {
-            Debug.LogError("CameraManager can't find something...");
-        }*/
     }
 
     private void EnteringLevel(bool enable)
     {
+        startFromExit = true;
+            
         if (!enable)
         {
             reachedStartButton = false;
@@ -117,6 +113,7 @@ public class CameraManager : MonoBehaviour
         
         if (startFromExit)
         {
+            
             reachedStartButton = false;
             reachedEndButton = false;
             disableAutoPanMapCam = false;
@@ -125,15 +122,24 @@ public class CameraManager : MonoBehaviour
         }
     }
 
+    private float delayCameraOnExitStart = 0.1f;
+    private float gameCamTime2 = 2;
+    private float defaultGameCamTime = 0.5f;
+    private float camCubeyDistance = 0.3f;
+    
     private IEnumerator StartFromExit()
     {
+        gameCamTime = gameCamTime2;
         yield return new WaitWhile(() => gameManager.LevelMetaData == null);
+        
         exitPos = gameManager.LevelMetaData.ExitPosition.transform.position;
         transform.position = exitPos;
-        yield return new WaitForSeconds(0.5f);
-        transform.position = Vector3.SmoothDamp(transform.position, CubeyPlayer.transform.position, ref velocity, gameCamTime);
-        
+        yield return new WaitForSeconds(delayCameraOnExitStart);
+
         startFromExit = false;
+
+        yield return new WaitUntil(() => Vector3.Distance(transform.position, CubeyPlayer.transform.position) < camCubeyDistance || Input.GetMouseButtonDown(0));
+        gameCamTime = defaultGameCamTime;
     }
     
     private IEnumerator ChangeCamSpeed(float n)
@@ -167,6 +173,7 @@ public class CameraManager : MonoBehaviour
     }
 
     [SerializeField] private Vector3 nextOpenLevel;
+    [SerializeField] private int panningToLevel;
     
     private IEnumerator PanToLevelButton()
     {
@@ -176,7 +183,6 @@ public class CameraManager : MonoBehaviour
             disableAutoPanMapCam = true;
         }
 
-        // TODO - SO
         var currentChapterList = chapterList[SaveLoadManager.LastChapterPlayed];
         var currentLevelNo = SaveLoadManager.LastLevelPlayed;
         var buttonPos = currentChapterList.ChapterMapButtonList[currentLevelNo].transform.position;
@@ -186,6 +192,7 @@ public class CameraManager : MonoBehaviour
             buttonToStartFrom = buttonPos;
             var moveToNewLevel = currentLevelNo < 29 ? currentLevelNo + 1 : currentLevelNo;
             buttonToEndAt = currentChapterList.ChapterMapButtonList[moveToNewLevel].transform.position;
+            panningToLevel = SaveLoadManager.LastLevelUnlocked;
         }
         else
         {

@@ -10,6 +10,7 @@ namespace Game.Scripts
     public class DeathVolume : MonoBehaviour
     {
         private GameManager gameManager;
+        [SerializeField] private bool autoRestart;
 
         private void Awake()
         {
@@ -28,7 +29,14 @@ namespace Game.Scripts
         {
             if (other.gameObject.CompareTag("Player"))
             {
-                gameManager.FailedScreen(true);
+                if (autoRestart)
+                {
+                    gameManager.RestartLevel();
+                }
+                else
+                {
+                    gameManager.FailedScreen(true);
+                }
             }
         }
 

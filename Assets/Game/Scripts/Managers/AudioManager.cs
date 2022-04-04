@@ -30,23 +30,31 @@ public class AudioManager : MonoBehaviour
     public AudioSource[] cubeyExitOpen;
     public AudioSource[] cubeyCelebtration;
 
-    public Camera cam;
-    public AudioListener audioListener;
+    [SerializeField] private Camera cam;
+    [SerializeField] private AudioListener audioListener;
 
-    public bool allowSounds;
+    [SerializeField] private bool allowSounds;
     public bool allowMusic;
 
-    public Toggle musicMute, audioToggle;
+    [SerializeField] private GameObject audioButtons;
+    [SerializeField] private Toggle musicMute; 
+    [SerializeField] private Toggle audioToggle;
 
+    public GameObject AudioButtons
+    {
+        get => audioButtons;
+        set => audioButtons = value;
+    }
+    
     private void Start()
     {
         if (PlayerPrefs.HasKey("music"))
         {
             var m = PlayerPrefs.GetInt("music");
-            if (m == 1)
+            if (m == 1) // on
             {
-                //ToggleMusic(false);
                 musicMute.isOn = false;
+                // musicMutePause.isOn = false;
                 allowMusic = true;
 
                 if (menuMusic != null)
@@ -57,8 +65,8 @@ public class AudioManager : MonoBehaviour
             }
             else
             {
-                //ToggleMusic(true);
                 musicMute.isOn = true;
+                // musicMutePause.isOn = true;
                 allowMusic = false;
 
                 if (menuMusic != null)
@@ -74,14 +82,14 @@ public class AudioManager : MonoBehaviour
             var m = PlayerPrefs.GetInt("sounds");
             if (m == 1)
             {
-                //ToggleSounds(true);
                 audioToggle.isOn = false;
+                // audioTogglePause.isOn = false;
                 allowSounds = true;
             }
             else
             {
-                //ToggleSounds(false);
                 audioToggle.isOn = true;
+                // audioTogglePause.isOn = true;
                 allowSounds = false;
             }
         }
@@ -165,8 +173,6 @@ public class AudioManager : MonoBehaviour
     {
         if (!music.isPlaying && allowMusic)
             music.Play();
-        //else
-        //    music.Stop();
     }
 
     public void StopMusic(AudioSource music)
@@ -179,7 +185,7 @@ public class AudioManager : MonoBehaviour
     {
         allowMusic = !on;
 
-        if (!on)
+        if (!on) // off
         {
             if (menuMusic != null)
                 PlayMusic(menuMusic);
@@ -187,7 +193,7 @@ public class AudioManager : MonoBehaviour
             if (levelMusic != null)
                 PlayMusic(levelMusic);
 
-            PlayerPrefs.SetInt("music", 1);
+            PlayerPrefs.SetInt("music", 1); // on
         }
         else
         {
@@ -197,10 +203,7 @@ public class AudioManager : MonoBehaviour
             if (levelMusic != null)
                 StopMusic(levelMusic);
 
-            PlayerPrefs.SetInt("music", 0);
+            PlayerPrefs.SetInt("music", 0); // off
         }
-
     }
-
-
 }

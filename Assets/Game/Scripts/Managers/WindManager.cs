@@ -18,7 +18,7 @@ public class WindManager : MonoBehaviour {
     private bool moveRight;
     
     [Header("Wind objects")]
-    [SerializeField] private bool tree;
+    [SerializeField] private bool shrubbery;
     [SerializeField] private bool windZone;
 
     private void Start()
@@ -32,11 +32,11 @@ public class WindManager : MonoBehaviour {
     
     private void LateUpdate()
     {
-        if (tree)
+        if (shrubbery)
             TreeWindMotion();
     }
     
-    void TreeWindMotion()
+    private void TreeWindMotion()
     {
         if (moveRight)
         {
@@ -52,7 +52,7 @@ public class WindManager : MonoBehaviour {
         }
     }
 
-
+    // wind zones for canyon
     private void OnTriggerStay(Collider other)
     {
         if (other.CompareTag("Player") && windZone)

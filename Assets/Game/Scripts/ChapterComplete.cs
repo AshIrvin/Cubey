@@ -25,10 +25,7 @@ public class ChapterComplete : MonoBehaviour
     {
         if (gameManager == null) gameManager = FindObjectOfType<GameManager>();        
         if (chapterNumberText == null) transform.Find("");
-        if (bronzeCollected == null) transform.Find("BronzeCollected_text");
-        if (silverCollected == null) transform.Find("SilverCollected_text");
         if (goldCollected == null) transform.Find("GoldCollected_text");
-        // if (goldButtonCollected == null) transform.Find("GoldCollected_text");
         if (goldLeftToCollect == null) transform.Find("MoreToCollectNumber_text");
         if (gotThemAll == null) transform.Find("YouGotThemAll_text");
         
@@ -50,35 +47,46 @@ public class ChapterComplete : MonoBehaviour
         }
 
         var chapter = SaveLoadManager.LastChapterPlayed;
-        
         chapterNumberText.text = "Chapter " + chapter.ToString();
-
-        var bronze = SaveLoadManager.GetChapterAward(chapter, SaveLoadManager.Awards.Bronze); 
-        var silver = SaveLoadManager.GetChapterAward(chapter, SaveLoadManager.Awards.Silver);
-        var gold = SaveLoadManager.GetChapterAward(chapter, SaveLoadManager.Awards.Gold);
-
-        bronzeCollected.text = bronze.ToString();
-        silverCollected.text = silver.ToString();
-        goldCollected.text = gold.ToString();
         
-        goldButtonCollected.text = gold.ToString();
+        var oneStar = SaveLoadManager.GetChapterAward(chapter, SaveLoadManager.Awards.OneStar); 
+        var twoStars = SaveLoadManager.GetChapterAward(chapter, SaveLoadManager.Awards.TwoStars);
+        var threeStars = SaveLoadManager.GetChapterAward(chapter, SaveLoadManager.Awards.ThreeStars);
+
+        bronzeCollected.text = oneStar.ToString();
+        silverCollected.text = twoStars.ToString();
+        goldCollected.text = threeStars.ToString();
+        goldButtonCollected.text = threeStars.ToString();
 
         var levelCount = chapterList[chapter].LevelList.Count;
-        goldLeftToCollect.text = levelCount - gold + " gold to collect!";
+        goldLeftToCollect.text = levelCount * 3 - threeStars + " stars to collect!";
 
-        if (bronze >= levelCount)
+        if (SaveLoadManager.GetLevelAward(29) > 0)
         {
             chapterNumberText.text = "Chapter " + chapter.ToString() + " Complete!";
+
+
+            if (SaveLoadManager.GetChapterAward(chapter, SaveLoadManager.Awards.ThreeStars) == 30)
+            {
+                goldLeftToCollect.gameObject.SetActive(false);
+                gotThemAll.gameObject.SetActive(true);
+            
+                // play PE
+                // VisualEffects.Instance.PlayEffect();
+            }
+            else if (SaveLoadManager.GetChapterAward(chapter, SaveLoadManager.Awards.TwoStars) == 30)
+            {
+                goldLeftToCollect.gameObject.SetActive(false);
+                gotThemAll.gameObject.SetActive(true);
+            }
+            else if (SaveLoadManager.GetChapterAward(chapter, SaveLoadManager.Awards.OneStar) == 30)
+            {
+                goldLeftToCollect.gameObject.SetActive(false);
+                gotThemAll.gameObject.SetActive(true);
+            }
         }
         
-        if (levelCount == gold)
-        {
-            goldLeftToCollect.gameObject.SetActive(false);
-            gotThemAll.gameObject.SetActive(true);
-            
-            // play PE
-            // VisualEffects.Instance.PlayEffect();
-        }
+
     }
 
     public void TogglePopup()

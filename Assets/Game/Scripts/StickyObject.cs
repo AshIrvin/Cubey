@@ -53,8 +53,12 @@ public class StickyObject : MonoBehaviour
         {
             yield return new WaitForSeconds(delayTime);
             allowPlayerToStick = true;
+            
             if (other != null)
+            {
                 other.transform.SetParent(GameManager.gameFolder.transform, true);
+            }
+            
             if (drawBridge)
             {
                 hinge.massScale = massExit;
@@ -70,10 +74,10 @@ public class StickyObject : MonoBehaviour
             stickyObject.CurrentValue = true;
             allowPlayerToStick = false;
 
-            if (drawBridge)
+            if (drawBridge && allowJointNudge)
             {
                 hinge.massScale = massEnter;
-                ToggleFreezePosition(true);
+                StartCoroutine(ToggleFreezePosition(true));
             }
 
             if (spindle)
@@ -87,10 +91,13 @@ public class StickyObject : MonoBehaviour
         }
     }
 
+    public bool allowJointNudge = true;
+    
     // For wakening the rb
-    private void ToggleFreezePosition(bool on)
+    private IEnumerator ToggleFreezePosition(bool state)
     {
-        drawBridgeRb.constraints = on ? RigidbodyConstraints.FreezePositionX : ResetFreeze();
+        drawBridgeRb.constraints = /*state ? RigidbodyConstraints.FreezePositionX :*/ ResetFreeze();
+        yield return new WaitForSeconds(0.1f);
     }
 
     private RigidbodyConstraints ResetFreeze()
@@ -103,9 +110,13 @@ public class StickyObject : MonoBehaviour
         if (other.gameObject.CompareTag("Player"))
         {
             StartCoroutine(DelayBelowActivatingSticky(null));
-            if (drawBridge)
+            
+            if (drawBridge && allowJointNudge)
             {
-                ToggleFreezePosition(false);
+                StartCoroutine(ToggleFreezePosition(false));
+                Debug.Log("leaving sticky");
+                stickyObject.CurrentValue = false;
+                allowPlayerToStick = true;
             }
         }
     }

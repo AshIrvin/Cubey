@@ -17,9 +17,6 @@ MonoBehaviour:
   chapterNumber: 3
   chapterName: Canyon
   pickupIcon: {fileID: 0}
-  lastLevelPlayed: 13
-  lastLevelUnlocked: 29
-  chapterUnlocked: 1
   chapterMap: {fileID: 5135766238846940214, guid: fba14e94f4946fb40928697011b97cd2,
     type: 3}
   cubeyPlayer: {fileID: 0}
@@ -87,7 +84,4 @@ MonoBehaviour:
   - {fileID: 0}
   - {fileID: 0}
   - {fileID: 0}
-  awardsBronze: 29
-  awardsSilver: 3
-  awardsGold: 3
   fullPathName: Assets/Src_Images/MainMenu/MapLevelImages/Chapter03/

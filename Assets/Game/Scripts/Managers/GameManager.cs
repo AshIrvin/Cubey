@@ -8,8 +8,10 @@ using UnityEngine;
 using Lean.Touch;
 using UnityEditor;
 using UnityEngine.SceneManagement;
+using UnityEngine.Serialization;
 using UnityEngine.UI;
 using Debug = UnityEngine.Debug;
+using Random = System.Random;
 
 public class GameManager : MonoBehaviour
 {
@@ -43,9 +45,9 @@ public class GameManager : MonoBehaviour
     private float timer;
     private string levelName;
 
-    private int gold;
-    private int silver;
-    private int bronze;
+    private int threeStars;
+    private int twoStars;
+    private int oneStar;
 
     private int levelNo;
     private int chapterNo;
@@ -56,10 +58,7 @@ public class GameManager : MonoBehaviour
     [SerializeField] private GameObject failedScreen;
     [SerializeField] private GameObject helpScreen;
     [SerializeField] private GameObject topUi;
-    // [SerializeField] private GameObject levelOpen;
     [SerializeField] private GameObject loadingScreen;
-    // [SerializeField] private GameObject environment;
-    
     [SerializeField] private GameObject deathWalls;
 
     [Header("UI Text")]
@@ -71,17 +70,23 @@ public class GameManager : MonoBehaviour
     [SerializeField] private Text bronzePodium;
     [SerializeField] private Text silverPodium;
     [SerializeField] private Text goldPodium;
+    [SerializeField] private Text oneStarTutorialText;
+    [SerializeField] private Text twoStarTutorialText;
+    [SerializeField] private Text threeStarTutorialText;
+    [SerializeField] private Text endScreenInfo;
     
     [Header("Level Exit")]
     private GameObject exitPrezzie;
     [SerializeField] private GameObject exitObject;
-    [SerializeField] public float cubeyJumpHeight = 2.6f;
-    [SerializeField] public bool useTimer;
-    [SerializeField] private bool camMovement;
-    [SerializeField] private bool gameLevelEnabled;
-    [SerializeField] private float playerGooDrag = 35f;
-
+    
+    public float cubeyJumpHeight = 2.6f;
+    public bool useTimer;
+    
+    private bool camMovement;
+    private bool gameLevelEnabled;
+    private float playerGooDrag = 35f;
     private ParticleSystem pe;
+    
     public Rigidbody playerRb;
 
     [Header("UI Pickups")]
@@ -121,7 +126,7 @@ public class GameManager : MonoBehaviour
 
     public bool LaunchArc
     {
-        get => launchArc;
+        get => launchArc.CurrentValue;
         set => launchArc.CurrentValue = value;
     }
     
@@ -148,10 +153,10 @@ public class GameManager : MonoBehaviour
     [SerializeField] public bool allowPlayerMovement;
     // [SerializeField] private bool allowFlight;
     [SerializeField] private bool jumpCountIncreases;
-    [SerializeField] private bool xagon;
+    // [SerializeField] private bool xagon;
     [SerializeField] private bool onBreakablePlatform;
     [SerializeField] private bool onMovingPlatform;
-    [SerializeField] private bool forceJump;
+    // [SerializeField] private bool forceJump;
 
     [Header("ints")]
     private int jumpLeft;
@@ -166,15 +171,11 @@ public class GameManager : MonoBehaviour
     [SerializeField] private Animator starSilver_anim;
     [SerializeField] private Animator starBronze_anim;
 
-
-
     [Header("Other")]
     private Vector3 cubeyPosition;
     public float cubeyMagnitude;
-    // private string pickupName = " Pickups";
-    private int stat_Jumps;
+    // private int stat_Jumps;
     private Vector3 flip;
-    
     private bool isPlayerRbNotNull;
     private bool isPlayerCubeNotNull;
 
@@ -200,6 +201,7 @@ public class GameManager : MonoBehaviour
         jumpAmountText.text = jumpLeft.ToString();
 
         SetGameCanvases(false);
+        SetupStarFinishImages();
     }
 
     private void OnDestroy()
@@ -217,9 +219,9 @@ public class GameManager : MonoBehaviour
         levelMetaData = chapterList[SaveLoadManager.LastChapterPlayed].LevelList[SaveLoadManager.LastLevelPlayed];
         
         timer = levelMetaData.Timer;
-        bronze = levelMetaData.JumpsForBronze;
-        silver = levelMetaData.JumpsForSilver;
-        gold = levelMetaData.JumpsForGold;
+        oneStar = levelMetaData.JumpsForBronze;
+        twoStars = levelMetaData.JumpsForSilver;
+        threeStars = levelMetaData.JumpsForGold;
         levelName = levelMetaData.LevelName;
         
         Debug.Log($"Level {levelNo}s info received.");
@@ -231,13 +233,14 @@ public class GameManager : MonoBehaviour
         exitProperty.CurrentValue = false;
         GetLevelInfo();
         StartLevel();
+        
     }
 
     private void OnDisable()
     {
         if (cubeyPlayer != null)
             cubeyPlayer.SetActive(false);
-        leanForceRb.canJump = false;
+        PlayerAllowedJump(false);
         SetGameCanvases(false);
         starGold_anim.Play("mapStarGoldBounce");
     }
@@ -246,7 +249,7 @@ public class GameManager : MonoBehaviour
     {
         enabled = enable;
         ResetCubeyPlayer(!enable);
-        launchArc.CurrentValue = enable;
+        LaunchArc = enable;
 
         mainMenuManager.mainMenu.SetActive(!enable);
         mainMenuManager.enabled = !enable;
@@ -259,7 +262,8 @@ public class GameManager : MonoBehaviour
     private void SetGameCanvases(bool state)
     {
         TopUi(state);
-        PauseGame(false);
+        // PauseGame(false);
+        PauseMenu(false);
         EndScreen(false);
         FailedScreen(false);
     }
@@ -289,20 +293,15 @@ public class GameManager : MonoBehaviour
 
     private void StartLevel()
     {
-        // visualEffects.player = cubeyPlayer;
-
-        // timer = GetComponent<Timer>();
+        GravityManager.ResetGravity();
+        
         if (deathWalls != null)
             deathWalls.SetActive(false);
         
-        // ResetCubeyPlayer(false);
         RestartTimer();
 
         if (pauseMenu != null)
             pauseMenu.SetActive(false);
-        
-        // EndScreen(false);
-        // FailedScreen(false);
         
         if (cubeyPlayer != null)
             flip = cubeyPlayer.transform.localScale;
@@ -310,14 +309,10 @@ public class GameManager : MonoBehaviour
             Debug.LogError("Can't find Cubey!!");
         
         DisableStartPosition();
-        
         UpdateLevelText(levelNo);
-
-        //blowingLeaves.Stop();
 
         if (chapterNo == 0)
         {
-            // setup game music
             levelMusic = GameObject.Find("XmasMusic").GetComponent<AudioSource>();
             audioManager.levelMusic = levelMusic;
         }
@@ -337,28 +332,31 @@ public class GameManager : MonoBehaviour
             audioManager.menuMusic = null;
 
         PickupText();
-        
         mapManager.enabled = false;
+        TimeTaken(true);
+
+        PlayerFaceDirection(exitObject.transform.position.x > 0);
     }
 
+    public Action AllowPlayerJump;
+
+    // TODO - fix this mess too
     public void Update()
     {
-        if (leanForceRb.canJump && CheckJumpMagnitude() && !forceJump)
+        /*if (leanForceRb.canJump && CheckJumpMagnitude())
         {
             PlayerAllowedJump(false);
-        }
+        }*/
 
         if (onMovingPlatform && playerRb.velocity.magnitude < 1f)
         {
             PlayerAllowedJump(true);
         }
-        else if (playerRb.velocity.magnitude < 0.1f)
+        else if (playerRb.velocity.magnitude < cubeyJumpMagValue)
             PlayerAllowedJump(true);
 
         if (isPlayerRbNotNull)
             cubeyMagnitude = playerRb.velocity.magnitude;
-
-        // CheckJumpCount();
 
         if (isPlayerCubeNotNull)
             cubeyPosition = cubeyPlayer.transform.position;
@@ -393,10 +391,14 @@ public class GameManager : MonoBehaviour
             awardToGet.text = "Need bronze for next level";
             ChangeTextColour(jumpAmountText, ColourManager.starDefault);
         }
-        
-        goldPodium.text = (jumpsToStartWith - levelMetaData.JumpsForGold).ToString();
-        silverPodium.text = (jumpsToStartWith - levelMetaData.JumpsForSilver).ToString();
-        bronzePodium.text = (jumpsToStartWith - levelMetaData.JumpsForBronze).ToString();
+
+        oneStarTutorialText.text = levelMetaData.JumpsForBronze.ToString();
+        twoStarTutorialText.text = levelMetaData.JumpsForSilver.ToString();
+        threeStarTutorialText.text = levelMetaData.JumpsForGold.ToString();
+
+        bronzePodium.text = levelMetaData.JumpsForBronze.ToString();
+        silverPodium.text = levelMetaData.JumpsForSilver.ToString();
+        goldPodium.text = levelMetaData.JumpsForGold.ToString();
     }
     
     public void ToggleSticky(bool on)
@@ -404,6 +406,7 @@ public class GameManager : MonoBehaviour
         if (!on)
         {
             playerRb.drag = 0;
+            playerRb.angularDrag = 0;
             stickyObject.CurrentValue = false;
             playerRb.isKinematic = false;
             cubeyPlayer.transform.SetParent(gameFolder, true);
@@ -411,6 +414,7 @@ public class GameManager : MonoBehaviour
         }
         
         playerRb.drag = playerGooDrag;
+        playerRb.angularDrag = playerGooDrag;
         playerRb.velocity = Vector3.zero;
         playerRb.angularVelocity = Vector3.zero;
         PlayerAllowedJump(true);
@@ -426,13 +430,15 @@ public class GameManager : MonoBehaviour
         screen.SetActive(!screen.activeSelf);
     }
 
+    private float cubeyJumpMagValue = 0.5f;
+    
     private bool CheckJumpMagnitude()
     {
-        if (playerRb.velocity.magnitude > 0.1f)
+        Debug.Log("playerRb.velocity.magnitude: " + playerRb.velocity.magnitude);
+        if (playerRb.velocity.magnitude > cubeyJumpMagValue)
             return true;
         return false;
     }
-
 
     private void CheckJumpCount() 
     {
@@ -475,6 +481,7 @@ public class GameManager : MonoBehaviour
         enabled = false;
         mapManager.enabled = true;
         mapManager.RestartLevel();
+        TimeTaken(true);
     }
 
     // Used as failed screen button
@@ -496,6 +503,7 @@ public class GameManager : MonoBehaviour
         }
         else
         {
+            TimeTaken(false);
             // Todo change end text to COMPLETED? 
             // play audio
             audioManager.PlayAudio(audioManager.cubeyCelebtration);
@@ -508,7 +516,7 @@ public class GameManager : MonoBehaviour
     
     private void ResetCubeyPlayer(bool disable)
     {
-        Debug.Log("Reseting Cubey");
+        // Debug.Log("Reseting Cubey");
         
         if (disable)
         {
@@ -537,7 +545,7 @@ public class GameManager : MonoBehaviour
         if (leanForceRb == null)
             leanForceRb = cubeyPlayer.GetComponent<LeanForceRigidbodyCustom>();
         else
-            leanForceRb.canJump = true;
+            PlayerAllowedJump(true);
 
         RestartTimer();
     }
@@ -708,25 +716,19 @@ public class GameManager : MonoBehaviour
             VisualEffects.Instance.PlayEffect(VisualEffects.Instance.peExitOpened, newPePos);*/
     }
 
-    public void PauseGame(bool enable)
+    public bool PlayerAllowedJump(bool state)
     {
-        if (pauseMenu != null)
-            pauseMenu.SetActive(enable);
-        Time.timeScale = enable ? 0 : 1;
-    }
-    
-    /*private void HideAllLevels()
-    {
-        /*if (ChaptersAndLevels.levelsList.Count > 0)
+        leanForceRb.canJump = state;
+        LaunchArc = state;
+        allowPlayerMovement = state;
+        
+        if (stickyObject.CurrentValue)
         {
-            foreach (GameObject go in ChaptersAndLevels.levelsList)
-                go.SetActive(false);
-        }#1#
-    }*/
-
-    public void PlayerAllowedJump(bool jump)
-    {
-        leanForceRb.canJump = jump;
+            leanForceRb.canJump = true;
+            return true;
+        }
+        
+        return state;
     }
 
     public void PlayerVelocity(float n)
@@ -749,12 +751,12 @@ public class GameManager : MonoBehaviour
 
         print("jumps: " + jumps + ", jumpsToStartWith: " + jumpsToStartWith);
 
-        if (jumps <= gold)
-            return SaveLoadManager.Awards.Gold;
-        else if (jumps <= silver)
-            return SaveLoadManager.Awards.Silver;
-        else if (jumps <= bronze)
-            return SaveLoadManager.Awards.Bronze;
+        if (jumps <= threeStars)
+            return SaveLoadManager.Awards.ThreeStars;
+        else if (jumps <= twoStars)
+            return SaveLoadManager.Awards.TwoStars;
+        else if (jumps <= oneStar)
+            return SaveLoadManager.Awards.OneStar;
 
         return SaveLoadManager.Awards.NoAward;
     }
@@ -764,100 +766,161 @@ public class GameManager : MonoBehaviour
         int chapter = SaveLoadManager.LastChapterPlayed;
         int level = SaveLoadManager.LastLevelPlayed;
         
-        SetBronzeAward(chapter, level, award);
-        SetSilverAward(chapter, level, award);
-        SetGoldAward(chapter, level, award);
-        // SaveLoadManager.SaveGameInfo();
+        SetStarAward(level, award);
     }
 
-    private void SetBronzeAward(int chapter, int level, SaveLoadManager.Awards award)
+    /*private void Set1Star(int chapter, int level, SaveLoadManager.Awards award)
     {
         if (award == SaveLoadManager.Awards.Bronze && SaveLoadManager.GetLevelAward(level, award) == (int)SaveLoadManager.Awards.NoAward)
         {
             SaveLoadManager.SetAward(level, SaveLoadManager.Awards.Bronze);
         }
-    }
+    }*/
     
-    private void SetSilverAward(int chapter, int level, SaveLoadManager.Awards award)
+    
+    /*private void Set2Stars(int chapter, int level, SaveLoadManager.Awards award)
     {
         if (award == SaveLoadManager.Awards.Silver && SaveLoadManager.GetLevelAward(level, award) == (int)SaveLoadManager.Awards.NoAward)
         {
-            SetBronzeAward(chapter, level, award);
+            Set1Star(chapter, level, award);
             SaveLoadManager.SetAward(level, SaveLoadManager.Awards.Silver);
         }
+    }*/
+    
+    private void SetStarAward(int level, SaveLoadManager.Awards award)
+    {
+        var levelAward = SaveLoadManager.GetLevelAward(level);
+        
+        if (levelAward < (int)award)
+            SaveLoadManager.SetAward(level, award);
+        
+        /*if (award == SaveLoadManager.Awards.ThreeStars && SaveLoadManager.GetLevelAward(level, award) == (int)SaveLoadManager.Awards.NoAward)
+        {
+            SaveLoadManager.SetAward(level, SaveLoadManager.Awards.ThreeStars);
+        }*/
     }
     
-    private void SetGoldAward(int chapter, int level, SaveLoadManager.Awards award)
+    [SerializeField] private List<Image> starImages;
+    
+    private void SetupStarFinishImages()
     {
-        if (award == SaveLoadManager.Awards.Gold && SaveLoadManager.GetLevelAward(level, award) == (int)SaveLoadManager.Awards.NoAward)
-        {
-            SetBronzeAward(chapter, level, award);
-            SetSilverAward(chapter, level, award);
-            SaveLoadManager.SetAward(level, SaveLoadManager.Awards.Gold);
-        }
-    }
-
-    // Shows stars on finished screen
-    private void ShowStarsAchieved()
-    {
-        award = StarsGiven();
+        if (starImages != null) 
+            return;
         
-        endScreen.transform.Find("Continue_button").gameObject.SetActive(award > 0);
-
         var sGrp = endScreen.transform.Find("StarsGrp");
-        List<Image> starImages = new List<Image>();
 
         for (int i = 0; i < 3; i++)
         {
             starImages.Add(sGrp.transform.GetChild(i).GetComponent<Image>());
             starImages[i].color = ColourManager.starDefault;
         }
+    }
+    
+    // Shows stars on finished screen
+    private void ShowStarsAchieved()
+    {
+        award = StarsGiven();
+        
+        endScreen.transform.Find("Buttons/Continue_button").gameObject.SetActive(award > 0);
 
         SetAwardForLevel(award);
 
-        if (award > 0)
+        if (award > 0 && SaveLoadManager.SaveStaticList[chapterNo].levels[levelNo].levelUnlocked)
         {
             SaveLoadManager.UnlockLevel(SaveLoadManager.LastLevelPlayed + 1);
         }
 
+        starImages[0].color = ColourManager.starDefault;
+        starImages[1].color = ColourManager.starDefault;
+        starImages[2].color = ColourManager.starDefault;
+        
+        starBronze_anim.StopPlayback();
+        starSilver_anim.StopPlayback();
+        starGold_anim.StopPlayback();
+        
         switch (award)
         {
-            case SaveLoadManager.Awards.Bronze:
+            case SaveLoadManager.Awards.NoAward:
+                UpdateEndScreenInfoText(FinishedInfo.Failed);
+                break;
+            case SaveLoadManager.Awards.OneStar:
+                Debug.Log("Running bronze stars");
                 starImages[0].color = ColourManager.starBronze;
+                starImages[1].color = ColourManager.starDefault;
+                starImages[2].color = ColourManager.starDefault;
 
-                starBronze_anim.Play("StarBronze", 0);
+                starBronze_anim.Play("StarBronze", 0, 0.4f);
                 starBronze_anim.speed = 1;
 
-                starSilver_anim.Play("StarSilver", 0, 0f);
+                starSilver_anim.Play("StarSilver", 0, 1);
                 starSilver_anim.speed = 0;
 
-                starGold_anim.Play("StarGold", 0, 0.4f);
+                starGold_anim.Play("StarGold", 0, 1);
                 starGold_anim.speed = 0;
 
-                starImages[2].color = ColourManager.starDefault;
+                UpdateEndScreenInfoText(FinishedInfo.Nearly);
                 break;
-            case SaveLoadManager.Awards.Silver:
+            case SaveLoadManager.Awards.TwoStars:
+                Debug.Log("Running silver stars");
                 starImages[0].color = ColourManager.starBronze;
                 starImages[1].color = ColourManager.starSilver;
+                starImages[2].color = ColourManager.starDefault;
 
-                starBronze_anim.Play("StarBronze", 0);
-                starBronze_anim.speed = 0;
+                starBronze_anim.Play("StarBronze", 0, 0);
+                starBronze_anim.speed = 1;
 
-                starSilver_anim.Play("StarSilver", 0, 0f);
+                starSilver_anim.Play("StarSilver", 0, -0.5f);
                 starSilver_anim.speed = 1;
 
-                starGold_anim.Play("StarGold", 0, 0.4f);
-                starGold_anim.speed = 0;
-                starImages[2].color = ColourManager.starDefault;
+                starGold_anim.StopPlayback();
+                starGold_anim.Play("StarGold", 0, 1);
+                starGold_anim.speed = 1;
+                
+                UpdateEndScreenInfoText(FinishedInfo.Nearly);
                 break;
-            case SaveLoadManager.Awards.Gold:
+            case SaveLoadManager.Awards.ThreeStars:
+                Debug.Log("Running gold stars");
                 starImages[0].color = ColourManager.starBronze;
                 starImages[1].color = ColourManager.starSilver;
                 starImages[2].color = ColourManager.starGold;
-                starGold_anim.Play("StarGold", 0, 0.4f);
-                starBronze_anim.speed = 0;
-                starSilver_anim.speed = 0;
+
+                starBronze_anim.Play("StarBronze", 0, 0);
+                starBronze_anim.speed = 1;
+                
+                starSilver_anim.Play("StarSilver", 0, 0f);
+                starSilver_anim.speed = 1;
+                
+                starGold_anim.Play("StarGold", 0, 0); // 0.4
                 starGold_anim.speed = 1;
+                
+                UpdateEndScreenInfoText(FinishedInfo.Completed);
+                break;
+        }
+    }
+
+    private enum FinishedInfo
+    {
+        Failed,
+        Nearly,
+        Completed
+    }
+    
+    [SerializeField] private List<string> finishedInfoText;
+    [SerializeField] private List<string> nearlyFinishedInfoText;
+    [SerializeField] private List<string> failedFinishedInfoText;
+
+    private void UpdateEndScreenInfoText(FinishedInfo info)
+    {
+        switch (info)
+        {
+            case FinishedInfo.Failed:
+                endScreenInfo.text = failedFinishedInfoText[UnityEngine.Random.Range(0, failedFinishedInfoText.Count)];
+                break;
+            case FinishedInfo.Nearly:
+                endScreenInfo.text = nearlyFinishedInfoText[UnityEngine.Random.Range(0, nearlyFinishedInfoText.Count)];
+                break;
+            case FinishedInfo.Completed:
+                endScreenInfo.text = finishedInfoText[UnityEngine.Random.Range(0, finishedInfoText.Count)];
                 break;
         }
     }
@@ -872,12 +935,40 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    // Todo 2 pause menus?
-    private void PauseMenu(bool on)
+    private void OnApplicationFocus(bool hasFocus)
     {
-        audioManager.MuteAudio(audioManager.levelMusic, on);
-        pauseMenu.SetActive(on);
-        Time.timeScale = on ? 0f : 1f;
+        if (!hasFocus && enabled)
+        {
+            PauseMenu(true);
+        }
+    }
+    
+    public void PauseMenu(bool state)
+    {
+        LaunchArc = !state;
+        audioManager?.AudioButtons?.SetActive(state);
+        audioManager?.MuteAudio(audioManager.levelMusic, state);
+        pauseMenu?.SetActive(state);
+        Time.timeScale = state ? 0f : 1f;
+        // if (!state && audioManager.allowMusic)
+        // audioManager.PlayMusic(audioManager.levelMusic);
+    }
+    
+    private float timeStarted;
+    private float durationInLevel;
+    
+    private void TimeTaken(bool start)
+    {
+        if (start)
+        {
+            timeStarted = Time.time;
+        }
+        else
+        {
+            float duration = Mathf.Abs(timeStarted - Time.time);
+            durationInLevel = Mathf.Round(duration * 100) /100;
+            SaveLoadManager.LevelTimeTaken(chapterNo, levelNo, durationInLevel);
+        }
     }
 
     private void EndScreen(bool on)

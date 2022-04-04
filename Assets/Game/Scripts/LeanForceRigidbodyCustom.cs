@@ -51,11 +51,11 @@ namespace Lean.Touch
         }
         
         // still used?
-        public void Apply(Vector2 screenDelta)
+        /*public void Apply(Vector2 screenDelta)
 		{
 			// Make sure the camera exists
 			var camera = LeanTouch.GetCamera(Camera, gameObject);
-
+            Debug.Log("Lean Apply used??");
 			if (camera != null)
 			{
 				var oldPoint    = transform.position;
@@ -69,29 +69,29 @@ namespace Lean.Touch
 				//ApplyBetween(oldPoint, newPoint);
                 //print("apply");
 			}
-		}
+		}*/
 
         // comes from leanFingerLine in game
+        // Only gets used on input released
         public void ApplyToOpposite(Vector3 end)
         {
             if (cachedBody == null || !cachedBody.gameObject.activeInHierarchy)
                 return;
 
-            // check if touch is below player
-            if (end.y < cachedBody.transform.position.y)
+            /*if (FingerPos.belowPlayer)
             {
                 // if within a good distance, allow movement, otherwise move screen
                 gameManager.allowPlayerMovement = true;
-                gameManager.LaunchArc = true;
+                // gameManager.LaunchArc = true;
             }
             else
             {
                 gameManager.allowPlayerMovement = false;
-                gameManager.LaunchArc = false;
+                // gameManager.LaunchArc = false;
                 return;
-            }
+            }*/
 
-            if (canJump)
+            if (canJump && FingerPos.belowPlayer && Time.timeScale > 0.2f)
             {
                 ApplyBetweenOpposite(transform.position, end);
             }
@@ -105,8 +105,6 @@ namespace Lean.Touch
             
             if (gameManager.allowPlayerMovement)
             {
-                
-                // gameManager.playerRb.drag = 0;
                 launchRenderArc.leanEndPos = fingerPos;
                 fingerPos.z = playerPos.z = transform.position.z;
 
@@ -114,8 +112,13 @@ namespace Lean.Touch
                 direction = directionNormalised * launchRenderArc.velocity;
 
                 angle = launchRenderArc.angle;
-                if (angle < 0) angle += 360;
+                if (angle < 0)
+                {
+                    angle += 360;
+                }
+                
                 var forceMode = useMass ? ForceMode.Impulse : ForceMode.VelocityChange;
+                
                 if (rotateToVelocity)
                 {
                     transform.rotation = Quaternion.Euler(0.0f, 0.0f, angle);
@@ -131,21 +134,28 @@ namespace Lean.Touch
 
         private IEnumerator PlayerJumped()
         {
-            
             yield return new WaitForSeconds(0.01f);
             gameManager.PlayerJumped();
         }
 
         private void OnCollisionEnter(Collision collision)
         {
-            if (collision.collider.CompareTag("GroundNormal"))
+            if (collision.collider.CompareTag("GroundGrass"))
+            {
+                Debug.Log("Cubey hit ground");
+                audioManager.PlayAudio(audioManager.cubeyLand);
+                VisualEffects.Instance.PlayEffect(VisualEffects.Instance.peLandingGrass, transform.position);
+            }
+            else if (collision.collider.CompareTag("GroundNormal"))
             {
                 audioManager.PlayAudio(audioManager.cubeyLand);
+                VisualEffects.Instance.PlayEffect(VisualEffects.Instance.peLandingDust, transform.position);
             }
-
-            if (collision.collider.CompareTag("GroundSnow"))
+            else if (collision.collider.CompareTag("GroundSnow"))
             {
+                // audioManager.PlayAudio(audioManager.cubeyLand);
                 audioManager.PlayAudio(audioManager.cubeyLandingSnow);
+                // VisualEffects.Instance.PlayEffect(VisualEffects.Instance.pe, transform.position);
             }
         }
 

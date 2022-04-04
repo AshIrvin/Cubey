@@ -16,16 +16,17 @@ MonoBehaviour:
   levelName: Level 12
   levelNumber: 12
   timer: 99
-  jumpsForGold: 3
+  jumpsForGold: 4
   jumpsForSilver: 5
   jumpsForBronze: 9
-  levelSprite: {fileID: 0}
-  levelPrefab: {fileID: 5596667648520493791, guid: ef332f8addadcb545895ad90fcdf767b,
+  levelSprite: {fileID: 21300000, guid: 7aad8ca0a5b1e43daa27e4ad9d98297f, type: 3}
+  levelPrefab: {fileID: 7866470333267372158, guid: ac78e7399f9de1a43a474f227a6d0ef5,
     type: 3}
-  startPosition: {fileID: 6072816088432078101, guid: ef332f8addadcb545895ad90fcdf767b,
+  startPosition: {fileID: 8414677432337001496, guid: ac78e7399f9de1a43a474f227a6d0ef5,
     type: 3}
-  exitPosition: {fileID: 1285334465467572501, guid: ef332f8addadcb545895ad90fcdf767b,
+  exitPosition: {fileID: 3555141547960086914, guid: ac78e7399f9de1a43a474f227a6d0ef5,
     type: 3}
   portalEnter: []
   portalExit: []
   pathName: Assets/Game/Prefabs/LevelPrefabs/Chapter01
+  mapSpritePathName: Assets/Src_Images/MainMenu/MapLevelImages/Chapter01

@@ -5,7 +5,8 @@ using UnityEngine;
 public class PlatformFalling : PlatformBase
 {
     [SerializeField] private float platformDropTimer = 3;
-
+    [SerializeField] private bool allowPlatformFall = false;
+    
     private void Awake()
     {
         platformRb = GetComponent<Rigidbody>();
@@ -13,17 +14,21 @@ public class PlatformFalling : PlatformBase
 
     private void OnCollisionEnter(Collision collision)
     {
-        if (collision.collider.CompareTag("Player") || collision.collider.CompareTag("Pickup"))
+        if (!allowPlatformFall) return; 
+        
+        if (collision.collider.CompareTag("Player") || 
+            collision.collider.CompareTag("Pickup"))
         {
             playerCol = collision.collider;
             StartCoroutine(WaitForPlatform(platformDropTimer));
-        } 
+        }
     }
 
-    // Player cant jump in the air
     private void OnCollisionExit(Collision collision)
     {
-        if (collision.collider.CompareTag("Player"))
+        if (!allowPlatformFall) return;
+        
+        if (collision.collider.CompareTag("Player") && allowPlatformFall == true)
         {
             collision.transform.parent = null;
             playerCol = null;

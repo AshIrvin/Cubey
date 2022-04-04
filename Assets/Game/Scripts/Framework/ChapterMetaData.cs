@@ -41,42 +41,6 @@ public class ChapterMetaData : ScriptableObject
         set => inGameMapButtonList = value;
     }
 
-    /*public int LastLevelPlayed
-    {
-        get => lastLevelPlayed;
-        set => lastLevelPlayed = value;
-    }
-
-    public int LastLevelUnlocked
-    {
-        get => lastLevelUnlocked;
-        set => lastLevelUnlocked = value;
-    }
-
-    public bool ChapterUnlocked
-    {
-        get => chapterUnlocked;
-        set => chapterUnlocked = value;
-    }
-    
-    public int AwardsBronze
-    {
-        get => awardsBronze;
-        set => awardsBronze = value;
-    }
-
-    public int AwardsSilver
-    {
-        get => awardsSilver;
-        set => awardsSilver = value;
-    }
-
-    public int AwardsGold
-    {
-        get => awardsGold;
-        set => awardsGold = value;
-    }*/
-
     public float MenuZoomLevel
     {
         get => menuZoomLevel;
@@ -117,22 +81,28 @@ public class ChapterMetaData : ScriptableObject
             var imageName = "Level" + (i+1).ToString("00") + ".JPG";
 
             var sprite = (Sprite) AssetDatabase.LoadAssetAtPath(fullPathName + imageName, typeof(Sprite));
-            var image = chapterMapButtonList[i].transform.Find("Mask").GetChild(0).GetComponent<Image>();
+            if (sprite == null)
+            {
+                imageName = "Level " + (i+1).ToString("00") + ".JPG";
+                sprite = (Sprite) AssetDatabase.LoadAssetAtPath(fullPathName + imageName, typeof(Sprite));
+            }
+            var image = chapterMapButtonList[i].transform.Find("Mask/Screenshot").GetComponent<Image>();
 
             if (sprite == null)
             {
-                Debug.Log("can't find sprite");
+                Debug.LogError("can't find sprite");
                 return;
             }
             
             if (image == null)
             {
-                Debug.Log("can't find image");
+                Debug.LogError("can't find image");
                 return;
             }
 
             image.sprite = sprite;
-            Debug.Log($"Assigning {sprite.name} sprite to {image.transform.parent.parent.name}");
+            Debug.Log($"Assigning {sprite.name} sprite to {image.transform.parent.parent.name}. image.sprite null: {image.sprite}");
+            Debug.LogError("Assign in game instead. User mapmanager/line 114");
         }
 #endif
     }

@@ -19,7 +19,7 @@ MonoBehaviour:
   jumpsForGold: 3
   jumpsForSilver: 5
   jumpsForBronze: 9
-  levelSprite: {fileID: 0}
+  levelSprite: {fileID: 21300000, guid: 10d8808b3b88246f2ba1e2ae68931658, type: 3}
   levelPrefab: {fileID: 1390751379959659718, guid: 248146f701f2ea246afcb9da933b4e44,
     type: 3}
   startPosition: {fileID: 765982054348427800, guid: 248146f701f2ea246afcb9da933b4e44,
@@ -29,3 +29,4 @@ MonoBehaviour:
   portalEnter: []
   portalExit: []
   pathName: Assets/Game/Prefabs/LevelPrefabs/Chapter01
+  mapSpritePathName: Assets/Src_Images/MainMenu/MapLevelImages/Chapter01

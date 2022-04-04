@@ -2,11 +2,13 @@
 using System.Collections.Generic;
 using UnityEngine;
 using System;
+using Lean.Touch;
 
 public class EyesLookingManager : MonoBehaviour
 {
     [SerializeField] private PointsOfInterestManager pointsOfInterestManager;
-    [SerializeField] private Vector3 defaultPos;
+    
+    private Vector3 defaultPos;
     [SerializeField] private Vector3 pupilPosition;
     
     [SerializeField] private bool showPupilMovement;
@@ -21,8 +23,9 @@ public class EyesLookingManager : MonoBehaviour
     [SerializeField] private GameObject playerTarget;
     [SerializeField] private GameObject pupils;
     [SerializeField] private GameObject pupilCenterTarget;
-    [SerializeField] private List<GameObject> pointsOfInterestList;
+    [SerializeField] private List<Vector3> pointsOfInterestList;
     [SerializeField] private float dist;
+    [SerializeField] private bool cubey;
 
     private Vector3 _target;
     private Vector2 currentTarget;
@@ -34,9 +37,13 @@ public class EyesLookingManager : MonoBehaviour
     private bool eyesMoved;
     private string pointOfInterest;
     private GameObject randomPoint;
-    private GameObject target;
+    private Vector3 target;
 
     private Camera cam;
+
+    [SerializeField] private LeanForceRigidbodyCustom leanForceRigidbodyCustom;
+    [SerializeField] private LaunchRenderArc launchRenderArc;
+
 
     private void Awake()
     {
@@ -61,6 +68,8 @@ public class EyesLookingManager : MonoBehaviour
         if (pupilCenterTarget == null)
             pupilCenterTarget = transform.Find("EyeCenter").gameObject;
 
+        defaultPos = transform.Find("EyeCenter").transform.localPosition;
+        
         FindPointsOfInterests();
         SetEyeDelay();
         
@@ -70,7 +79,7 @@ public class EyesLookingManager : MonoBehaviour
         target = RandomlyChoosePoint();
         
         if (target != null)
-            EyesMovement(target.transform.position);
+            EyesMovement(target);
         
         showPupilMovement = false;
     }
@@ -80,65 +89,59 @@ public class EyesLookingManager : MonoBehaviour
         if (!gameObject.activeInHierarchy)
             return;
         
-        randomEyeMovement -= Time.deltaTime;
-
-        if (randomEyeMovement < 0)
+        if (cubey)
         {
-            if (gameObject.CompareTag("Player")) 
+            if (FingerPos.belowPlayer && !gameObject.name.Contains("CubeyOnMap") 
+                                      && !gameObject.name.Contains("MenuCubey"))
             {
-                RandomlyChoosePoint();
+                EyesMovement(GetPositionFromAngle());
             }
-            else
+            else if (randomEyeMovement < 0)
             {
-                if (playerTarget == null)
-                    playerTarget = GameObject.FindWithTag("Player").gameObject;
-                if (target != null)
-                    EyesMovement(playerTarget.transform.position);
+                EyesMovement(RandomlyChoosePoint());
             }
-
-            SetEyeDelay();
+        }
+        if (playerTarget != null && !cubey)
+        {
+            EyesMovement(playerTarget.transform.position);
         }
 
-        randomEyeReset -= Time.deltaTime;
-        
-        // set eyes to default pos looking at player
-        if (randomEyeReset < 0 )
+        if (randomEyeReset < 0)
         {
             StartCoroutine(ResetEyes(UnityEngine.Random.Range(1, 4)));
         }
+    }
 
-        // for testing
-        if (showPupilMovement)
-            pupilPosition = pupils.transform.localPosition;
+    private void LateUpdate()
+    {
+        randomEyeMovement -= Time.deltaTime;
+        randomEyeReset -= Time.deltaTime;
     }
 
     IEnumerator ResetEyes(float delay)
     {
-        pupils.transform.localPosition = defaultPos;
+        if (defaultPos != Vector3.zero)
+            pupils.transform.localPosition = defaultPos;
         yield return new WaitForSeconds(delay);
         RandomEyeReset();
-        SetEyeDelay();
+        // SetEyeDelay();
     }
 
-    // Look for points of interest active when starting level
     private void FindPointsOfInterests()
     {
         pointsOfInterestList.Clear();
 
-         var arr = GameObject.FindGameObjectsWithTag("PointOfInterest");
-         foreach (var p in arr)
+         var listOfPositions = GameObject.FindGameObjectsWithTag("PointOfInterest");
+         foreach (var p in listOfPositions)
          {
-             pointsOfInterestList.Add(p);
+             pointsOfInterestList.Add(p.transform.position);
          }
-        
-        /*pointsOfInterestList.Clear();
-        if (pointsOfInterestManager.pointsOfInterestList.Count != 0)
-            pointsOfInterestList = pointsOfInterestManager.pointsOfInterestList;*/
     }
 
-    private void SetEyeDelay(){
+    private void SetEyeDelay()
+    {
         randomEyeMovement = UnityEngine.Random.Range(eyeTimeMovementMin, eyeTimeMovementMax);
-        RandomlyChoosePoint();
+        // target = RandomlyChoosePoint();
     }
 
     private void RandomEyeReset(){
@@ -147,6 +150,7 @@ public class EyesLookingManager : MonoBehaviour
 
     private void EyesMovement(Vector3 newTarget)
     {
+        // Debug.Log("Move pupils");
         MovePupils(newTarget);
         
         Debug.DrawLine(pupilCenterTarget.transform.position, newTarget, Color.yellow, 1f);
@@ -159,36 +163,41 @@ public class EyesLookingManager : MonoBehaviour
         localTarget.z = 0;
         pupils.transform.localPosition = Vector3.MoveTowards(pupilCenterTarget.transform.localPosition, localTarget, dist);
     }
-    
+
     private float MoveEyesAlongX(float posX)
     {
         return Mathf.Clamp(posX, pupilCenterTarget.transform.position.x + eyeXmin, pupilCenterTarget.transform.position.x + eyeXmax);
     }
-    
+
     private float MoveEyesAlongY(float posY)
     {
         return Mathf.Clamp(posY, pupilCenterTarget.transform.position.y + eyeYmin, pupilCenterTarget.transform.position.y + eyeYmax);
     }
-    
+
     private int ChooseRandomInterest()
     {
         randomNo = UnityEngine.Random.Range(0, pointsOfInterestList.Count);
         return randomNo;
     }
 
-    private GameObject RandomlyChoosePoint()
+    private Vector3 RandomlyChoosePoint()
     {
+        if (pointsOfInterestList.Count == 0) 
+            return defaultPos;
+        
         var n = ChooseRandomInterest();
-        
+    
         if (pointsOfInterestList.Count > 0 && pointsOfInterestList[n] != null)
-            return pointsOfInterestList[n];
-        else
         {
-            // Debug.LogError("Can't find POI: " + transform.parent.name);
-            return null;
+            SetEyeDelay();
+            return pointsOfInterestList[n];
         }
-        
-        // return pointsOfInterestList[ChooseRandomInterest()];
+        return defaultPos;
+    }
+
+    private Vector3 GetPositionFromAngle()
+    {
+        return launchRenderArc.firstPosition;
     }
 }
 

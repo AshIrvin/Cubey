@@ -4,47 +4,38 @@ using UnityEngine;
 
 public class SpriteChangerManager : MonoBehaviour
 {
-    SpriteRenderer spr;
+    public float timeMin;
+    public float timeMax;
+    private float time;
+    private float smileTime;
+    public float timeSpriteDisabled = 0.2f;
 
-    public float timeMin, timeMax;
-    public float time, smileTime, timeSpriteDisabled = 0.2f;
-
-    Color colour;
-
-    bool timerEnabled;
-    public bool blinkEyes, smiles;//, smoothTransition;
-
+    public bool blinkEyes;
+    public bool smiles;
     public GameObject[] sprites;
+    
+    private SpriteRenderer spr;
+    private Color colour;
+    private bool timerEnabled;
 
-    //Color t = new Color(1, 1, 1, 0);
-    //Color o = new Color(1, 1, 1, 1);
-
-    // Start is called before the first frame update
-    void Start()
+    private void Start()
     {
-
-        //time = SetRandomTime();
         smileTime = SetRandomTime();
         SetSprite(1, 0);
         BlinkingEyes();
         time = 1f;
     }
 
-    void FixedUpdate()
+    private void Update()
     {
-
         if (blinkEyes)
             BlinkingEyes();
 
         if (smiles)
             SetSmiles();
-
-        //if (smoothTransition)
-        //    SmoothTransition();
-
     }
 
-    void SmoothTransition()
+    private void SmoothTransition()
     {
 
         time -= Time.deltaTime;
@@ -53,11 +44,9 @@ public class SpriteChangerManager : MonoBehaviour
             SetSprite(1, 0);
             time = 1f;
         }
-
-        
     }
 
-    void SetSmiles()
+    private void SetSmiles()
     {
         smileTime -= Time.deltaTime;
 
@@ -69,7 +58,7 @@ public class SpriteChangerManager : MonoBehaviour
         }
     }
 
-    void BlinkingEyes() 
+    private void BlinkingEyes() 
     {
         if (timerEnabled)
         {
@@ -96,14 +85,13 @@ public class SpriteChangerManager : MonoBehaviour
         }
     }
 
-    float SetRandomTime()
+    private float SetRandomTime()
     {
         time = Random.Range(timeMin, timeMax);
         return time;
-
     }
 
-    void SetAlpha(int c)
+    private void SetAlpha(int c)
     {
         colour.a = c;
         spr.color = colour;
