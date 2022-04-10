@@ -86,7 +86,7 @@ public class GameManager : MonoBehaviour
     private bool gameLevelEnabled;
     private float playerGooDrag = 35f;
     private ParticleSystem pe;
-    
+    private float cubeyJumpMagValue = 0.5f;
     public Rigidbody playerRb;
 
     [Header("UI Pickups")]
@@ -293,8 +293,6 @@ public class GameManager : MonoBehaviour
 
     private void StartLevel()
     {
-        GravityManager.ResetGravity();
-        
         if (deathWalls != null)
             deathWalls.SetActive(false);
         
@@ -348,12 +346,14 @@ public class GameManager : MonoBehaviour
             PlayerAllowedJump(false);
         }*/
 
-        if (onMovingPlatform && playerRb.velocity.magnitude < 1f)
+        if (onMovingPlatform && playerRb.velocity.magnitude < 1f || playerRb.velocity.magnitude < cubeyJumpMagValue)
         {
             PlayerAllowedJump(true);
         }
-        else if (playerRb.velocity.magnitude < cubeyJumpMagValue)
-            PlayerAllowedJump(true);
+        else
+        {
+            PlayerAllowedJump(false);
+        }
 
         if (isPlayerRbNotNull)
             cubeyMagnitude = playerRb.velocity.magnitude;
@@ -425,13 +425,13 @@ public class GameManager : MonoBehaviour
         helpScreen.SetActive(on);
     }
 
+    
+
     public void ToggleScreen(GameObject screen)
     {
         screen.SetActive(!screen.activeSelf);
     }
 
-    private float cubeyJumpMagValue = 0.5f;
-    
     private bool CheckJumpMagnitude()
     {
         Debug.Log("playerRb.velocity.magnitude: " + playerRb.velocity.magnitude);
@@ -671,10 +671,7 @@ public class GameManager : MonoBehaviour
         pePos.y += 0.65f;
         visualEffects.peExitSwirl.transform.position = pePos;
 
-        if (exitObject.transform.parent.name.Contains("Spindle") || exitObject.transform.parent.name.Contains("MovingExitPlatform"))
-        {
-            ReParentExitSwirl(true);
-        }
+        ReParentExitSwirl(true);
         
         exitObject.SetActive(false);
     }
@@ -684,6 +681,7 @@ public class GameManager : MonoBehaviour
         if (move)
         {
             visualEffects.peExitSwirl.transform.SetParent(exitObject.transform.parent);
+            visualEffects.peExitSwirl.GetComponent<Animator>().enabled = true;
         }
         else
         {

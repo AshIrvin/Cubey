@@ -17,9 +17,6 @@ MonoBehaviour:
   chapterNumber: 5
   chapterName: In Space
   pickupIcon: {fileID: 0}
-  lastLevelPlayed: 15
-  lastLevelUnlocked: 15
-  chapterUnlocked: 1
   chapterMap: {fileID: 3336618370525336414, guid: 32d8215d4ec24a8448158e4156485f34,
     type: 3}
   cubeyPlayer: {fileID: 0}
@@ -87,7 +84,4 @@ MonoBehaviour:
   - {fileID: 0}
   - {fileID: 0}
   - {fileID: 0}
-  awardsBronze: 0
-  awardsSilver: 0
-  awardsGold: 0
   fullPathName: Assets/Src_Images/MainMenu/MapLevelImages/Chapter05/

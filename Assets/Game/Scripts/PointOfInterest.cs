@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
+using DG.Tweening;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
@@ -11,62 +13,68 @@ public class PointOfInterest : MonoBehaviour
     [SerializeField] private Transform transformToMove;
     [SerializeField] private Transform[] pointOfInterests;
 
-    [SerializeField] private float eyeSpeed = 5;
-    [SerializeField] private float minTime;
-    [SerializeField] private float maxTime;
-    [SerializeField] private float distance = 1f;
-    
+    [SerializeField] private float eyeSpeed = 12f;
+    [SerializeField] private float minTime = 2;
+    [SerializeField] private float maxTime = 5;
     [SerializeField] private bool timerEnabled;
+    [SerializeField] private float countdown;
+    [SerializeField] private Vector3 newPos;
+    [SerializeField] private Vector3 localPos;
 
-    private float randomTime = 0.1f;
-    private float countdown;
-    private Vector3 velocity;
-    private Vector3 newPos;
-    private bool newPosFound;
+    private float minEyeSpeed = 10;
+    private float maxEyeSpeed = 20;
+
+    public bool objectMoving;
     
-    private void Update()
+    private void Start()
     {
-        CountdownTimer();
+        GetNewPosition();
+        countdown = GetRandomNumber(0, 2);
+        eyeSpeed = GetRandomNumber(minEyeSpeed, maxEyeSpeed);
+    }
+
+    private void LateUpdate()
+    {
+        if (timerEnabled)
+            CountdownTimer();
     }
 
     private void CountdownTimer()
     {
-        if (timerEnabled)
+        countdown -= Time.deltaTime;
+
+        if (countdown < 0)
         {
-            countdown += Time.deltaTime;
-
-            if (!newPosFound)
-            {
-                ChooseNewPosition();
-                newPosFound = true;
-            }
-
-            MoveToPosition();
-            
-            if (Vector3.Distance(transformToMove.position, newPos) < distance)
-            {
-                randomTime = SetRandomTime();
-                if (countdown > randomTime)
-                {
-                    countdown = 0;
-                    newPosFound = false;
-                }
-            }
+            // MoveObject();
+            StartCoroutine(MoveObject());
         }
     }
 
-    private float SetRandomTime()
+    private IEnumerator MoveObject()
     {
-        return Random.Range(minTime, maxTime);
+        if (transformToMove == null || objectMoving)
+        {
+            yield break;
+        }
+
+        objectMoving = true;
+        
+        transformToMove.DOLocalMove(localPos, eyeSpeed).SetEase(Ease.InOutBack).onComplete = () =>
+        {
+            countdown = GetRandomNumber(minTime, maxTime);
+            GetNewPosition();
+            eyeSpeed = GetRandomNumber(minEyeSpeed, maxEyeSpeed);
+            objectMoving = false;
+        };
     }
-    
-    private void ChooseNewPosition()
+
+    private float GetRandomNumber(float min, float max)
     {
-        newPos = pointOfInterests[Random.Range(0, pointOfInterests.Length)].position;
+        return Random.Range(min, max);
     }
-    
-    private void MoveToPosition()
+
+    private void GetNewPosition()
     {
-        transformToMove.position = Vector3.SmoothDamp(transformToMove.position, newPos, ref velocity, eyeSpeed);
+        localPos = pointOfInterests[Random.Range(0, pointOfInterests.Length)].localPosition;
     }
 }

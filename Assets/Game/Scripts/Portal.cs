@@ -127,15 +127,12 @@ public class Portal : MonoBehaviour
         cubeyForce = 0f;
         if (leanForce != null)
         {
-            Debug.Log("cubey force capped");
-            // get speed of entry
             cubeyForce = Mathf.Max(leanForce.playerMagnitude, minVelocityForce);
             cubeyForce = Mathf.Min(cubeyForce, maxVelocityForce);
             rb.AddForce(portalExit.transform.up * cubeyForce, ForceMode.Impulse); // 6
         }
         else
         {
-            Debug.Log("menu cubey portal");
             rb.AddForce(portalExit.transform.up * portalForceMultiply, ForceMode.Impulse);
         }
     

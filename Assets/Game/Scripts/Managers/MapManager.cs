@@ -220,7 +220,15 @@ public class MapManager : MonoBehaviour
     {
         Debug.Log("Restarting Level");
         EnableGameManager = false;
-        Destroy(levelGameObject);    
+        Destroy(levelGameObject);
+        if (levelParent.transform.childCount > 0)
+        {
+            for (int i = 0; i < levelParent.transform.childCount; i++)
+            {
+                Destroy(levelParent.transform.GetChild(i).gameObject);
+            }
+        }
+        
         LevelGameObject = Instantiate(allChapters[SaveLoadManager.LastChapterPlayed].LevelList[SaveLoadManager.LastLevelPlayed].LevelPrefab, levelParent.transform);
         levelGameObject.SetActive(true);
         EnableGameManager = true;

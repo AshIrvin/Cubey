@@ -20,6 +20,8 @@ public class VisualEffects : MonoBehaviour
     public ParticleSystem peExitStars;
     public ParticleSystem peExitOpened;
     public ParticleSystem peExitExplosion;
+    public ParticleSystem peGravityImplode;
+    public ParticleSystem peGravityExplode;
     public ParticleSystem peHintArrow;
     public ParticleSystem peLandingDust;
     public ParticleSystem peLandingGrass;

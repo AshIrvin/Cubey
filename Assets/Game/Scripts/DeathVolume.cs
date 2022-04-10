@@ -21,7 +21,14 @@ namespace Game.Scripts
         {
             if (collision.collider.CompareTag("Player"))
             {
-                gameManager.FailedScreen(true);
+                if (autoRestart)
+                {
+                    gameManager.RestartLevel();
+                }
+                else
+                {
+                    gameManager.FailedScreen(true);
+                }
             }
         }
 

@@ -5,24 +5,16 @@ using UnityEngine;
 
 public class PickupManager : MonoBehaviour
 {
-    // public static PickupManager Instance { get; set; }
-    // [SerializeField] private VisualEffects visualEffects;
-
     [SerializeField] private IntGlobalVariable pickupCountProperty;
     
-    
-    
-    
-    public AudioManager audioManager;
+    [SerializeField] private AudioManager audioManager;
+    [SerializeField] private Vector3 startPos;
 
-    
-    public Vector3 startPos;
+    [SerializeField] private bool butterfly; // increases jumps
+    [SerializeField] private bool friend; //
+    [SerializeField] private bool sweet;
 
-    public bool butterfly; // increases jumps
-    public bool friend; //
-    public bool sweet;
-
-    public bool butterflyWing;
+    // [SerializeField] private bool butterflyWing;
 
 
     [Header("Timer")]
@@ -32,17 +24,17 @@ public class PickupManager : MonoBehaviour
     private Vector3 velocity = Vector3.zero;
 
     [Header("Movement")]
-    public Vector3 newPos;
-    public Vector3 currentPos;
-    public float smoothTime = 0.3F;
-    public float dist = 0.1f;
-    public float posRange = 0.1f;
+    [SerializeField] private Vector3 newPos;
+    [SerializeField] private Vector3 currentPos;
+    [SerializeField] private float smoothTime = 0.3F;
+    [SerializeField] private float dist = 0.1f;
+    [SerializeField] private float positionRange = 0.1f;
 
     [Header("Random time range")]
-    public float timeMin;
-    public float timeMax;
+    [SerializeField] private float timeMin;
+    [SerializeField] private float timeMax;
 
-    bool moveObject;
+    private bool moveObject;
 
     public int PickupCountProperty
     {
@@ -50,25 +42,12 @@ public class PickupManager : MonoBehaviour
         set => pickupCountProperty.CurrentValue = value;
     }
 
-
-    private void Awake()
-    {
-        // Instance = this;
-    }
-
     private void Start()
     {
         if (audioManager == null)
             audioManager = GameObject.Find("AudioManager").GetComponent<AudioManager>();
 
-        //if (Vector3.Distance(startPos, transform.position) > 0.1f && butterfly)
-        //{
-        //    transform.position = startPos;
-        //} else
-        //{
-            startPos = transform.position;
-        //}
-
+        startPos = transform.position;
     }
 
     private void Update()
@@ -77,16 +56,6 @@ public class PickupManager : MonoBehaviour
         {
             ButterflyEffect();
         }
-
-        if (butterflyWing)
-        {
-
-        }
-    }
-
-    private void ButterflyWingFlutter()
-    {
-
     }
 
     private void ButterflyEffect()
@@ -99,11 +68,11 @@ public class PickupManager : MonoBehaviour
         }
     }
 
-    void MoveObject()
+    private void MoveObject()
     {
         if (moveObject)
         {
-            gameObject.transform.localPosition = Vector3.SmoothDamp(transform.position, RandomPosition(), ref velocity, smoothTime);
+            gameObject.transform.position = Vector3.SmoothDamp(transform.position, RandomPosition(), ref velocity, smoothTime);
             if (Vector3.Distance(currentPos, newPos) < dist)
             {
                 timer = RandomTime();
@@ -112,11 +81,11 @@ public class PickupManager : MonoBehaviour
         }
     }
 
-    Vector3 RandomPosition()
+    private Vector3 RandomPosition()
     {
-        var n = Random.Range(-posRange, posRange);
-        var p = Random.Range(-posRange, posRange);
-        currentPos = transform.localPosition;
+        var n = Random.Range(-positionRange, positionRange);
+        var p = Random.Range(-positionRange, positionRange);
+        currentPos = transform.position;
         newPos = currentPos;
 
         newPos.x += n;
@@ -146,31 +115,17 @@ public class PickupManager : MonoBehaviour
         if (other.CompareTag("Player") && friend)
         {
             Destroy(gameObject);
-            // PE needed
             VisualEffects.Instance.PlayEffect(VisualEffects.Instance.peAirBoom, transform.position);
 
             PickupCountProperty--;
         }
 
-        //if (other.CompareTag("PickUpJump"))
         if (other.CompareTag("Player") && butterfly)
         {
             VisualEffects.Instance.PlayEffect(VisualEffects.Instance.peSweetPickup, transform.position);
 
             PickupCountProperty--;
-            //GameManager.Instance.AddJump();
             Destroy(gameObject);
         }
-
-        //if (other.CompareTag("Player") && sweet)
-        //{
-        //    // PE needed
-        //    VisualEffects.Instance.PlayEffect(VisualEffects.Instance.peSweetPickup, transform.position);
-
-        //    GameManager.Instance.PickupCount(gameObject);
-
-        //    Destroy(gameObject);
-        //}
     }
-
 }
