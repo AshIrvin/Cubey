@@ -16,9 +16,9 @@ MonoBehaviour:
   levelName: Level 29
   levelNumber: 29
   timer: 99
-  jumpsForGold: 3
-  jumpsForSilver: 5
-  jumpsForBronze: 8
+  jumpsForGold: 7
+  jumpsForSilver: 8
+  jumpsForBronze: 9
   levelSprite: {fileID: 21300000, guid: 7ca38ec88ae8a2a4892cd853b698ea6e, type: 3}
   levelPrefab: {fileID: 7326525578732712116, guid: d8fd025013e9e0c4088384913b8048cd,
     type: 3}

@@ -16,7 +16,7 @@ MonoBehaviour:
   levelName: Level 30
   levelNumber: 30
   timer: 99
-  jumpsForGold: 6
+  jumpsForGold: 5
   jumpsForSilver: 7
   jumpsForBronze: 9
   levelSprite: {fileID: 21300000, guid: 8c7f89f398969734d9e1eb1c8590ec30, type: 3}

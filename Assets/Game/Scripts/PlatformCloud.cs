@@ -46,21 +46,41 @@ public class PlatformCloud : PlatformBase
     private void MoveCloudPlatform()
     {
         if (!allowCloudMovement) return;
-        
-        if (moveRight)
+
+        if (allowPlatformMovement)
         {
-            transform.position = Vector3.SmoothDamp(transform.position, targetPos, ref velocity, smoothTime);
-            
-            if (Vector3.Distance(transform.position, targetPos) < distanceOffset)
+            transform.position = Vector3.SmoothDamp(transform.position, movePlatform ? targetPos : startPos, ref velocity,
+                smoothTime);
+
+            if (movePlatform)
             {
-                StartCoroutine(ScaleCollider(true));
-                StartCoroutine(ScaleCloudPlatform(true));
+                if (Vector3.Distance(transform.position, targetPos) < distanceOffset)
+                {
+                    movePlatform = false;
+                }
+            }
+            else if (Vector3.Distance(transform.position, startPos) < distanceOffset)
+            {
+                movePlatform = true;
             }
         }
-        else if (Vector3.Distance(transform.position, startPos) < distanceOffset)
+        else
         {
-            StartCoroutine(ScaleCloudPlatform(false));
-            StartCoroutine(ScaleCollider(false));
+            if (moveRight)
+            {
+                transform.position = Vector3.SmoothDamp(transform.position, targetPos, ref velocity, smoothTime);
+
+                if (Vector3.Distance(transform.position, targetPos) < distanceOffset)
+                {
+                    StartCoroutine(ScaleCollider(true));
+                    StartCoroutine(ScaleCloudPlatform(true));
+                }
+            }
+            else if (Vector3.Distance(transform.position, startPos) < distanceOffset)
+            {
+                StartCoroutine(ScaleCloudPlatform(false));
+                StartCoroutine(ScaleCollider(false));
+            }
         }
     }
 

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using System;
+using DG.Tweening;
 using Lean.Touch;
 
 public class EyesLookingManager : MonoBehaviour
@@ -9,9 +10,8 @@ public class EyesLookingManager : MonoBehaviour
     [SerializeField] private PointsOfInterestManager pointsOfInterestManager;
     
     private Vector3 defaultPos;
-    [SerializeField] private Vector3 pupilPosition;
-    
-    [SerializeField] private bool showPupilMovement;
+    // [SerializeField] private Vector3 pupilPosition;
+    // [SerializeField] private bool showPupilMovement;
     
     [SerializeField] private float eyeXmin;
     [SerializeField] private float eyeXmax;
@@ -19,9 +19,11 @@ public class EyesLookingManager : MonoBehaviour
     [SerializeField] private float eyeYmax;
     [SerializeField] private float eyeTimeMovementMin;
     [SerializeField] private float eyeTimeMovementMax;
+    [SerializeField] private float eyeMovementSpeed;
 
     [SerializeField] private GameObject playerTarget;
     [SerializeField] private GameObject pupils;
+    [Tooltip("EyeCenter")]
     [SerializeField] private GameObject pupilCenterTarget;
     [SerializeField] private List<Vector3> pointsOfInterestList;
     [SerializeField] private float dist;
@@ -68,7 +70,8 @@ public class EyesLookingManager : MonoBehaviour
         if (pupilCenterTarget == null)
             pupilCenterTarget = transform.Find("EyeCenter").gameObject;
 
-        defaultPos = transform.Find("EyeCenter").transform.localPosition;
+        if (pupilCenterTarget != null)
+            defaultPos = pupilCenterTarget.transform.localPosition;
         
         FindPointsOfInterests();
         SetEyeDelay();
@@ -81,7 +84,7 @@ public class EyesLookingManager : MonoBehaviour
         if (target != null)
             EyesMovement(target);
         
-        showPupilMovement = false;
+        // showPupilMovement = false;
     }
 
     private void Update()
@@ -162,6 +165,8 @@ public class EyesLookingManager : MonoBehaviour
         Vector3 localTarget = transform.InverseTransformPoint(target);
         localTarget.z = 0;
         pupils.transform.localPosition = Vector3.MoveTowards(pupilCenterTarget.transform.localPosition, localTarget, dist);
+        // Todo Change eye movement to DoTween?
+        // pupils.transform.DOLocalMove(pupilCenterTarget.transform.localPosition, eyeMovementSpeed);
     }
 
     private float MoveEyesAlongX(float posX)

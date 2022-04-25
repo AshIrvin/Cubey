@@ -18,7 +18,7 @@ MonoBehaviour:
   timer: 99
   jumpsForGold: 3
   jumpsForSilver: 5
-  jumpsForBronze: 8
+  jumpsForBronze: 9
   levelSprite: {fileID: 21300000, guid: 09e565a3b19871149aa3cdfe22f97cc0, type: 3}
   levelPrefab: {fileID: 7326525578732712116, guid: 38ba7d64ce26570428a57d2736c2aa51,
     type: 3}

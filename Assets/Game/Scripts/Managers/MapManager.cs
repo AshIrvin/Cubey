@@ -73,6 +73,8 @@ public class MapManager : MonoBehaviour
         }
         
         bgAdBlocker?.SetActive(false);
+
+        shopButton.SetActive(true);
     }
 
     private void OnEnable()
@@ -185,7 +187,7 @@ public class MapManager : MonoBehaviour
 
             if (played >= manyLevelsBeforeAds)
             {
-                shopButton.SetActive(false);
+                // shopButton.SetActive(false);
                 mainMenuManager.NavButtons = false;
                 PlayerPrefs.SetInt("levelsPlayed", 0);
                 levelsPlayed = 0;
@@ -290,7 +292,6 @@ public class MapManager : MonoBehaviour
         Time.timeScale = 1;
         enabled = true;
         DestroyLevels();
-        // mainMenuManager.BackButton = true;
         mainMenuManager.NavButtons = true;
         mainMenuManager?.SetCollisionBox("CollisionMap");
     }
@@ -305,7 +306,6 @@ public class MapManager : MonoBehaviour
 
     #region Button Level Locking
 
-    // public bool gamePurchased = false;
     private int maxDemoLevel = 10;
 
     public bool GamePurchased
@@ -316,7 +316,6 @@ public class MapManager : MonoBehaviour
     
     public void PurchaseGameButton()
     {
-        // TODO - link this with Google
         GamePurchased = true;
         SceneManager.LoadScene("CubeyGame");
         Debug.Log("Game Purchased: " + GamePurchased);
@@ -331,7 +330,6 @@ public class MapManager : MonoBehaviour
     // Check which levels are unlocked inside the chapter
     private void CycleButtonLocks()
     {
-        // bool levelUnlocked = false;
         var lastChapter = allChapters[SaveLoadManager.LastChapterPlayed];
 
         var buttons = lastChapter.InGameMapButtonList;
@@ -367,8 +365,6 @@ public class MapManager : MonoBehaviour
         SetButtonToShopButton(lastChapter.InGameMapButtonList[10].GetComponent<Button>());
     }
 
-    // [SerializeField] private Image shopButtonImage;
-
     private void CheckGamePurchased(Button button, int i)
     {
         int maxLevels = SaveLoadManager.GamePurchased ? 30 : maxDemoLevel;
@@ -395,7 +391,6 @@ public class MapManager : MonoBehaviour
         {
             var pos = button.transform.position;
             var b = button.GetComponent<Button>();
-            // b.onClick.AddListener(PurchaseGameButton);
             b.onClick.RemoveAllListeners();
             b.onClick.AddListener(() => mainMenuManager.ToggleGameObject(shopMenu));
             b.interactable = true;

@@ -16,7 +16,7 @@ MonoBehaviour:
   levelName: Level 28
   levelNumber: 28
   timer: 99
-  jumpsForGold: 5
+  jumpsForGold: 6
   jumpsForSilver: 7
   jumpsForBronze: 9
   levelSprite: {fileID: 21300000, guid: bc428420f8037b944a0406974e4f1668, type: 3}

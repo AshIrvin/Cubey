@@ -16,9 +16,9 @@ MonoBehaviour:
   levelName: Level 16
   levelNumber: 16
   timer: 99
-  jumpsForGold: 3
-  jumpsForSilver: 5
-  jumpsForBronze: 8
+  jumpsForGold: 5
+  jumpsForSilver: 7
+  jumpsForBronze: 9
   levelSprite: {fileID: 21300000, guid: caaad23fceff046448a4d43d22f1c25f, type: 3}
   levelPrefab: {fileID: 7326525578732712116, guid: 4fc6057b5f344f24abb246f0b56111eb,
     type: 3}

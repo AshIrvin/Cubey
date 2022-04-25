@@ -16,9 +16,9 @@ MonoBehaviour:
   levelName: Level 17
   levelNumber: 17
   timer: 99
-  jumpsForGold: 3
-  jumpsForSilver: 5
-  jumpsForBronze: 8
+  jumpsForGold: 2
+  jumpsForSilver: 4
+  jumpsForBronze: 9
   levelSprite: {fileID: 21300000, guid: 9c0d63a7ac69b294f9471148dd7253f5, type: 3}
   levelPrefab: {fileID: 7326525578732712116, guid: 4c3cc1414ce3076429d7e79cb6c1254d,
     type: 3}

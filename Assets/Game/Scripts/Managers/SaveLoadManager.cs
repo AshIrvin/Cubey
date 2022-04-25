@@ -96,6 +96,12 @@ public class SaveLoadManager : MonoBehaviour
 
     private void FirstTimeUse()
     {
+        if (SaveStaticList.Count == 0)
+        {
+            Debug.LogError("SaveStaticList not created. Old data?");
+            return;
+        }
+        
         Debug.Log("Setting up 1st time use");
         SaveStaticList[0].chapterUnlocked = false;
         SaveStaticList[1].chapterUnlocked = true;

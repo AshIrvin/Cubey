@@ -16,9 +16,9 @@ MonoBehaviour:
   levelName: Level 23
   levelNumber: 23
   timer: 99
-  jumpsForGold: 3
-  jumpsForSilver: 5
-  jumpsForBronze: 8
+  jumpsForGold: 6
+  jumpsForSilver: 8
+  jumpsForBronze: 9
   levelSprite: {fileID: 21300000, guid: b7bbdc692cb07ce44a6ebba0cd8a8ca0, type: 3}
   levelPrefab: {fileID: 7326525578732712116, guid: 346ab663b8dab304e841801609ae467e,
     type: 3}

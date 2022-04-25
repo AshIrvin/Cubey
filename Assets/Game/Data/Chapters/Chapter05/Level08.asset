@@ -16,9 +16,9 @@ MonoBehaviour:
   levelName: Level 8
   levelNumber: 8
   timer: 99
-  jumpsForGold: 3
-  jumpsForSilver: 5
-  jumpsForBronze: 8
+  jumpsForGold: 2
+  jumpsForSilver: 4
+  jumpsForBronze: 9
   levelSprite: {fileID: 21300000, guid: 70300d1d84d0c754398ee171e7e72535, type: 3}
   levelPrefab: {fileID: 7326525578732712116, guid: bd75b0d66062978489ce1f9b58abf081,
     type: 3}

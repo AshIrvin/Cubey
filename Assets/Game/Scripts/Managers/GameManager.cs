@@ -591,7 +591,6 @@ public class GameManager : MonoBehaviour
 
     private void CountSweetsForLevel()
     {
-        PickupCountProperty = 0;
         GameObject pickupGroup = mapManager.LevelGameObject.transform.Find("Pickups").gameObject;
 
         if (pickupGroup == null)
@@ -599,11 +598,16 @@ public class GameManager : MonoBehaviour
             Debug.Log("<color:red>Setup pickups for level!</color>");
             return;
         }
-        
+
+        // PickupCountProperty = 0;
+        var pickupCount = 0;
         for (int i = 0; i < pickupGroup.transform.childCount; i++)
         {
-            PickupCountProperty++;
+            pickupCount += 1;
+            // PickupCountProperty++;
         }
+
+        PickupCountProperty = pickupCount;
 
         PickupText();
     }

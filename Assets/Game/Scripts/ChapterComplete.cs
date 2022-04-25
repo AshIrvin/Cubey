@@ -30,7 +30,10 @@ public class ChapterComplete : MonoBehaviour
         if (gotThemAll == null) transform.Find("YouGotThemAll_text");
         
         gotThemAll.gameObject.SetActive(false);
+    }
 
+    private void Start()
+    {
         UpdateButtonAward();
     }
 
