@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
+using DG.Tweening;
 using Game.Scripts;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -87,14 +88,50 @@ public class CameraManager : MonoBehaviour
         
         if (!gameManager.CamMovement || startFromExit) return;
 
-        if (gameManager.GameLevel && CubeyPlayer != null)
+        if (!mapManager.enabled)
         {
-            transform.position = Vector3.SmoothDamp(transform.position, CubeyPlayer.transform.position, ref velocity,
-                gameCamTime);
+            if (CubeyPlayer == null || cubeyOnMap == null)
+            {
+                return;
+            }
+            
+            if (gameManager.GameLevel)
+            {
+                transform.position = Vector3.SmoothDamp(transform.position, CubeyPlayer.transform.position, ref velocity, gameCamTime);
+                // transform.DOMove(CubeyPlayer.transform.position, gameCamTime);
+                return;
+            }
+            else
+            {
+                transform.position = Vector3.SmoothDamp(transform.position, cubeyOnMap.transform.position, ref velocity, gameCamTime);
+                // transform.DOMove(cubeyOnMap.transform.position, gameCamTime);
+                return;
+            }
         }
-        else if (!mapManager.enabled && !gameManager.GameLevel) // menu
+    }
+
+    private void CameraPath(int n)
+    {
+        switch (n)
         {
-            transform.position = Vector3.SmoothDamp(transform.position, cubeyOnMap.transform.position, ref velocity, gameCamTime);
+            case 1:
+                StartCoroutine(PlayStartCameraSweep());
+                break;
+            case 2:
+                StartCoroutine(PanToLevelButton());
+                break;
+            case 3:
+                Debug.Log("Moving to Cubey level position");
+                // transform.position = Vector3.SmoothDamp(transform.position, CubeyPlayer.transform.position, ref velocity, gameCamTime);
+                transform.DOMove(CubeyPlayer.transform.position, gameCamTime);
+                break;
+            case 4:
+                Debug.Log("Moving to Cubey MAP position");
+                // transform.position = Vector3.SmoothDamp(transform.position, cubeyOnMap.transform.position, ref velocity, gameCamTime);
+                transform.DOMove(cubeyOnMap.transform.position, gameCamTime);
+                break;
+            default:
+                break;
         }
     }
 

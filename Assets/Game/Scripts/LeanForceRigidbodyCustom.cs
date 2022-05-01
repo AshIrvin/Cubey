@@ -32,6 +32,8 @@ namespace Lean.Touch
         public bool moveScreen;
         
         public float Angle => angle;
+
+        public Action<bool> onGround;
         
         private void FixedUpdate()
         {
@@ -78,19 +80,6 @@ namespace Lean.Touch
             if (cachedBody == null || !cachedBody.gameObject.activeInHierarchy)
                 return;
 
-            /*if (FingerPos.belowPlayer)
-            {
-                // if within a good distance, allow movement, otherwise move screen
-                gameManager.allowPlayerMovement = true;
-                // gameManager.LaunchArc = true;
-            }
-            else
-            {
-                gameManager.allowPlayerMovement = false;
-                // gameManager.LaunchArc = false;
-                return;
-            }*/
-
             if (canJump && FingerPos.belowPlayer && Time.timeScale > 0.2f)
             {
                 ApplyBetweenOpposite(transform.position, end);
@@ -126,6 +115,7 @@ namespace Lean.Touch
                 
                 stickyObject.CurrentValue = false;
                 cachedBody.AddForce(direction * velocityMultiplier, forceMode);
+                onGround?.Invoke(false);
                 
                 gameManager.PlayerFaceDirection(direction.x > 0);
                 StartCoroutine(PlayerJumped());
@@ -140,24 +130,47 @@ namespace Lean.Touch
 
         private void OnCollisionEnter(Collision collision)
         {
-            if (collision.collider.CompareTag("GroundGrass"))
+            // Debug.Log("cubey hit collision: " + collision.collider.name);
+            if (collision.collider.CompareTag("Sticky"))
             {
-                Debug.Log("Cubey hit ground");
+                // Debug.Log("Hit sticky object");
+                onGround?.Invoke(true);
+            }
+            else if (collision.collider.CompareTag("Platform") || collision.collider.CompareTag("MovingPlatform"))
+            {
+                // Debug.Log("Hit a platform");
                 audioManager.PlayAudio(audioManager.cubeyLand);
                 VisualEffects.Instance.PlayEffect(VisualEffects.Instance.peLandingGrass, transform.position);
+                onGround?.Invoke(true);
+            }
+            else if (collision.collider.CompareTag("GroundGrass"))
+            {
+                // Debug.Log("Hit grass");
+                audioManager.PlayAudio(audioManager.cubeyLand);
+                VisualEffects.Instance.PlayEffect(VisualEffects.Instance.peLandingGrass, transform.position);
+                onGround?.Invoke(true);
             }
             else if (collision.collider.CompareTag("GroundNormal"))
             {
+                // Debug.Log("Hit normal ground");
                 audioManager.PlayAudio(audioManager.cubeyLand);
                 VisualEffects.Instance.PlayEffect(VisualEffects.Instance.peLandingDust, transform.position);
+                onGround?.Invoke(true);
             }
             else if (collision.collider.CompareTag("GroundSnow"))
             {
+                // Debug.Log("Hit snow");
                 // audioManager.PlayAudio(audioManager.cubeyLand);
                 audioManager.PlayAudio(audioManager.cubeyLandingSnow);
                 // VisualEffects.Instance.PlayEffect(VisualEffects.Instance.pe, transform.position);
+                onGround?.Invoke(true);
             }
         }
 
+        private void OnCollisionExit(Collision other)
+        {
+            // Debug.Log("Collision exited");
+            // onGround?.Invoke(false);
+        }
     }
 }

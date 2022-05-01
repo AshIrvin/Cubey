@@ -147,17 +147,5 @@ public class ChapterMetaData : ScriptableObject
         }
 #endif
     }
-
-    /*public void DeleteAwardsForChapter()
-    {
-        // TODO - delete all level awards in each chapter 
-/*#if UNITY_EDITOR
-        for (int i = 0; i < levelList.Count; i++)
-        {
-            // levelList[i].AwardsReceived = 0;
-            
-            SaveLoadManager.SetAward(i, 0);
-        }
-#endif#1#
-    }*/
+    
 }

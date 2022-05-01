@@ -34,12 +34,12 @@ public class GameManager : MonoBehaviour
 
     [Header("Player")]
     [SerializeField] private GameObject cubeyPlayer;
-    [SerializeField] private GameObject cubeyPlayerPrefab;
+    // [SerializeField] private GameObject cubeyPlayerPrefab;
     [SerializeField] private LeanForceRigidbodyCustom leanForceRb;
     
     [Header("Audio")]
     [SerializeField] private AudioManager audioManager;
-    [SerializeField] private AudioSource levelMusic;
+    [SerializeField] private AudioSource gameMusic;
 
     public static Transform gameFolder;
     private float timer;
@@ -146,17 +146,10 @@ public class GameManager : MonoBehaviour
 
     public bool playSingleLevel = false;
 
-    // [SerializeField] private GameObject xagonBg;
-    // [SerializeField] private GameObject treeRight;
-    // [SerializeField] private GameObject levelsGrp;
-
     [SerializeField] public bool allowPlayerMovement;
-    // [SerializeField] private bool allowFlight;
     [SerializeField] private bool jumpCountIncreases;
-    // [SerializeField] private bool xagon;
     [SerializeField] private bool onBreakablePlatform;
     [SerializeField] private bool onMovingPlatform;
-    // [SerializeField] private bool forceJump;
 
     [Header("ints")]
     private int jumpLeft;
@@ -174,7 +167,6 @@ public class GameManager : MonoBehaviour
     [Header("Other")]
     private Vector3 cubeyPosition;
     public float cubeyMagnitude;
-    // private int stat_Jumps;
     private Vector3 flip;
     private bool isPlayerRbNotNull;
     private bool isPlayerCubeNotNull;
@@ -186,7 +178,8 @@ public class GameManager : MonoBehaviour
         pickupCountProperty.OnValueChanged += CheckPickupCount;
         exitProperty.OnValueChanged += LoadEndScreen;
         stickyObject.OnValueChanged += ToggleSticky;
-
+        leanForceRb.onGround += PlayerAllowedJump;
+        
         if (leanForceRb == null)
             leanForceRb = FindObjectOfType<LeanForceRigidbodyCustom>();
 
@@ -210,6 +203,7 @@ public class GameManager : MonoBehaviour
         pickupCountProperty.OnValueChanged -= CheckPickupCount;
         exitProperty.OnValueChanged -= LoadEndScreen;
         stickyObject.OnValueChanged -= ToggleSticky;
+        leanForceRb.onGround -= PlayerAllowedJump;
     }
     
     private void GetLevelInfo()
@@ -238,6 +232,7 @@ public class GameManager : MonoBehaviour
 
     private void OnDisable()
     {
+        Debug.Log("GameManager disabled");
         if (cubeyPlayer != null)
             cubeyPlayer.SetActive(false);
         PlayerAllowedJump(false);
@@ -253,7 +248,10 @@ public class GameManager : MonoBehaviour
 
         mainMenuManager.mainMenu.SetActive(!enable);
         mainMenuManager.enabled = !enable;
-        exitObject.SetActive(!enable);
+        if (exitObject != null)
+        {
+            exitObject.SetActive(!enable);
+        }
 
         SetGameCanvases(enable);
         visualEffects.ParticleEffectsGo.SetActive(enable);
@@ -262,7 +260,6 @@ public class GameManager : MonoBehaviour
     private void SetGameCanvases(bool state)
     {
         TopUi(state);
-        // PauseGame(false);
         PauseMenu(false);
         EndScreen(false);
         FailedScreen(false);
@@ -279,7 +276,8 @@ public class GameManager : MonoBehaviour
 
     private void DisableStartPosition()
     {
-        if (mapManager.LevelGameObject.transform.GetChild(1).name.Contains("Start"))
+        if (mapManager.LevelGameObject != null && 
+            mapManager.LevelGameObject.transform.GetChild(1).name.Contains("Start"))
             mapManager.LevelGameObject.transform.GetChild(1)?.GetChild(1)?.gameObject.SetActive(false);
         else if (mapManager.LevelGameObject.transform.GetChild(0).name.Contains("Start"))
         {
@@ -309,59 +307,49 @@ public class GameManager : MonoBehaviour
         DisableStartPosition();
         UpdateLevelText(levelNo);
 
-        if (chapterNo == 0)
-        {
-            levelMusic = GameObject.Find("XmasMusic").GetComponent<AudioSource>();
-            audioManager.levelMusic = levelMusic;
-        }
-        else
-        {
-            levelMusic = GameObject.Find("LevelMusic").GetComponent<AudioSource>();
-            audioManager.levelMusic = levelMusic;
-        }
-
         JumpCount = 10;
         CountSweetsForLevel();
         ReParentExitSwirl(false);
         SetupExit();
         StartCoroutine(UpdateAwardsNeeded());
-        
-        if (audioManager != null)
-            audioManager.menuMusic = null;
 
         PickupText();
         mapManager.enabled = false;
         TimeTaken(true);
 
-        PlayerFaceDirection(exitObject.transform.position.x > 0);
+        PlayerFaceDirection(exitObject.transform.position.x < 0);
     }
 
-    public Action AllowPlayerJump;
-
-    // TODO - fix this mess too
     public void Update()
     {
-        /*if (leanForceRb.canJump && CheckJumpMagnitude())
-        {
-            PlayerAllowedJump(false);
-        }*/
+        
+        
 
-        if (onMovingPlatform && playerRb.velocity.magnitude < 1f || playerRb.velocity.magnitude < cubeyJumpMagValue)
+        if (playerRb.velocity.magnitude < cubeyJumpMagValue)
         {
             PlayerAllowedJump(true);
         }
         else
         {
+            if (stickyObject.CurrentValue)
+            {
+                return;
+            }
             PlayerAllowedJump(false);
         }
-
+        
         if (isPlayerRbNotNull)
             cubeyMagnitude = playerRb.velocity.magnitude;
 
         if (isPlayerCubeNotNull)
             cubeyPosition = cubeyPlayer.transform.position;
     }
-    
+
+    private void LateUpdate()
+    {
+        // PlayerAllowedJump(playerRb.velocity.magnitude < cubeyJumpMagValue);
+    }
+
     private void ChangeTextColour(Text text, Color color)
     {
         text.color = color;
@@ -401,9 +389,10 @@ public class GameManager : MonoBehaviour
         goldPodium.text = levelMetaData.JumpsForGold.ToString();
     }
     
-    public void ToggleSticky(bool on)
+    public void ToggleSticky(bool state)
     {
-        if (!on)
+        Debug.Log("Toggle sticky: " + state);
+        if (!state)
         {
             playerRb.drag = 0;
             playerRb.angularDrag = 0;
@@ -417,15 +406,13 @@ public class GameManager : MonoBehaviour
         playerRb.angularDrag = playerGooDrag;
         playerRb.velocity = Vector3.zero;
         playerRb.angularVelocity = Vector3.zero;
-        PlayerAllowedJump(true);
+        // PlayerAllowedJump(true);
     }
     
     public void LoadHelpScreen(bool on)
     {
         helpScreen.SetActive(on);
     }
-
-    
 
     public void ToggleScreen(GameObject screen)
     {
@@ -434,7 +421,6 @@ public class GameManager : MonoBehaviour
 
     private bool CheckJumpMagnitude()
     {
-        Debug.Log("playerRb.velocity.magnitude: " + playerRb.velocity.magnitude);
         if (playerRb.velocity.magnitude > cubeyJumpMagValue)
             return true;
         return false;
@@ -487,6 +473,10 @@ public class GameManager : MonoBehaviour
     // Used as failed screen button
     public void LoadMainMenu()
     {
+        for (int i = 0; i < mapManager.LevelParent.transform.childCount; i++)
+        {
+            Destroy(mapManager.LevelParent.transform.GetChild(i).gameObject);
+        }
         GameLevel = false;
         StartCoroutine(LoadingScene(true));
         HideScreens();
@@ -505,8 +495,7 @@ public class GameManager : MonoBehaviour
         {
             TimeTaken(false);
             // Todo change end text to COMPLETED? 
-            // play audio
-            audioManager.PlayAudio(audioManager.cubeyCelebtration);
+            audioManager.PlayAudio(audioManager.cubeyCelebration);
             ReParentExitSwirl(false);
             EndScreen(true);
             
@@ -516,8 +505,6 @@ public class GameManager : MonoBehaviour
     
     private void ResetCubeyPlayer(bool disable)
     {
-        // Debug.Log("Reseting Cubey");
-        
         if (disable)
         {
             playerRb.useGravity = false;
@@ -525,10 +512,10 @@ public class GameManager : MonoBehaviour
             return;
         }
         
-        if (cubeyPlayer == null && cubeyPlayerPrefab != null)
+        if (cubeyPlayer == null)
         {
-            cubeyPlayer = Instantiate(cubeyPlayerPrefab);
-            playerRb = cubeyPlayer.GetComponent<Rigidbody>();
+            Debug.LogError("ALERT: Can't find Cubey!");
+            return;
         }
         
         cubeyPlayer.SetActive(true);
@@ -544,8 +531,8 @@ public class GameManager : MonoBehaviour
         playerRb.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationY | RigidbodyConstraints.FreezePositionZ;
         if (leanForceRb == null)
             leanForceRb = cubeyPlayer.GetComponent<LeanForceRigidbodyCustom>();
-        else
-            PlayerAllowedJump(true);
+        // else
+        //     PlayerAllowedJump(true);
 
         RestartTimer();
     }
@@ -718,19 +705,12 @@ public class GameManager : MonoBehaviour
             VisualEffects.Instance.PlayEffect(VisualEffects.Instance.peExitOpened, newPePos);*/
     }
 
-    public bool PlayerAllowedJump(bool state)
+    public void PlayerAllowedJump(bool state)
     {
+        allowPlayerMovement = state;
         leanForceRb.canJump = state;
         LaunchArc = state;
-        allowPlayerMovement = state;
-        
-        if (stickyObject.CurrentValue)
-        {
-            leanForceRb.canJump = true;
-            return true;
-        }
-        
-        return state;
+        // Debug.Log("allowed jump: " + state);
     }
 
     public void PlayerVelocity(float n)
@@ -948,12 +928,18 @@ public class GameManager : MonoBehaviour
     public void PauseMenu(bool state)
     {
         LaunchArc = !state;
-        audioManager?.AudioButtons?.SetActive(state);
-        audioManager?.MuteAudio(audioManager.levelMusic, state);
-        pauseMenu?.SetActive(state);
+        
+        if (pauseMenu != null)
+        {
+            pauseMenu.SetActive(state);
+        }
+        
         Time.timeScale = state ? 0f : 1f;
-        // if (!state && audioManager.allowMusic)
-        // audioManager.PlayMusic(audioManager.levelMusic);
+        
+        if (audioManager.allowMusic)
+        {
+            audioManager.MuteAudio(audioManager.gameMusic, state);
+        }
     }
     
     private float timeStarted;

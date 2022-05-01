@@ -151,6 +151,7 @@ public class PlatformCloud : PlatformBase
             if (playerRb == null)
                 playerRb = other.GetComponent<Rigidbody>();
             playerRb.drag = 0f;
+            stickyObject.CurrentValue = false;
         }
     }
 }

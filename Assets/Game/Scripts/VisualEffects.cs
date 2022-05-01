@@ -67,21 +67,17 @@ public class VisualEffects : MonoBehaviour
 
     private void Update()
     {
-        if (!gameManager.enabled)
-            return;
-        
         PowerDustEffect();
     }
 
     public float powerDustOffset = 0.1f;
     public float powerDustDistanceOffset = 2f;
+    // private bool allowedAudio = true;
     
     private void PowerDustEffect()
     {
-        /*if (Input.GetMouseButtonUp(0))
-        {
-            StopEffect(pePowerDust);
-        }*/
+        if (!gameManager.enabled || Time.timeScale < 0.5f)
+            return;
 
         if (Input.GetMouseButton(0) && FingerPos.belowPlayer)
         {
@@ -89,6 +85,11 @@ public class VisualEffects : MonoBehaviour
             playerPos.y -= powerDustOffset;
             PlayEffect(pePowerDust, playerPos);
             var pePlayerDist = Vector3.Distance(playerPos, FingerPos.FingerPosition);
+            /*if (allowedAudio)
+            {
+                allowedAudio = false;
+                audioManager.PlayAudio(audioManager.cubeyPowerUp);
+            }*/
             
             var peMain = pePowerDust.main;
             peMain.startSpeed =pePlayerDist * powerDustDistanceOffset;
@@ -96,11 +97,13 @@ public class VisualEffects : MonoBehaviour
         else if (Input.GetMouseButtonUp(0))
         {
             StopEffect(pePowerDust);
+            // audioManager.StopAudio(audioManager.cubeyPowerUp);
+            // allowedAudio = true;
         }
     }
     
-    // no longer used
-    private void BlastOffEffect()
+    // no longer used??
+    /*private void BlastOffEffect()
     {
         if (Input.GetMouseButtonUp(0))
         {
@@ -154,7 +157,7 @@ public class VisualEffects : MonoBehaviour
             StopEffect(pePowerJump);
             audioManager.StopAudio(audioManager.cubeyPowerUp);
         }
-    }
+    }*/
 
     public void StopEffect(ParticleSystem effect)
     {

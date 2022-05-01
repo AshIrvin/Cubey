@@ -52,10 +52,27 @@ public class MapManager : MonoBehaviour
         set => levelGameObject = value;
     }
 
-    public GameObject LevelParent => levelParent;
+    public GameObject LevelParent
+    {
+        get
+        {
+            if (levelParent == null)
+            {
+                Debug.Log("Finding LevelParent...");
+                levelParent = GameObject.Find("Game/LevelParent");
+            }
+            return levelParent;
+        }
+    }
+
     public GameObject CubeyOnMap => cubeyOnMap;
 
-    
+    public bool GamePurchased
+    {
+        get => SaveLoadManager.GamePurchased;
+        set => SaveLoadManager.SaveGamePurchased(value);
+    }
+
     private void Awake()
     {
         AddChapterMaps();
@@ -106,6 +123,7 @@ public class MapManager : MonoBehaviour
 
     private void OnDisable()
     {
+        InitialiseAds.LoadLevel -= LoadLevel;
         bgAdBlocker.SetActive(false);
         DisableMaps();
         mapActive = false;
@@ -141,7 +159,7 @@ public class MapManager : MonoBehaviour
             map.SetActive(false);
         }
     }
-    
+
     private void EnableMap(int chapter)
     {
         DisableMaps();
@@ -153,9 +171,11 @@ public class MapManager : MonoBehaviour
         mainMenuManager.TryChapterFinishScreen();
         
         if(!SaveLoadManager.GamePurchased)
+        {
             PrepareGoogleAds();
+        }
     }
-    
+
     public void DisableMaps()
     {
         for (int i = 0; i < chapterMaps.Count; i++)
@@ -208,8 +228,9 @@ public class MapManager : MonoBehaviour
             LoadLevel(n);
         }
     }
-    
+
     // comes from level buttons on map
+
     public void GetLevelNoToLoad()
     {
         var levelButtonClicked = EventSystem.current.currentSelectedGameObject.gameObject.transform.Find("LevelText_no").GetComponent<Text>().text.ToString();
@@ -223,15 +244,15 @@ public class MapManager : MonoBehaviour
         Debug.Log("Restarting Level");
         EnableGameManager = false;
         Destroy(levelGameObject);
-        if (levelParent.transform.childCount > 0)
+        if (LevelParent.transform.childCount > 0)
         {
-            for (int i = 0; i < levelParent.transform.childCount; i++)
+            for (int i = 0; i < LevelParent.transform.childCount; i++)
             {
-                Destroy(levelParent.transform.GetChild(i).gameObject);
+                Destroy(LevelParent.transform.GetChild(i).gameObject);
             }
         }
         
-        LevelGameObject = Instantiate(allChapters[SaveLoadManager.LastChapterPlayed].LevelList[SaveLoadManager.LastLevelPlayed].LevelPrefab, levelParent.transform);
+        LevelGameObject = Instantiate(allChapters[SaveLoadManager.LastChapterPlayed].LevelList[SaveLoadManager.LastLevelPlayed].LevelPrefab, LevelParent.transform);
         levelGameObject.SetActive(true);
         EnableGameManager = true;
         enabled = false;
@@ -240,7 +261,16 @@ public class MapManager : MonoBehaviour
     private void LoadLevel()
     {
         Debug.Log("Ad 5 - finished. Loading level: " + levelToLoad);
-        bgAdBlocker?.SetActive(false);
+        if (bgAdBlocker == null)
+        {
+            bgAdBlocker = GameObject.Find("GoogleAds/Canvas/BlockBg").gameObject;
+            bgAdBlocker.SetActive(false);
+        }
+        else
+        {
+            bgAdBlocker.SetActive(false);
+        }
+        
         LoadLevel(levelToLoad);
     }
 
@@ -251,12 +281,9 @@ public class MapManager : MonoBehaviour
     }
 
     private BoxCollider levelCollision;
-    
+
     private void LoadLevel(int levelNumber)
     {
-        // if (audioManager != null && audioManager.allowSounds)
-        //     audioManager.PlayMusic(audioManager.menuStartLevel);
-
         var l = levelNumber.ToString();
 
         if (l.Length > 2)
@@ -271,7 +298,7 @@ public class MapManager : MonoBehaviour
         
         if (LevelGameObject == null)
         {
-            LevelGameObject = Instantiate( allChapters[SaveLoadManager.LastChapterPlayed].LevelList[SaveLoadManager.LastLevelPlayed].LevelPrefab, levelParent.transform);
+            LevelGameObject = Instantiate( allChapters[SaveLoadManager.LastChapterPlayed].LevelList[SaveLoadManager.LastLevelPlayed].LevelPrefab, LevelParent.transform);
             levelCollision = levelGameObject.transform.Find("Environment").Find("LevelCollision")?.GetComponent<BoxCollider>();
         }
         
@@ -308,16 +335,10 @@ public class MapManager : MonoBehaviour
 
     private int maxDemoLevel = 10;
 
-    public bool GamePurchased
-    {
-        get => SaveLoadManager.GamePurchased;
-        set => SaveLoadManager.SaveGamePurchased(value);
-    }
-    
     public void PurchaseGameButton()
     {
         GamePurchased = true;
-        SceneManager.LoadScene("CubeyGame");
+        // SceneManager.LoadScene("CubeyGame");
         Debug.Log("Game Purchased: " + GamePurchased);
     }
 
@@ -445,4 +466,9 @@ public class MapManager : MonoBehaviour
     }
     
     #endregion
+
+    private void OnDestroy()
+    {
+        InitialiseAds.LoadLevel -= LoadLevel;
+    }
 }

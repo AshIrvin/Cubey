@@ -16,8 +16,8 @@ public class AudioManager : MonoBehaviour
     public AudioSource cubeyCubey;
 
     [Header("Music")]
-    public AudioSource menuMusic;
-    public AudioSource levelMusic;
+    public AudioSource gameMusic;
+    // public AudioSource levelMusic;
 
     [Header("Cubey Audio")]
     public AudioSource[] cubeyJump;
@@ -28,7 +28,7 @@ public class AudioManager : MonoBehaviour
     public AudioSource[] snowThrowing;
     public AudioSource[] cubeyLandingSnow;
     public AudioSource[] cubeyExitOpen;
-    public AudioSource[] cubeyCelebtration;
+    public AudioSource[] cubeyCelebration;
 
     [SerializeField] private Camera cam;
     [SerializeField] private AudioListener audioListener;
@@ -48,50 +48,46 @@ public class AudioManager : MonoBehaviour
     
     private void Start()
     {
-        if (PlayerPrefs.HasKey("music"))
+        var m = PlayerPrefs.GetInt("music", 1);
+        
+        if (m == 1) // on
         {
-            var m = PlayerPrefs.GetInt("music");
-            if (m == 1) // on
-            {
-                musicMute.isOn = false;
-                // musicMutePause.isOn = false;
-                allowMusic = true;
+            musicMute.isOn = false;
+            // musicMutePause.isOn = false;
+            allowMusic = true;
 
-                if (menuMusic != null)
-                    PlayMusic(menuMusic);
+            if (gameMusic != null)
+                PlayMusic(gameMusic);
 
-                if (levelMusic != null)
-                    PlayMusic(levelMusic);
-            }
-            else
-            {
-                musicMute.isOn = true;
-                // musicMutePause.isOn = true;
-                allowMusic = false;
-
-                if (menuMusic != null)
-                    StopMusic(menuMusic);
-
-                if (levelMusic != null)
-                    StopMusic(levelMusic);
-            }
+            // if (levelMusic != null)
+            //     PlayMusic(levelMusic);
         }
-
-        if (PlayerPrefs.HasKey("sounds"))
+        else
         {
-            var m = PlayerPrefs.GetInt("sounds");
-            if (m == 1)
-            {
-                audioToggle.isOn = false;
-                // audioTogglePause.isOn = false;
-                allowSounds = true;
-            }
-            else
-            {
-                audioToggle.isOn = true;
-                // audioTogglePause.isOn = true;
-                allowSounds = false;
-            }
+            musicMute.isOn = true;
+            // musicMutePause.isOn = true;
+            allowMusic = false;
+
+            if (gameMusic != null)
+                StopMusic(gameMusic);
+
+            // if (levelMusic != null)
+            //     StopMusic(levelMusic);
+        }
+        
+
+        var s = PlayerPrefs.GetInt("sounds", 1);
+        if (s == 1)
+        {
+            audioToggle.isOn = false;
+            // audioTogglePause.isOn = false;
+            allowSounds = true;
+        }
+        else
+        {
+            audioToggle.isOn = true;
+            // audioTogglePause.isOn = true;
+            allowSounds = false;
         }
 
         if (cam == null)
@@ -101,20 +97,22 @@ public class AudioManager : MonoBehaviour
         }
 
         if (allowSounds)
+        {
             PlayButtonAudio(cubeyCubey);
+        }
 
     }
 
-    public void ToggleSounds(bool on)
+    public void ToggleSounds(bool state)
     {
-        allowSounds = !on;
+        allowSounds = !state;
 
         if (santaSleighBells != null)
-            santaSleighBells.enabled = !on;
+            santaSleighBells.enabled = !state;
         if (cubeySnowthrow != null)
-            cubeySnowthrow.enabled = !on;
+            cubeySnowthrow.enabled = !state;
 
-        if (on)
+        if (state)
             PlayerPrefs.SetInt("sounds", 0);
         else
             PlayerPrefs.SetInt("sounds", 1);
@@ -137,48 +135,70 @@ public class AudioManager : MonoBehaviour
 
     public void PlayAudio(AudioSource[] audio)
     {
+        // Debug.Log("audio name: " + audio[0].name);
+
         var n = ChooseRandomClip(audio.Length);
         if (audio[n] == null)
         {
             Debug.Log("No audio clips found");
             return;
         }
-        else if (!audio[n].isPlaying && allowSounds)
+
+        StopAudio(audio);
+
+        if (!audio[n].isPlaying && allowSounds)
         {
             audio[n].Play();
         }
-        else
+        /*else
         {
-            // Debug.LogError("Audio issue! - " + audio[n].name);
-        }
-
-
+            // could be playing
+            Debug.LogError("Audio issue! - " + audio[n].name);
+        }*/
     }
 
     public void StopAudio(AudioSource[] audio)
     {
         for (int i = 0; i < audio.Length; i++)
         {
-            if (audio[i].isPlaying)
+            if (audio[i] != null && audio[i].isPlaying)
                 audio[i].Stop();
         }
     }
 
-    public void MuteAudio(AudioSource audio, bool on)
+    /// <summary>
+    /// Mute = true
+    /// Unmute = false
+    /// </summary>
+    /// <param name="audio"></param>
+    /// <param name="state"></param>
+    public void MuteAudio(AudioSource audio, bool state)
     {
-        audio.mute = on;
+        if (audio != null && audio.isPlaying)
+        {
+            Debug.Log("Mute audio: " + state);
+            audio.mute = state;    
+        }
+        /*else
+        {
+            Debug.Log("Mute audio: " + audio + ", audio.isPlaying: " + audio.isPlaying);
+        }*/
     }
 
     public void PlayMusic(AudioSource music)
     {
         if (!music.isPlaying && allowMusic)
+        {
             music.Play();
+        }
     }
 
     public void StopMusic(AudioSource music)
     {
         if (music.isPlaying)
+        {
             music.Stop();
+        }
     }
 
     public void ToggleMusic(bool on)
@@ -187,21 +207,21 @@ public class AudioManager : MonoBehaviour
 
         if (!on) // off
         {
-            if (menuMusic != null)
-                PlayMusic(menuMusic);
+            if (gameMusic != null)
+                PlayMusic(gameMusic);
 
-            if (levelMusic != null)
-                PlayMusic(levelMusic);
+            // if (levelMusic != null)
+            //     PlayMusic(levelMusic);
 
             PlayerPrefs.SetInt("music", 1); // on
         }
         else
         {
-            if (menuMusic != null)
-                StopMusic(menuMusic);
+            if (gameMusic != null)
+                StopMusic(gameMusic);
 
-            if (levelMusic != null)
-                StopMusic(levelMusic);
+            // if (levelMusic != null)
+            //     StopMusic(levelMusic);
 
             PlayerPrefs.SetInt("music", 0); // off
         }

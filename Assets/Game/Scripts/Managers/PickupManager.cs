@@ -10,9 +10,9 @@ public class PickupManager : MonoBehaviour
     [SerializeField] private AudioManager audioManager;
     [SerializeField] private Vector3 startPos;
 
-    [SerializeField] private bool butterfly; // increases jumps
-    [SerializeField] private bool friend; //
-    [SerializeField] private bool sweet;
+    [SerializeField] private bool levelPickup; // increases jumps
+    // [SerializeField] private bool friend; //
+    // [SerializeField] private bool sweet;
 
     // [SerializeField] private bool butterflyWing;
 
@@ -52,7 +52,7 @@ public class PickupManager : MonoBehaviour
 
     private void Update()
     {
-        if (butterfly)
+        if (levelPickup)
         {
             ButterflyEffect();
         }
@@ -102,30 +102,17 @@ public class PickupManager : MonoBehaviour
     // if player his a friend, friend vanishes and PE emits
     private void OnTriggerEnter(Collider other)
     {
-        if (other.CompareTag("Player") && sweet)
+        if (other.CompareTag("Player"))
         {
-            audioManager.PlayAudio(audioManager.itemPickup);
-            VisualEffects.Instance.PlayEffect(VisualEffects.Instance.peSweetPickup, transform.position);
+            if (levelPickup)
+            {
+                audioManager.PlayAudio(audioManager.itemPickup);
+                VisualEffects.Instance.PlayEffect(VisualEffects.Instance.peSweetPickup, transform.position);
 
-            PickupCountProperty--;
+                PickupCountProperty--;
 
-            Destroy(gameObject);
-        }
-
-        if (other.CompareTag("Player") && friend)
-        {
-            Destroy(gameObject);
-            VisualEffects.Instance.PlayEffect(VisualEffects.Instance.peAirBoom, transform.position);
-
-            PickupCountProperty--;
-        }
-
-        if (other.CompareTag("Player") && butterfly)
-        {
-            VisualEffects.Instance.PlayEffect(VisualEffects.Instance.peSweetPickup, transform.position);
-
-            PickupCountProperty--;
-            Destroy(gameObject);
+                Destroy(gameObject);
+            }
         }
     }
 }

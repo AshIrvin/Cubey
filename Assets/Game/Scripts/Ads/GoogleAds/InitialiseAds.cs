@@ -129,9 +129,15 @@ public class InitialiseAds : MonoBehaviour
     public void GetAd()
     {
         fullscreenAd?.LoadAd();
-        if (fullscreenAd.InterstitialAd.IsLoaded())
+        if (fullscreenAd != null && fullscreenAd.InterstitialAd.IsLoaded())
         {
             Debug.Log("ad is loaded");
+        }
+        else
+        {
+            Debug.LogError("Ad errored out");
+            // AdFailed();
+            DestroyAd();
         }
     }
     
@@ -152,11 +158,28 @@ public class InitialiseAds : MonoBehaviour
         ContinueToLevel();
     }
 
-    public void ContinueToLevel()
+    private void DestroyAd()
     {
         fullscreenAd?.DestroyAd();
         Debug.Log("Destroying ad. fullscreenAd null? " + fullscreenAd);
+    }
+    
+    public void ContinueToLevel()
+    {
+        DestroyAd();
         
         LoadLevel?.Invoke();
+    }
+
+    private void OnDisable()
+    {
+        // MapManager.LoadAd -= ShowAd;
+        // MapManager.PrepareAd -= GetAd;
+    }
+
+    private void OnDestroy()
+    {
+        MapManager.LoadAd -= ShowAd;
+        MapManager.PrepareAd -= GetAd;
     }
 }
