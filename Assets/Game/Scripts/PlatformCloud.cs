@@ -64,7 +64,7 @@ public class PlatformCloud : PlatformBase
                 movePlatform = true;
             }
         }
-        else
+        /*else
         {
             if (moveRight)
             {
@@ -81,7 +81,7 @@ public class PlatformCloud : PlatformBase
                 StartCoroutine(ScaleCloudPlatform(false));
                 StartCoroutine(ScaleCollider(false));
             }
-        }
+        }*/
     }
 
     private IEnumerator ScaleCollider(bool reduceSize)

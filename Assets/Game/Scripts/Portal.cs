@@ -125,15 +125,18 @@ public class Portal : MonoBehaviour
             autoRotation.AddRotation(Random.Range(-4, 4));
         
         cubeyForce = 0f;
-        if (leanForce != null)
+        if (rb != null)
         {
-            cubeyForce = Mathf.Max(leanForce.playerMagnitude, minVelocityForce);
-            cubeyForce = Mathf.Min(cubeyForce, maxVelocityForce);
-            rb.AddForce(portalExit.transform.up * cubeyForce, ForceMode.Impulse); // 6
-        }
-        else
-        {
-            rb.AddForce(portalExit.transform.up * portalForceMultiply, ForceMode.Impulse);
+            if (leanForce != null)
+            {
+                cubeyForce = Mathf.Max(rb.velocity.magnitude, minVelocityForce);
+                cubeyForce = Mathf.Min(cubeyForce, maxVelocityForce);
+                rb.AddForce(portalExit.transform.up * cubeyForce, ForceMode.Impulse); // 6
+            }
+            else
+            {
+                rb.AddForce(portalExit.transform.up * portalForceMultiply, ForceMode.Impulse);
+            }
         }
     
         StartCoroutine(DelayPortalActivation());

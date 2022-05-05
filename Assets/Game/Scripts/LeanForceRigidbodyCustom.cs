@@ -20,7 +20,7 @@ namespace Lean.Touch
         [SerializeField] private bool useMass;
         [SerializeField] private bool rotateToVelocity;
 
-        public float playerMagnitude;
+        // public float playerMagnitude;
 
         [SerializeField] private Vector3 direction;
         [SerializeField] private Vector3 directionNormalised;
@@ -35,12 +35,6 @@ namespace Lean.Touch
 
         public Action<bool> onGround;
         
-        private void FixedUpdate()
-        {
-            if (cachedBody.velocity.magnitude > 0.01f)
-                playerMagnitude = cachedBody.velocity.magnitude;
-        }
-
         protected virtual void OnEnable()
         {
             cachedBody = GetComponent<Rigidbody>();
@@ -51,27 +45,6 @@ namespace Lean.Touch
             if (launchRenderArc == null)
                 launchRenderArc = FindObjectOfType<LaunchRenderArc>();
         }
-        
-        // still used?
-        /*public void Apply(Vector2 screenDelta)
-		{
-			// Make sure the camera exists
-			var camera = LeanTouch.GetCamera(Camera, gameObject);
-            Debug.Log("Lean Apply used??");
-			if (camera != null)
-			{
-				var oldPoint    = transform.position;
-				var screenPoint = camera.WorldToScreenPoint(oldPoint);
-
-				screenPoint.x += screenDelta.x;
-				screenPoint.y += screenDelta.y;
-
-				var newPoint = camera.ScreenToWorldPoint(screenPoint);
-
-				//ApplyBetween(oldPoint, newPoint);
-                //print("apply");
-			}
-		}*/
 
         // comes from leanFingerLine in game
         // Only gets used on input released
@@ -165,12 +138,6 @@ namespace Lean.Touch
                 // VisualEffects.Instance.PlayEffect(VisualEffects.Instance.pe, transform.position);
                 onGround?.Invoke(true);
             }
-        }
-
-        private void OnCollisionExit(Collision other)
-        {
-            // Debug.Log("Collision exited");
-            // onGround?.Invoke(false);
         }
     }
 }

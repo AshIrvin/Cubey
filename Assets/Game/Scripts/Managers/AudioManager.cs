@@ -176,7 +176,7 @@ public class AudioManager : MonoBehaviour
     {
         if (audio != null && audio.isPlaying)
         {
-            Debug.Log("Mute audio: " + state);
+            // Debug.Log("Mute audio: " + state);
             audio.mute = state;    
         }
         /*else

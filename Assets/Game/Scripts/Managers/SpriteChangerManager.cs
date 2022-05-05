@@ -112,17 +112,10 @@ public class SpriteChangerManager : MonoBehaviour
         if (n >= 0 && n < sprites.Length)
         {
             sprites[n].SetActive(true);
-            try
+            if (sprites.Length > 1)
             {
-                if (sprites.Length > 1)
-                {
-                    if (m == 2)
-                        sprites[m].SetActive(true);
-                }
-            }
-            catch (System.Exception ex)
-            {
-
+                if (m == 2)
+                    sprites[m].SetActive(true);
             }
         }
 

@@ -87,6 +87,7 @@ public class EyesLookingManager : MonoBehaviour
         // showPupilMovement = false;
     }
 
+    // Todo - can I do something about this?
     private void Update()
     {
         if (!gameObject.activeInHierarchy)
@@ -130,11 +131,12 @@ public class EyesLookingManager : MonoBehaviour
         // SetEyeDelay();
     }
 
+    // Todo - this is awful
     private void FindPointsOfInterests()
     {
         pointsOfInterestList.Clear();
 
-         var listOfPositions = GameObject.FindGameObjectsWithTag("PointOfInterest");
+         var listOfPositions = GameObject.FindGameObjectsWithTag(pointOfInterest);
          foreach (var p in listOfPositions)
          {
              pointsOfInterestList.Add(p.transform.position);

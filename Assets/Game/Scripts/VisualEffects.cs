@@ -44,11 +44,11 @@ public class VisualEffects : MonoBehaviour
     public GameObject peExitSwirl;
 
     [Header("Floats")]
-    [SerializeField] private float spawnPeBlastDist = 1;
-    [SerializeField] private float timer = 2;
-    [SerializeField] private float peSpeed = 1.8f;
-    [SerializeField] private float angle = 0;
-    [SerializeField] private float powerLength = 7;
+    // [SerializeField] private float spawnPeBlastDist = 1;
+    // [SerializeField] private float timer = 2;
+    // [SerializeField] private float peSpeed = 1.8f;
+    // [SerializeField] private float angle = 0;
+    // [SerializeField] private float powerLength = 7;
 
     [Header("Bools")]
     public bool enableSizeIncrease;
@@ -65,6 +65,7 @@ public class VisualEffects : MonoBehaviour
         Instance = this;
     }
 
+    // Todo - need rid of this. Add action to on finger below cubey?
     private void Update()
     {
         PowerDustEffect();

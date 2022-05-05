@@ -168,8 +168,8 @@ public class GameManager : MonoBehaviour
     private Vector3 cubeyPosition;
     public float cubeyMagnitude;
     private Vector3 flip;
-    private bool isPlayerRbNotNull;
-    private bool isPlayerCubeNotNull;
+    // private bool isPlayerRbNotNull;
+    // private bool isPlayerCubeNotNull;
 
 
     private void Awake()
@@ -218,7 +218,7 @@ public class GameManager : MonoBehaviour
         threeStars = levelMetaData.JumpsForGold;
         levelName = levelMetaData.LevelName;
         
-        Debug.Log($"Level {levelNo}s info received.");
+        // Debug.Log($"Level {levelNo}s info received.");
     }
 
     private void OnEnable()
@@ -232,7 +232,7 @@ public class GameManager : MonoBehaviour
 
     private void OnDisable()
     {
-        Debug.Log("GameManager disabled");
+        // Debug.Log("GameManager disabled");
         if (cubeyPlayer != null)
             cubeyPlayer.SetActive(false);
         PlayerAllowedJump(false);
@@ -301,8 +301,8 @@ public class GameManager : MonoBehaviour
         
         if (cubeyPlayer != null)
             flip = cubeyPlayer.transform.localScale;
-        else
-            Debug.LogError("Can't find Cubey!!");
+        // else
+        //     Debug.LogError("Can't find Cubey!!");
         
         DisableStartPosition();
         UpdateLevelText(levelNo);
@@ -322,9 +322,6 @@ public class GameManager : MonoBehaviour
 
     public void Update()
     {
-        
-        
-
         if (playerRb.velocity.magnitude < cubeyJumpMagValue)
         {
             PlayerAllowedJump(true);
@@ -337,17 +334,6 @@ public class GameManager : MonoBehaviour
             }
             PlayerAllowedJump(false);
         }
-        
-        if (isPlayerRbNotNull)
-            cubeyMagnitude = playerRb.velocity.magnitude;
-
-        if (isPlayerCubeNotNull)
-            cubeyPosition = cubeyPlayer.transform.position;
-    }
-
-    private void LateUpdate()
-    {
-        // PlayerAllowedJump(playerRb.velocity.magnitude < cubeyJumpMagValue);
     }
 
     private void ChangeTextColour(Text text, Color color)
@@ -361,17 +347,17 @@ public class GameManager : MonoBehaviour
         
         if (jumpsToStartWith - jumpLeft <= levelMetaData.JumpsForGold) // 10 - 8 < 3
         {
-            awardToGet.text = levelMetaData.JumpsForGold + " jumps for gold";
+            // awardToGet.text = levelMetaData.JumpsForGold + " jumps for gold";
             ChangeTextColour(jumpAmountText, ColourManager.starGold);
         }
         else if (jumpsToStartWith - jumpLeft <= levelMetaData.JumpsForSilver)
         {
-            awardToGet.text = levelMetaData.JumpsForSilver + " jumps for silver";
+            // awardToGet.text = levelMetaData.JumpsForSilver + " jumps for silver";
             ChangeTextColour(jumpAmountText, ColourManager.starSilver);
         }
         else if (jumpsToStartWith - jumpLeft <= levelMetaData.JumpsForBronze) // 9 - 9 <= 9
         {
-            awardToGet.text = levelMetaData.JumpsForBronze + " jumps for bronze";
+            // awardToGet.text = levelMetaData.JumpsForBronze + " jumps for bronze";
             ChangeTextColour(jumpAmountText, ColourManager.starBronze);
         }
         else
@@ -391,7 +377,6 @@ public class GameManager : MonoBehaviour
     
     public void ToggleSticky(bool state)
     {
-        Debug.Log("Toggle sticky: " + state);
         if (!state)
         {
             playerRb.drag = 0;
@@ -406,7 +391,6 @@ public class GameManager : MonoBehaviour
         playerRb.angularDrag = playerGooDrag;
         playerRb.velocity = Vector3.zero;
         playerRb.angularVelocity = Vector3.zero;
-        // PlayerAllowedJump(true);
     }
     
     public void LoadHelpScreen(bool on)
@@ -448,7 +432,6 @@ public class GameManager : MonoBehaviour
     private void RestartTimer()
     {
         time = countdown;
-        // var startTimer = GetComponent<Timer>();
     }
 
     private void HideScreens()
@@ -512,15 +495,8 @@ public class GameManager : MonoBehaviour
             return;
         }
         
-        if (cubeyPlayer == null)
-        {
-            Debug.LogError("ALERT: Can't find Cubey!");
-            return;
-        }
-        
         cubeyPlayer.SetActive(true);
         cubeyPlayer.transform.SetParent(gameFolder, true);
-        // ReParentExitSwirl(false);
         GetPlayerSpawn();
         playerRb = cubeyPlayer.gameObject.GetComponent<Rigidbody>();
         playerRb.freezeRotation = true;
@@ -531,8 +507,6 @@ public class GameManager : MonoBehaviour
         playerRb.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationY | RigidbodyConstraints.FreezePositionZ;
         if (leanForceRb == null)
             leanForceRb = cubeyPlayer.GetComponent<LeanForceRigidbodyCustom>();
-        // else
-        //     PlayerAllowedJump(true);
 
         RestartTimer();
     }
@@ -582,7 +556,7 @@ public class GameManager : MonoBehaviour
 
         if (pickupGroup == null)
         {
-            Debug.Log("<color:red>Setup pickups for level!</color>");
+            // Debug.Log("<color:red>Setup pickups for level!</color>");
             return;
         }
 
@@ -621,7 +595,7 @@ public class GameManager : MonoBehaviour
             // enable and scale up exit to full size
             exitObject.SetActive(true);
             exitObject.transform.GetChild(0).gameObject.SetActive(true);
-            Debug.Log("Open Exit");
+            // Debug.Log("Open Exit");
         }
     }
 
@@ -647,7 +621,7 @@ public class GameManager : MonoBehaviour
         }
         else
         {
-            Debug.LogError("Can't find the exit in: " + mapManager.LevelGameObject.name);
+            // Debug.LogError("Can't find the exit in: " + mapManager.LevelGameObject.name);
             return null;
         }
     }
@@ -731,7 +705,7 @@ public class GameManager : MonoBehaviour
     {
         var jumps = jumpsToStartWith - jumpLeft;
 
-        print("jumps: " + jumps + ", jumpsToStartWith: " + jumpsToStartWith);
+        // print("jumps: " + jumps + ", jumpsToStartWith: " + jumpsToStartWith);
 
         if (jumps <= threeStars)
             return SaveLoadManager.Awards.ThreeStars;
@@ -750,24 +724,6 @@ public class GameManager : MonoBehaviour
         
         SetStarAward(level, award);
     }
-
-    /*private void Set1Star(int chapter, int level, SaveLoadManager.Awards award)
-    {
-        if (award == SaveLoadManager.Awards.Bronze && SaveLoadManager.GetLevelAward(level, award) == (int)SaveLoadManager.Awards.NoAward)
-        {
-            SaveLoadManager.SetAward(level, SaveLoadManager.Awards.Bronze);
-        }
-    }*/
-    
-    
-    /*private void Set2Stars(int chapter, int level, SaveLoadManager.Awards award)
-    {
-        if (award == SaveLoadManager.Awards.Silver && SaveLoadManager.GetLevelAward(level, award) == (int)SaveLoadManager.Awards.NoAward)
-        {
-            Set1Star(chapter, level, award);
-            SaveLoadManager.SetAward(level, SaveLoadManager.Awards.Silver);
-        }
-    }*/
     
     private void SetStarAward(int level, SaveLoadManager.Awards award)
     {
@@ -775,11 +731,6 @@ public class GameManager : MonoBehaviour
         
         if (levelAward < (int)award)
             SaveLoadManager.SetAward(level, award);
-        
-        /*if (award == SaveLoadManager.Awards.ThreeStars && SaveLoadManager.GetLevelAward(level, award) == (int)SaveLoadManager.Awards.NoAward)
-        {
-            SaveLoadManager.SetAward(level, SaveLoadManager.Awards.ThreeStars);
-        }*/
     }
     
     [SerializeField] private List<Image> starImages;
@@ -826,7 +777,7 @@ public class GameManager : MonoBehaviour
                 UpdateEndScreenInfoText(FinishedInfo.Failed);
                 break;
             case SaveLoadManager.Awards.OneStar:
-                Debug.Log("Running bronze stars");
+                // Debug.Log("Running bronze stars");
                 starImages[0].color = ColourManager.starBronze;
                 starImages[1].color = ColourManager.starDefault;
                 starImages[2].color = ColourManager.starDefault;
@@ -843,7 +794,7 @@ public class GameManager : MonoBehaviour
                 UpdateEndScreenInfoText(FinishedInfo.Nearly);
                 break;
             case SaveLoadManager.Awards.TwoStars:
-                Debug.Log("Running silver stars");
+                // Debug.Log("Running silver stars");
                 starImages[0].color = ColourManager.starBronze;
                 starImages[1].color = ColourManager.starSilver;
                 starImages[2].color = ColourManager.starDefault;
@@ -861,7 +812,7 @@ public class GameManager : MonoBehaviour
                 UpdateEndScreenInfoText(FinishedInfo.Nearly);
                 break;
             case SaveLoadManager.Awards.ThreeStars:
-                Debug.Log("Running gold stars");
+                // Debug.Log("Running gold stars");
                 starImages[0].color = ColourManager.starBronze;
                 starImages[1].color = ColourManager.starSilver;
                 starImages[2].color = ColourManager.starGold;

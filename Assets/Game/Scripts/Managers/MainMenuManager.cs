@@ -52,11 +52,8 @@ public class MainMenuManager : MonoBehaviour
     private Vector3 scale1 = new Vector3(0.95f, 0.95f, 0.95f);
     private Vector3 scale2 = new Vector3(0.95f, 0.95f, 0.95f);
 
-    [SerializeField]
-    private LeanCameraZoomSmooth leanZoom;
-
+    [SerializeField] private LeanCameraZoomSmooth leanZoom;
     [SerializeField] private List<GameObject> chapterButtons;
-
     [SerializeField] private Color fadedButton = new Color(0.25f, 0.25f, 0.25f);
     [SerializeField] private Color unlockedButton = Color.white;
     
@@ -77,8 +74,6 @@ public class MainMenuManager : MonoBehaviour
 
     private void Awake()
     {
-        // Application.targetFrameRate = 120;
-    
         SetNavButtons(false);
         
         if (visualEffects == null) visualEffects = GetComponent<VisualEffects>();

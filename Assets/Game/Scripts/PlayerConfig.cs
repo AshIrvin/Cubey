@@ -9,14 +9,14 @@ namespace Game.Scripts
         // Todo - move player related setup methods here
         // or change name of script
         
-        private void OnCollisionEnter(Collision collision)
+        /*private void OnCollisionEnter(Collision collision)
         {
             if (collision.collider.CompareTag("Platform"))
             {
                 // VisualEffects.Instance.LandingDust();
                 VisualEffects.Instance.PlayEffect(VisualEffects.Instance.peLandingDust, transform.position);
             }
-        }
+        }*/
 
     }
 }
