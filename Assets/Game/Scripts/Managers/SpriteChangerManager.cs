@@ -35,7 +35,7 @@ public class SpriteChangerManager : MonoBehaviour
             SetSmiles();
     }
 
-    private void SmoothTransition()
+    /*private void SmoothTransition()
     {
 
         time -= Time.deltaTime;
@@ -44,7 +44,7 @@ public class SpriteChangerManager : MonoBehaviour
             SetSprite(1, 0);
             time = 1f;
         }
-    }
+    }*/
 
     private void SetSmiles()
     {
@@ -112,10 +112,17 @@ public class SpriteChangerManager : MonoBehaviour
         if (n >= 0 && n < sprites.Length)
         {
             sprites[n].SetActive(true);
-            if (sprites.Length > 1)
+            try
             {
-                if (m == 2)
-                    sprites[m].SetActive(true);
+                if (sprites.Length > 1)
+                {
+                    if (m == 2)
+                        sprites[m].SetActive(true);
+                }
+            }
+            catch (System.Exception ex)
+            {
+                Debug.Log("sprite changer error: " + ex.Message);
             }
         }
 

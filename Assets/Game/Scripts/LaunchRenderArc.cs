@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using DG.Tweening;
 using UnityEngine;
 using Lean.Touch;
+using Mono.CompilerServices.SymbolWriter;
 
 [RequireComponent(typeof(LineRenderer))]
 public class LaunchRenderArc : MonoBehaviour
@@ -25,7 +27,7 @@ public class LaunchRenderArc : MonoBehaviour
     [SerializeField] private float distance = 18;
 
     [Header("Other")]
-    [SerializeField] private int resolution = 15;
+    [SerializeField] private int resolution = 13;
     [SerializeField] private Vector3 groundOffset;
     [SerializeField] private Vector3 mousePos;
     [SerializeField] public Vector3 leanEndPos;
@@ -38,19 +40,29 @@ public class LaunchRenderArc : MonoBehaviour
 
     [SerializeField] private List<GameObject> dotSprites = new List<GameObject>();
     [SerializeField] private GameObject dottedLineArcGroup;
-    [SerializeField] private Color[] spriteColours;
+    // [SerializeField] private Color[] spriteColours;
 
     private float leanAngle;
     private LineRenderer lr;
     private List<LeanTouch> lt;
     private float g;
     private float radianAngle;
-    
+    private bool allowFade;
+
     public float timeToFade = 2f;
+    public Vector3 firstPosition;
     
+    [SerializeField] private Vector3[] arcArray;
+    private CanvasGroup canvasGroup;
+
+    private Tween tween;
+    private float fadeSpeed = 1f;
+
+
     private void Awake()
     {
         launchArc.OnValueChanged += EnableLaunchArc;
+        FingerPos.belowCubey += DelayBeforeRenderArc;
     }
 
     private void Start()
@@ -58,8 +70,11 @@ public class LaunchRenderArc : MonoBehaviour
         lr = GetComponent<LineRenderer>();
         g = Mathf.Abs(Physics2D.gravity.y);
         cubey = transform.parent.gameObject;
+        
         if (leanForce == null)
+        {
             leanForce = transform.GetComponentInParent<LeanForceRigidbodyCustom>();
+        }
         
         dotSprites.Clear();
         var arc = Instantiate(dottedLineArcGroup);
@@ -69,45 +84,37 @@ public class LaunchRenderArc : MonoBehaviour
         {
             dotSprites.Add(arc.transform.GetChild(i).gameObject);
         }
-        
-        spriteColours = new Color[dotSprites.Count];
-        for (int i = 0; i < dotSprites.Count; i++)
-        {
-            spriteColours[i] = dotSprites[i].GetComponent<SpriteRenderer>().color;
-        }
+
+        resolution = dotSprites.Count;
+
+        canvasGroup = arc.GetComponent<CanvasGroup>();
 
         EnableLaunchArc(false);
-    }
-
-    private void Update()
-    {
-        if (Time.timeScale > 0.2f)
-        {
-            // StartCoroutine(DelayBeforeRenderArc());
-            DelayBeforeRenderArc();
-        }
     }
 
     private void OnDestroy()
     {
         launchArc.OnValueChanged -= EnableLaunchArc;
+        FingerPos.belowCubey -= DelayBeforeRenderArc;
     }
 
     private void DelayBeforeRenderArc()
     {
-        if (Input.GetMouseButton(0) && launchArc.CurrentValue && FingerPos.belowPlayer)
+        if (Time.timeScale < 0.2f)
+        {
+            return;
+        }
+        
+        if (launchArc.CurrentValue)
         {
             RenderArc();
         }
-        
-        if (Input.GetMouseButtonUp(0) && spriteColours[0].a > 0)
-        {
-            StartCoroutine(DelayFadeArc());
-        }
     }
-    
+
     private void EnableLaunchArc(bool on)
     {
+        if (!gameObject.activeInHierarchy) return;
+            
         renderArcAllowed = on;
         gameManager.LaunchArc = on;
         if (!on)
@@ -115,7 +122,7 @@ public class LaunchRenderArc : MonoBehaviour
             EnableArc(false);
         }
     }
-    
+
     private void RenderArc()
     {
         ResetArc();
@@ -131,56 +138,38 @@ public class LaunchRenderArc : MonoBehaviour
         }
 
         lr.positionCount = resolution + 1;
-        SpawnArcSprites(CalculateArcArray());
+        PositionArcSprites(CalculateArcArray());
 
         leanAngle = leanForce.Angle;
-        
-        // Debug.Log("Rendering Arc: " + leanAngle);
     }
 
-    IEnumerator DelayFadeArc()
+    private IEnumerator DelayFadeArc()
     {
         allowFade = true;
         yield return new WaitForSeconds(1);
-        StartCoroutine(FadeArc(0.5f));
+        StartCoroutine(FadeArc());
     }
 
-    private bool allowFade;
-    
-    IEnumerator FadeArc(float fadeSpeed)
+    private IEnumerator FadeArc()
     {
         if (!allowFade) yield break;
-        
-        while (spriteColours[0].a > 0)
-        {
-            for (int i = 0; i < spriteColours.Length; i++)
-            {
-                float alpha = spriteColours[i].a - (fadeSpeed * Time.deltaTime);
-                spriteColours[i] = new Color(spriteColours[i].r, spriteColours[i].g, spriteColours[i].b, alpha);
-            }
+        tween.Kill();
+        tween = DOTween.To(() => canvasGroup.alpha, x => canvasGroup.alpha = x, 0, fadeSpeed);
+        // tween = DOTween.Sequence().Append(DOTween.To(() => canvasGroup.alpha, x => canvasGroup.alpha = x, 0, fadeSpeed));
 
-            AssignToSprite();
-            yield return null;
-        }
-    }
-
-    private void AssignToSprite()
-    {
-        for (int i = 0; i < dotSprites.Count; i++)
-        {
-            dotSprites[i].GetComponent<SpriteRenderer>().color = spriteColours[i];
-        }
+        yield return null;
     }
 
     private void ResetArc()
     {
         allowFade = false;
         
-        LoopSpriteColours(1);
+        SetCanvasAlpha(1);
     }
-    
-    private void SpawnArcSprites(Vector3[] positions)
+
+    private void PositionArcSprites(Vector3[] positions)
     {
+        // Debug.Log("dotSprites length: " + dotSprites.Count + ", positions.length: " + positions.Length);
         for (int i = 0; i < positions.Length-1; i++)
         {
             dotSprites[i].transform.position = positions[i];
@@ -194,32 +183,21 @@ public class LaunchRenderArc : MonoBehaviour
         
         if (!enable)
         {
-            LoopSpriteColours(0);
+            StartCoroutine(DelayFadeArc());
         }
     }
 
-    private void LoopSpriteColours(float alpha)
+    private void SetCanvasAlpha(float alpha)
     {
-        for (int i = 0; i < spriteColours.Length; i++)
-        {
-            spriteColours[i] = new Color(spriteColours[i].r, spriteColours[i].g, spriteColours[i].b, alpha);
-        }
-        AssignToSprite();
-    }
-
-    private Vector3 GetMousePoint()
-    {
-        Ray castPoint = Camera.main.ScreenPointToRay(Input.mousePosition);
-
-        mousePos = castPoint.origin + (castPoint.direction * distance);
-
-        return mousePos;
+        tween.Kill();
+        canvasGroup.alpha = alpha;
     }
 
     private float CalculateMouseAngle()
     {
         var startPosition = cubey.transform.position;
 
+        // mousePos = FingerPos.FingerPosition;
         mousePos = GetMousePoint();
         velocity = Vector3.Distance(mousePos, startPosition);
         velocity *= extraPower;
@@ -240,12 +218,20 @@ public class LaunchRenderArc : MonoBehaviour
         return angle2;
     }
 
-    public Vector3 firstPosition;
+    private Vector3 GetMousePoint()
+    {
+        Ray castPoint = Camera.main.ScreenPointToRay(Input.mousePosition);
+
+        mousePos = castPoint.origin + (castPoint.direction * distance);
+
+        return mousePos;
+    }
     
     private Vector3[] CalculateArcArray()
     {
-        Vector3[] arcArray = new Vector3[resolution + 1];
-
+        arcArray = new Vector3[resolution + 1];
+        // firstPosition = Vector3.zero;
+        
         angle = CalculateMouseAngle();
 
         radianAngle = Mathf.Deg2Rad * angle;

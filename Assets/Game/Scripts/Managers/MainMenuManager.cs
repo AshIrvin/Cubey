@@ -26,7 +26,8 @@ public class MainMenuManager : MonoBehaviour
     [Header("Extra screens")]
     [SerializeField] private GameObject chapterFinishScreen;
     [SerializeField] private bool deleteLastChapterFinishScreenData;
-
+    [SerializeField] private GameObject loadingScreen;
+    
     // Old
     [Header("Scripts")]
     [SerializeField] private VisualEffects visualEffects;
@@ -59,6 +60,7 @@ public class MainMenuManager : MonoBehaviour
     
     public int chapterUnlockedTo;
 
+    public static Action onStart;
 
     public bool NavButtons
     {
@@ -75,6 +77,7 @@ public class MainMenuManager : MonoBehaviour
     private void Awake()
     {
         SetNavButtons(false);
+        LoadingScene(true);
         
         if (visualEffects == null) visualEffects = GetComponent<VisualEffects>();
         if (audioManager == null) audioManager = GetComponent<AudioManager>();
@@ -110,7 +113,8 @@ public class MainMenuManager : MonoBehaviour
         SetMenuEnvironment(SaveLoadManager.LastChapterPlayed);
         chapterFinishScreen.SetActive(false);
         
-        // if purchased, show a thank you message from Cubey
+        onStart.Invoke();
+        LoadingScene(false);
     }
 
     private void OnEnable()
@@ -142,6 +146,16 @@ public class MainMenuManager : MonoBehaviour
         }
     }
 
+    public IEnumerator LoadingScene(bool on)
+    {
+        if (loadingScreen != null)
+        {
+            loadingScreen.SetActive(on);
+            yield return new WaitForSeconds(0.2f);
+            loadingScreen.SetActive(false);
+        }
+    }
+    
     public void ToggleGameObject(GameObject gameObject)
     {
         gameObject.SetActive(!gameObject.activeInHierarchy);
@@ -293,8 +307,8 @@ public class MainMenuManager : MonoBehaviour
         menuEnvironmentParent.SetActive(true);
         mapManager.enabled = false;
         audioManager.AudioButtons.SetActive(enable);
-        cameraManager.panToLevel = false;
-        cameraManager.disableAutoPanMapCam = false;
+        // cameraManager.panToLevel = false;
+        // cameraManager.disableAutoPanMapCam = false;
         
         leanZoom.enabled = false;
         backButton.onClick.AddListener(MainMenuScreen);

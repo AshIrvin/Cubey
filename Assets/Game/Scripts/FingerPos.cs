@@ -20,7 +20,8 @@ public class FingerPos : MonoBehaviour
 
     public Vector3 GetPlayerPosition => transform.position;
 
-    public Action belowCubey;
+    public static Action belowCubey;
+    public static Action aboveCubey;
     
     private void Awake()
     {
@@ -56,8 +57,11 @@ public class FingerPos : MonoBehaviour
 
             if (belowPlayer)
             {
-                belowCubey.Invoke(); // will this loop on button down?
-                Debug.Log("below cubey");
+                belowCubey?.Invoke();
+            }
+            else
+            {
+                aboveCubey?.Invoke();
             }
         }
     }

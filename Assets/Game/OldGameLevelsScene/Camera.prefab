@@ -90,15 +90,12 @@ MonoBehaviour:
   cubeyOnMap: {fileID: 0}
   speed: 0.1
   camTime: 1
-  camToLevelButtonTime: 1.4
+  camToLevelButtonTime: 2.5
   gameCamTime: 0.5
-  camMapDragTime: 0.3
   velocity: {x: 0, y: 0, z: 0}
   startFromExit: 0
   panToLevel: 0
   disableAutoPanMapCam: 0
-  delayCameraOnExitStart: 0.5
-  gameCamTime2: 3
   nextOpenLevel: {x: 0, y: 0, z: 0}
   panningToLevel: 0
 --- !u!114 &8411527538666725389

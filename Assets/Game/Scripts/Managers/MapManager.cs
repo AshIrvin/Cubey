@@ -14,7 +14,7 @@ public class MapManager : MonoBehaviour
     [Header("Scripts")]
     [SerializeField] private SaveMetaData saveMetaData;
     [SerializeField] private ChapterList allChapters;
-    [SerializeField] private BoolGlobalVariable enableGameManager;
+    [SerializeField] private BoolGlobalVariable gameLevel;
     [SerializeField] private MainMenuManager mainMenuManager;
     [SerializeField] private InitialiseAds initialiseAds;
     [SerializeField] private int levelsPlayed;
@@ -40,10 +40,11 @@ public class MapManager : MonoBehaviour
     
     public static Action LoadAd;
     public static Action PrepareAd;
+    public static Action MapOpened;
     
-    private bool EnableGameManager
+    private bool GameLevel
     {
-        set => enableGameManager.CurrentValue = value;
+        set => gameLevel.CurrentValue = value;
     }
 
     public GameObject LevelGameObject
@@ -101,7 +102,8 @@ public class MapManager : MonoBehaviour
         mapActive = true;
         SetCubeyMapPosition(false);
         VisualEffects.Instance.PlayEffect(VisualEffects.Instance.peNewLevel);
-        // PrepareGoogleAds();
+
+        MapOpened.Invoke();
     }
 
     /// <summary>
@@ -242,7 +244,7 @@ public class MapManager : MonoBehaviour
     public void RestartLevel()
     {
         Debug.Log("Restarting Level");
-        EnableGameManager = false;
+        GameLevel = false;
         Destroy(levelGameObject);
         if (LevelParent.transform.childCount > 0)
         {
@@ -254,7 +256,7 @@ public class MapManager : MonoBehaviour
         
         LevelGameObject = Instantiate(allChapters[SaveLoadManager.LastChapterPlayed].LevelList[SaveLoadManager.LastLevelPlayed].LevelPrefab, LevelParent.transform);
         levelGameObject.SetActive(true);
-        EnableGameManager = true;
+        GameLevel = true;
         enabled = false;
     }
 
@@ -304,7 +306,7 @@ public class MapManager : MonoBehaviour
         
         levelGameObject?.SetActive(true);
         bgAdBlocker.SetActive(false);
-        EnableGameManager = true;
+        GameLevel = true;
         enabled = false;
         mainMenuManager?.SetCollisionBox("LevelCollision", levelCollision);
     }
@@ -315,7 +317,7 @@ public class MapManager : MonoBehaviour
         GameObject cubey = GameObject.FindWithTag("Player").transform.gameObject;
         cubey.transform.SetParent(null, true);
         VisualEffects.Instance.peExitSwirl.transform.SetParent(VisualEffects.Instance.ParticleEffectsGo.transform, true);
-        EnableGameManager = false;
+        GameLevel = false;
         Time.timeScale = 1;
         enabled = true;
         DestroyLevels();

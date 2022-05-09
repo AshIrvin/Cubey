@@ -1,4 +1,5 @@
-﻿using UnityEditor.Rendering;
+﻿using System;
+using UnityEditor.Rendering;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
@@ -54,132 +55,55 @@ public class VisualEffects : MonoBehaviour
     public bool enableSizeIncrease;
     public bool enableColour;
 
+    public float powerDustOffset = 0.1f;
+    public float powerDustDistanceOffset = 2f;
+
     public GameObject ParticleEffectsGo
     {
         get => particleEffectsGo;
         set => particleEffectsGo.SetActive(value);
     }
-    
+
     private void Awake()
     {
         Instance = this;
+
+        FingerPos.belowCubey += PowerDustEffect;
+        // FingerPos.aboveCubey += StopDustEffect;
     }
 
-    // Todo - need rid of this. Add action to on finger below cubey?
-    private void Update()
+    private void OnDestroy()
     {
-        PowerDustEffect();
+        FingerPos.belowCubey -= PowerDustEffect;
+        // FingerPos.aboveCubey -= StopDustEffect;
     }
 
-    public float powerDustOffset = 0.1f;
-    public float powerDustDistanceOffset = 2f;
-    // private bool allowedAudio = true;
+    private void LateUpdate()
+    {
+        if (pePowerDust.isPlaying && Input.GetMouseButtonUp(0))
+        {
+            StopEffect(pePowerDust);
+        }
+    }
     
     private void PowerDustEffect()
     {
-        if (!gameManager.enabled || Time.timeScale < 0.5f)
+        if (!gameManager.enabled || Time.timeScale < 0.5f || !gameManager.allowPlayerMovement)
             return;
-
-        if (Input.GetMouseButton(0) && FingerPos.belowPlayer)
-        {
-            var playerPos = gameManager.CubeyPlayer.transform.position;
-            playerPos.y -= powerDustOffset;
-            PlayEffect(pePowerDust, playerPos);
-            var pePlayerDist = Vector3.Distance(playerPos, FingerPos.FingerPosition);
-            /*if (allowedAudio)
-            {
-                allowedAudio = false;
-                audioManager.PlayAudio(audioManager.cubeyPowerUp);
-            }*/
-            
-            var peMain = pePowerDust.main;
-            peMain.startSpeed =pePlayerDist * powerDustDistanceOffset;
-        }
-        else if (Input.GetMouseButtonUp(0))
-        {
-            StopEffect(pePowerDust);
-            // audioManager.StopAudio(audioManager.cubeyPowerUp);
-            // allowedAudio = true;
-        }
+        
+        var playerPos = gameManager.CubeyPlayer.transform.position;
+        playerPos.y += powerDustOffset;
+        PlayEffectOnceUpdatePos(pePowerDust, playerPos);
+        var pePlayerDist = Vector3.Distance(playerPos, FingerPos.FingerPosition);
+        var peMain = pePowerDust.main;
+        peMain.startSpeed =pePlayerDist * powerDustDistanceOffset;
     }
     
-    // no longer used??
-    /*private void BlastOffEffect()
-    {
-        if (Input.GetMouseButtonUp(0))
-        {
-            StopEffect(pePowerJump);
-        }
-
-        if (Input.GetMouseButton(0))
-        {
-            var ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-
-            var playerPos = gameManager.CubeyPlayer.transform.position;
-            playerPos.z -= 0.2f;
-            var distance = FingerPos.GetCameraPlayerDistance();
-            var fingerPos = FingerPos.FingerPosition;
-
-            // Todo - fix start point to keep PE on z 0
-            fingerPos.z = angle;
-
-            if (Physics.Raycast(ray) && FingerPos.belowPlayer)
-            {
-                audioManager.PlayAudio(audioManager.cubeyPowerUp);
-
-                var peMain = pePowerJump.main;
-                peMain.loop = true;
-                var peEmit = pePowerJump.emission;
-                peEmit.enabled = true;
-                var direction = FingerPos.FingerPlayerDirection;
-                pePowerJump.Play();
-
-                pePowerJump.transform.rotation = Quaternion.LookRotation(direction, Vector3.up);;
-                pePowerJump.transform.position = playerPos + Vector3.ClampMagnitude(direction, spawnPeBlastDist);
-
-                var pePlayerDist = Vector3.Distance(playerPos, pePowerJump.transform.position);
-                peMain.startLifetime = pePlayerDist;
-                peMain.startSpeed = pePlayerDist * peSpeed;
-
-                if (enableSizeIncrease)
-                    peMain.startSize = pePlayerDist / powerLength;
-
-                if (enableColour)
-                {
-                    peMain.startColor = Color.Lerp(new Color(0.9f, 1f, 0f), new Color(1f, 0.1f, 0f), pePlayerDist/ powerLength);
-                    var startColor = peMain.startColor;
-                    startColor.colorMin = Color.Lerp(Color.yellow, Color.red, pePlayerDist / 6);;
-                    peMain.startColor = startColor;
-                }
-            }
-        }
-        else
-        {
-            StopEffect(pePowerJump);
-            audioManager.StopAudio(audioManager.cubeyPowerUp);
-        }
-    }*/
-
     public void StopEffect(ParticleSystem effect)
     {
         effect.Stop(true);
+        effect.Clear(true);
     }
-
-    /*public void LandingDust()
-    {
-        peLandingDust.gameObject.SetActive(true);
-        peLandingDust.Play();
-        var pos = gameManager.CubeyPlayer.transform.position;
-        pos.y -= powerDustOffset;
-        PlayEffect(peLandingDust, pos);
-    }*/
-
-    /*public void PlayerTrail()
-    {
-        pePlayerTrail.gameObject.SetActive(true);
-        pePlayerTrail.Play();
-        pePlayerTrail.gameObject.transform.position = gameManager.CubeyPlayer.transform.position;
-    }*/
 
     public void ExitCompletion()
     {
@@ -221,6 +145,20 @@ public class VisualEffects : MonoBehaviour
             effect.gameObject.SetActive(true);
             effect.gameObject.transform.position = pos;
             effect.Play();
+        }
+    }
+    
+    public void PlayEffectOnceUpdatePos(ParticleSystem effect, Vector3 pos)
+    {
+        if (!effect.isPlaying)
+        {
+            effect.gameObject.transform.position = pos;
+            effect.gameObject.SetActive(true);
+            effect.Play();
+        }
+        else
+        {
+            effect.gameObject.transform.position = pos;
         }
     }
 }

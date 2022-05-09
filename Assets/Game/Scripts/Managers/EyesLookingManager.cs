@@ -50,6 +50,13 @@ public class EyesLookingManager : MonoBehaviour
     private void Awake()
     {
         pointsOfInterestManager = FindObjectOfType<PointsOfInterestManager>();
+
+        FingerPos.belowCubey += SubEyesMovement;
+    }
+
+    private void OnDestroy()
+    {
+        FingerPos.belowCubey -= SubEyesMovement;
     }
 
     private void Start()
@@ -87,27 +94,21 @@ public class EyesLookingManager : MonoBehaviour
         // showPupilMovement = false;
     }
 
-    // Todo - can I do something about this?
+    // Todo - can I do something about this? use actions??
     private void Update()
     {
         if (!gameObject.activeInHierarchy)
             return;
         
-        if (cubey)
+        if (cubey && randomEyeMovement < 0)
         {
-            if (FingerPos.belowPlayer && !gameObject.name.Contains("CubeyOnMap") 
-                                      && !gameObject.name.Contains("MenuCubey"))
-            {
-                EyesMovement(GetPositionFromAngle());
-            }
-            else if (randomEyeMovement < 0)
-            {
-                EyesMovement(RandomlyChoosePoint());
-            }
+            EyesMovement(RandomlyChoosePoint());
         }
-        if (playerTarget != null && !cubey)
+        
+        if (playerTarget != null && !cubey && randomEyeMovement < 0)
         {
             EyesMovement(playerTarget.transform.position);
+            SetEyeDelay();
         }
 
         if (randomEyeReset < 0)
@@ -128,7 +129,6 @@ public class EyesLookingManager : MonoBehaviour
             pupils.transform.localPosition = defaultPos;
         yield return new WaitForSeconds(delay);
         RandomEyeReset();
-        // SetEyeDelay();
     }
 
     // Todo - this is awful
@@ -146,16 +146,22 @@ public class EyesLookingManager : MonoBehaviour
     private void SetEyeDelay()
     {
         randomEyeMovement = UnityEngine.Random.Range(eyeTimeMovementMin, eyeTimeMovementMax);
-        // target = RandomlyChoosePoint();
     }
 
     private void RandomEyeReset(){
         randomEyeReset = UnityEngine.Random.Range(2, 6);
     }
 
+    private void SubEyesMovement()
+    {
+        if (cubey && gameObject.activeInHierarchy)
+        {
+            EyesMovement(GetPositionFromAngle());
+        }
+    }
+    
     private void EyesMovement(Vector3 newTarget)
     {
-        // Debug.Log("Move pupils");
         MovePupils(newTarget);
         
         Debug.DrawLine(pupilCenterTarget.transform.position, newTarget, Color.yellow, 1f);
@@ -167,8 +173,6 @@ public class EyesLookingManager : MonoBehaviour
         Vector3 localTarget = transform.InverseTransformPoint(target);
         localTarget.z = 0;
         pupils.transform.localPosition = Vector3.MoveTowards(pupilCenterTarget.transform.localPosition, localTarget, dist);
-        // Todo Change eye movement to DoTween?
-        // pupils.transform.DOLocalMove(pupilCenterTarget.transform.localPosition, eyeMovementSpeed);
     }
 
     private float MoveEyesAlongX(float posX)

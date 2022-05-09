@@ -250,45 +250,11 @@ public class SaveLoadManager : MonoBehaviour
     public static int GetLevelAward(int level)
     {
         return SaveStaticList[lastChapterPlayed].levels[level].stars;
-        
-        /*switch (awardType)
-        {
-            case Awards.NoAward:
-                // no award
-                break;
-            case Awards.OneStar:
-                return SaveStaticList[lastChapterPlayed].levels[level].bronze;
-                break;
-            case Awards.TwoStars:
-                return SaveStaticList[lastChapterPlayed].levels[level].silver;
-                break;
-            case Awards.ThreeStars:
-                return SaveStaticList[lastChapterPlayed].levels[level].stars;
-                break;
-        }
-        return 0;*/
     }
 
     public static int GetChapterAward(int chapter, Awards awardType)
     {
         return SaveStaticList[chapter].allStars;
-        
-        /*switch (awardType)
-        {
-            case Awards.NoAward:
-                // no award
-                break;
-            case Awards.OneStar:
-                return SaveStaticList[chapter].allBronze;
-                break;
-            case Awards.TwoStars:
-                return SaveStaticList[chapter].allSilver;
-                break;
-            case Awards.ThreeStars:
-                return SaveStaticList[chapter].allStars;
-                break;
-        }
-        return 0;*/
     }
     
     /// <summary>

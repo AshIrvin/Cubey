@@ -91,6 +91,8 @@ public class GameManager : MonoBehaviour
 
     [Header("UI Pickups")]
     [SerializeField] private List<Image> pickupUiImages;
+
+    public static Action LevelLoaded;
     
     public bool GameLevel
     {
@@ -318,6 +320,8 @@ public class GameManager : MonoBehaviour
         TimeTaken(true);
 
         PlayerFaceDirection(exitObject.transform.position.x < 0);
+        
+        LevelLoaded?.Invoke();
     }
 
     public void Update()
@@ -448,7 +452,7 @@ public class GameManager : MonoBehaviour
         playerRb.isKinematic = false;
         HideScreens();
         enabled = false;
-        mapManager.enabled = true;
+        // mapManager.enabled = true; // not needed
         mapManager.RestartLevel();
         TimeTaken(true);
     }
@@ -858,7 +862,7 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    IEnumerator LoadingScene(bool on)
+    public IEnumerator LoadingScene(bool on)
     {
         if (loadingScreen != null)
         {

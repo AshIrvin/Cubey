@@ -6,6 +6,7 @@ using DG.Tweening;
 using Game.Scripts;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 using Debug = UnityEngine.Debug;
 
 
@@ -28,11 +29,11 @@ public class CameraManager : MonoBehaviour
     [Header("Floats")]
     [SerializeField] private float speed = 0.1f;
     [SerializeField] private float camTime = 1f;
-    [SerializeField] private float camToLevelButtonTime = 1.4f;
-    [SerializeField] private float gameCamTime = 1f;//0.3f;
+    [SerializeField] private float camToLevelButtonTime = 2.5f; // old 1.4
+    [SerializeField] private float panToCubeyTime = 1f;//0.3f;
     // [SerializeField] private float camMapDragTime = 0.3f;
     [SerializeField] private Vector3 velocity = Vector3.zero;
-    [SerializeField] private bool startFromExit;
+    private bool panningFromExit;
     
     private Vector3 dragOrigin; //Where are we moving?
     private Vector3 buttonToStartFrom;
@@ -42,28 +43,54 @@ public class CameraManager : MonoBehaviour
     private float distanceFromEndButton;
     private bool playedIntroOnce;
     private bool reachedStartButton;
-    private bool reachedEndButton;
+    // private bool reachedEndButton;
 
-    public bool panToLevel;
-    public bool disableAutoPanMapCam;
+    // public bool panToLevel;
+    // public bool disableAutoPanMapCam;
+
+    [SerializeField] private float delayCameraOnExitStart = 1f;
+    private float gameCamTime2 = 2;
+    private float defaultGameCamTime = 0.5f;
+    private float camCubeyDistance = 0.3f;
+
+    [SerializeField] private Vector3 nextOpenLevel;
+    [SerializeField] private int panningToLevel;
+    [SerializeField] private Toggle autoPanToCubeyButton;
+    
+    private Tween panToCubey;
+    
+    
     
     public bool GameLevel
     {
         get => gameLevel.CurrentValue;
         set => gameLevel.CurrentValue = value;
     }
+
+    public bool autoPanToCubey = true;
     
     private GameObject CubeyPlayer => gameManager.CubeyPlayer;
-    
-    
+
+
     private void Awake()
     {
-        gameLevel.OnValueChanged += EnteringLevel;
+        GameManager.LevelLoaded += EnteringLevel;
+        MainMenuManager.onStart += PlayStartCameraSweep;
+        MapManager.MapOpened += PanToLevelButton;
+        // GameManager.LevelLoaded += PanToLevelCubey;
+    }
+
+    private void Start()
+    {
+        LoadAutoPanMode();
     }
 
     private void OnDestroy()
     {
-        gameLevel.OnValueChanged -= EnteringLevel;
+        GameManager.LevelLoaded -= EnteringLevel;
+        MainMenuManager.onStart -= PlayStartCameraSweep;
+        MapManager.MapOpened -= PanToLevelButton;
+        // GameManager.LevelLoaded -= PanToLevelCubey;
     }
 
     private void OnDisable()
@@ -72,117 +99,73 @@ public class CameraManager : MonoBehaviour
         nextOpenLevel = chapterList[SaveLoadManager.LastChapterPlayed].ChapterMapButtonList[SaveLoadManager.LastLevelUnlocked].transform.position;
     }
 
-    private void Start()
-    {
-        panToLevel = false;
-    }
-
-    // todo fix this mess
     private void Update()
     {
-        if (!playedIntroOnce && !mapManager.mapActive)
-            StartCoroutine(PlayStartCameraSweep());
-
-        if (mapManager.mapActive && !panToLevel && !reachedEndButton)
-            StartCoroutine(PanToLevelButton());
-        
-        if (!gameManager.CamMovement || startFromExit) return;
-
-        if (!mapManager.enabled)
+        if (panToCubey != null)
         {
-            if (CubeyPlayer == null || cubeyOnMap == null)
+            if (panToCubey.IsPlaying() && Input.GetMouseButtonDown(0))
             {
-                return;
+                KillSequence();
             }
-            
-            if (gameManager.GameLevel)
-            {
-                transform.position = Vector3.SmoothDamp(transform.position, CubeyPlayer.transform.position, ref velocity, gameCamTime);
-                // transform.DOMove(CubeyPlayer.transform.position, gameCamTime);
-                return;
-            }
-            else
-            {
-                transform.position = Vector3.SmoothDamp(transform.position, cubeyOnMap.transform.position, ref velocity, gameCamTime);
-                // transform.DOMove(cubeyOnMap.transform.position, gameCamTime);
-                return;
-            }
-        }
-    }
-
-    private void CameraPath(int n)
-    {
-        switch (n)
-        {
-            case 1:
-                StartCoroutine(PlayStartCameraSweep());
-                break;
-            case 2:
-                StartCoroutine(PanToLevelButton());
-                break;
-            case 3:
-                Debug.Log("Moving to Cubey level position");
-                // transform.position = Vector3.SmoothDamp(transform.position, CubeyPlayer.transform.position, ref velocity, gameCamTime);
-                transform.DOMove(CubeyPlayer.transform.position, gameCamTime);
-                break;
-            case 4:
-                Debug.Log("Moving to Cubey MAP position");
-                // transform.position = Vector3.SmoothDamp(transform.position, cubeyOnMap.transform.position, ref velocity, gameCamTime);
-                transform.DOMove(cubeyOnMap.transform.position, gameCamTime);
-                break;
-            default:
-                break;
-        }
-    }
-
-    private void EnteringLevel(bool enable)
-    {
-        startFromExit = true;
-            
-        if (!enable)
-        {
-            reachedStartButton = false;
-            reachedEndButton = false;
-            disableAutoPanMapCam = false;
-            panToLevel = false;
-            return;
         }
         
-        if (startFromExit)
+        if (autoPanToCubey && !mapManager.enabled && gameManager.GameLevel && !panningFromExit) 
         {
-            
-            reachedStartButton = false;
-            reachedEndButton = false;
-            disableAutoPanMapCam = false;
-            panToLevel = false;
-            StartCoroutine(StartFromExit());
+            transform.position = Vector3.SmoothDamp(transform.position, CubeyPlayer.transform.position, ref velocity, defaultGameCamTime);
         }
     }
 
-    private float delayCameraOnExitStart = 0.1f;
-    private float gameCamTime2 = 2;
-    private float defaultGameCamTime = 0.5f;
-    private float camCubeyDistance = 0.3f;
+    public void KillSequence()
+    {
+        panToCubey.Kill();
+        panningFromExit = false;
+    }
     
+    public void AutoPanToCubey(bool state)
+    {
+        autoPanToCubey = !state;
+        PlayerPrefs.SetInt("autoPanToCubey", !state ? 1 : 0);
+        Debug.Log("autoPanToCubey saving: " + !state);
+    }
+
+    private void LoadAutoPanMode()
+    {
+        autoPanToCubey = PlayerPrefs.GetInt("autoPanToCubey", 1) == 1;
+        autoPanToCubeyButton.isOn = !autoPanToCubey;
+    }
+    
+    private void PanToLevelCubey()
+    {
+        KillSequence();
+        var cubeyPos = CubeyPlayer.transform.position;
+        panToCubey = DOTween.Sequence().Append(transform.DOMove(cubeyPos, panToCubeyTime).SetEase(Ease.InOutQuad));
+        panToCubey.onComplete = () =>
+        {
+            panningFromExit = false;
+        };
+    }
+
+    private void EnteringLevel()
+    {
+        StartCoroutine(StartFromExit());
+    }
+
     private IEnumerator StartFromExit()
     {
-        gameCamTime = gameCamTime2;
+        panningFromExit = true;
+        panToCubeyTime = gameCamTime2;
         yield return new WaitWhile(() => gameManager.LevelMetaData == null);
-        
         exitPos = gameManager.LevelMetaData.ExitPosition.transform.position;
         transform.position = exitPos;
         yield return new WaitForSeconds(delayCameraOnExitStart);
 
-        startFromExit = false;
-
-        yield return new WaitUntil(() => Vector3.Distance(transform.position, CubeyPlayer.transform.position) < camCubeyDistance || Input.GetMouseButtonDown(0));
-        gameCamTime = defaultGameCamTime;
+        PanToLevelCubey();
     }
-    
+
     private IEnumerator ChangeCamSpeed(float n)
     {
         yield return new WaitForSeconds(2);
-        gameCamTime = n;
+        panToCubeyTime = n;
     }
 
     public void ResetCamPosition()
@@ -200,26 +183,15 @@ public class CameraManager : MonoBehaviour
         return smoothPos;
     }
 
-    private IEnumerator PlayStartCameraSweep()
+    private void PlayStartCameraSweep()
     {
-        transform.position = Vector3.SmoothDamp(transform.position, endCamPos, ref velocity, camTime);
-
-        yield return new WaitForSeconds(3);
-
-        playedIntroOnce = true;
+        transform.DOMove(endCamPos, camTime);
     }
 
-    [SerializeField] private Vector3 nextOpenLevel;
-    [SerializeField] private int panningToLevel;
-    
-    private IEnumerator PanToLevelButton()
+    private void PanToLevelButton()
     {
-        if (Input.GetMouseButtonDown(0))
-        {
-            panToLevel = true;
-            disableAutoPanMapCam = true;
-        }
-
+        KillSequence();
+        
         var currentChapterList = chapterList[SaveLoadManager.LastChapterPlayed];
         var currentLevelNo = SaveLoadManager.LastLevelPlayed;
         var buttonPos = currentChapterList.ChapterMapButtonList[currentLevelNo].transform.position;
@@ -245,24 +217,12 @@ public class CameraManager : MonoBehaviour
         
         VisualEffects.Instance.PlayEffect(VisualEffects.Instance.peNewLevel, nextOpenLevel);
         
-        if (distanceFromStartButton > offsetFromButton && !reachedStartButton)
-        {
-            transform.position = buttonToStartFrom;
-            reachedStartButton = true;
-            yield return new WaitUntil(() => Vector3.Distance(transform.position, buttonToStartFrom) < offsetFromButton);
-        }
+        transform.position = buttonToStartFrom;
+        reachedStartButton = true;
 
-        if (distanceFromEndButton > offsetFromButton && !reachedEndButton)
-        {
-            var pos = Vector3.SmoothDamp(transform.position, buttonToEndAt, ref velocity, camToLevelButtonTime);
-            transform.position = ClampCam(pos);
-            yield return new WaitUntil(() => Vector3.Distance(transform.position, buttonToEndAt) < offsetFromButton);
-            reachedEndButton = true;
-        }
+        panToCubey = DOTween.Sequence().Append(transform.DOMove(buttonToEndAt, camToLevelButtonTime).SetEase(Ease.InOutQuad));
         
         buttonToStartFrom = Vector3.zero;
         buttonToEndAt = Vector3.zero;
-
-        panToLevel = true;
     }
 }
