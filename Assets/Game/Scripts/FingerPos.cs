@@ -12,11 +12,12 @@ public class FingerPos : MonoBehaviour
     public static Vector3 FingerPosition => fingerPosition;
     public static Vector3 FingerPlayerDirection => fingerPosition - playerPosition;
     public static bool belowPlayer;
-    public static bool screenTouched;
+    public static bool abovePlayer;
+    // public static bool screenTouched;
     private float fingerOffset = 1.2f;
     
     private LeanFingerLine leanFingerLine;
-    [SerializeField] private GameObject screenPosGo2;
+    // [SerializeField] private GameObject screenPosGo2;
 
     public Vector3 GetPlayerPosition => transform.position;
 
@@ -48,13 +49,9 @@ public class FingerPos : MonoBehaviour
             playerPosition = GetPlayerPosition;
             fingerPosition = leanFingerLine.ScreenDepth.Convert(finger.ScreenPosition, Camera.main, gameObject);
             
-            if (screenPosGo2 != null)
-            {
-                screenPosGo2.transform.position = fingerPosition;
-            }
-            
             belowPlayer = fingerPosition.y < transform.position.y + fingerOffset;
-
+            abovePlayer = fingerPosition.y > transform.position.y;
+            
             if (belowPlayer)
             {
                 belowCubey?.Invoke();
@@ -69,6 +66,7 @@ public class FingerPos : MonoBehaviour
     private void ResetFinger(LeanFinger finger)
     {
         belowPlayer = false;
+        abovePlayer = false;
     }
 
     public static float GetCameraPlayerDistance()

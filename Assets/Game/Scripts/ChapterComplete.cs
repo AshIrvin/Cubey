@@ -8,14 +8,16 @@ using UnityEngine.UI;
 public class ChapterComplete : MonoBehaviour
 {
     [SerializeField] private Text chapterNumberText;
-    [SerializeField] private Text bronzeCollected;
-    [SerializeField] private Text silverCollected;
+    // [SerializeField] private Text bronzeCollected;
+    // [SerializeField] private Text silverCollected;
     [SerializeField] private Text goldCollected;
     [SerializeField] private Text goldButtonCollected;
     [SerializeField] private Text goldLeftToCollect;
-    [SerializeField] private GameObject gotThemAll;
+    // [SerializeField] private GameObject gotThemAll;
     [SerializeField] private GameObject popup;
+    [SerializeField] private GameObject completedChapter100;
     [SerializeField] private ChapterList chapterList;
+    [SerializeField] private ParticleSystem peChapterCompleteStars;
     
     public GameObject goldStarButton;
 
@@ -24,25 +26,25 @@ public class ChapterComplete : MonoBehaviour
     private void Awake()
     {
         if (gameManager == null) gameManager = FindObjectOfType<GameManager>();        
-        if (chapterNumberText == null) transform.Find("");
+        // if (chapterNumberText == null) transform.Find("");
         if (goldCollected == null) transform.Find("GoldCollected_text");
         if (goldLeftToCollect == null) transform.Find("MoreToCollectNumber_text");
-        if (gotThemAll == null) transform.Find("YouGotThemAll_text");
-        
-        gotThemAll.gameObject.SetActive(false);
+        // if (gotThemAll == null) transform.Find("YouGotThemAll_text");
+        // gotThemAll.gameObject.SetActive(false);
     }
 
     private void Start()
     {
-        UpdateButtonAward();
+        // ShowCompleteScreen(false);
     }
 
     private void OnEnable()
     {
         goldStarButton.SetActive(true);
+        // completedChapter100.SetActive(false);
     }
 
-    public void UpdateButtonAward()
+    public void ShowCompleteScreen(bool state)
     {
         if (gameManager == null)
         {
@@ -52,49 +54,75 @@ public class ChapterComplete : MonoBehaviour
         var chapter = SaveLoadManager.LastChapterPlayed;
         chapterNumberText.text = "Chapter " + chapter.ToString();
         
-        var oneStar = SaveLoadManager.GetChapterAward(chapter, SaveLoadManager.Awards.OneStar); 
-        var twoStars = SaveLoadManager.GetChapterAward(chapter, SaveLoadManager.Awards.TwoStars);
         var threeStars = SaveLoadManager.GetChapterAward(chapter, SaveLoadManager.Awards.ThreeStars);
 
-        bronzeCollected.text = oneStar.ToString();
-        silverCollected.text = twoStars.ToString();
         goldCollected.text = threeStars.ToString();
         goldButtonCollected.text = threeStars.ToString();
 
         var levelCount = chapterList[chapter].LevelList.Count;
         goldLeftToCollect.text = levelCount * 3 - threeStars + " stars to collect!";
 
-        if (SaveLoadManager.GetLevelAward(29) > 0)
+        if (SaveLoadManager.GetChapterAward(chapter, SaveLoadManager.Awards.ThreeStars) >= 90)
         {
-            chapterNumberText.text = "Chapter " + chapter.ToString() + " Complete!";
-
-
-            if (SaveLoadManager.GetChapterAward(chapter, SaveLoadManager.Awards.ThreeStars) == 30)
-            {
-                goldLeftToCollect.gameObject.SetActive(false);
-                gotThemAll.gameObject.SetActive(true);
+            bool completedGame = true;
             
-                // play PE
-                // VisualEffects.Instance.PlayEffect();
-            }
-            else if (SaveLoadManager.GetChapterAward(chapter, SaveLoadManager.Awards.TwoStars) == 30)
+            // also check other chapters if player has finished the game
+            for (int i = 0; i < SaveLoadManager.ChapterAmount; i++)
             {
-                goldLeftToCollect.gameObject.SetActive(false);
-                gotThemAll.gameObject.SetActive(true);
+                if (SaveLoadManager.GetChapterAward(i, SaveLoadManager.Awards.ThreeStars) < 90)
+                {
+                    completedGame = false;
+                    break;
+                }
             }
-            else if (SaveLoadManager.GetChapterAward(chapter, SaveLoadManager.Awards.OneStar) == 30)
+
+            // TODO add completed game popup
+            if (completedGame)
             {
-                goldLeftToCollect.gameObject.SetActive(false);
-                gotThemAll.gameObject.SetActive(true);
+                // player has completed the whole game! Show new popup
+                
+            }
+            else
+            {
+                completedChapter100.SetActive(state);
+                popup.SetActive(false);
+                VisualEffects.Instance.PlayEffect(peChapterCompleteStars);
+            }
+        }
+        else 
+        {
+            if (SaveLoadManager.LastLevelPlayed == 29 && SaveLoadManager.GetLevelAward(29) > 0)
+            {
+                popup.SetActive(state);
+                completedChapter100.SetActive(false);
+                
+                chapterNumberText.text = "Chapter " + chapter.ToString() + " Complete!";
             }
         }
         
 
     }
 
-    public void TogglePopup()
+    public void ClosePopup()
     {
-        popup.SetActive(!popup.activeInHierarchy);
-        goldStarButton.SetActive(!goldStarButton.activeInHierarchy);
+        popup.SetActive(false);
+        completedChapter100.SetActive(false);
+        goldStarButton.SetActive(true);
+    }
+
+    public void OpenPopup()
+    {
+        if (SaveLoadManager.GetChapterAward(SaveLoadManager.LastChapterPlayed, SaveLoadManager.Awards.ThreeStars) >= 90)
+        {
+            completedChapter100.SetActive(true);
+            popup.SetActive(false);
+        }
+        else
+        {
+            popup.SetActive(true);
+            completedChapter100.SetActive(false);
+        }
+        
+        goldStarButton.SetActive(false);
     }
 }

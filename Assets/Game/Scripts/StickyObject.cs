@@ -7,7 +7,7 @@ using UnityEngine;
 public class StickyObject : MonoBehaviour
 {
     [SerializeField] private BoolGlobalVariable stickyObject;
-    [SerializeField] private float delayTime = 0.15f;
+    private float delayTime = 0.3f;
     private bool allowPlayerToStick;
     private Transform parent;
 
@@ -96,7 +96,7 @@ public class StickyObject : MonoBehaviour
     // For wakening the rb
     private IEnumerator ToggleFreezePosition(bool state)
     {
-        drawBridgeRb.constraints = /*state ? RigidbodyConstraints.FreezePositionX :*/ ResetFreeze();
+        drawBridgeRb.constraints = ResetFreeze();
         yield return new WaitForSeconds(0.1f);
     }
 
@@ -114,7 +114,6 @@ public class StickyObject : MonoBehaviour
             if (drawBridge && allowJointNudge)
             {
                 StartCoroutine(ToggleFreezePosition(false));
-                Debug.Log("leaving sticky");
                 stickyObject.CurrentValue = false;
                 allowPlayerToStick = true;
             }

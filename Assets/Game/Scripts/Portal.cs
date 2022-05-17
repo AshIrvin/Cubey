@@ -23,7 +23,9 @@ public class Portal : MonoBehaviour
     [SerializeField] private float minVelocityForce = 2f;
     [SerializeField] private float maxVelocityForce = 8f;
     [SerializeField] private float cubeyForce;
-
+    [SerializeField] private float cubeyMagnitude;
+    [SerializeField] private Rigidbody cubeyRb;
+    
     [Header("Other")]
     public GameObject objectToTeleport;
 
@@ -68,6 +70,11 @@ public class Portal : MonoBehaviour
     {
         if (other.CompareTag("Player") && usePortal.CurrentValue)
         {
+            if (cubeyRb == null)
+            {
+                cubeyRb = other.GetComponent<Rigidbody>();
+            }
+            cubeyMagnitude = cubeyRb.velocity.magnitude;
             objectToTeleport = other.gameObject;
 
             if (autoRotation == null)
@@ -91,8 +98,7 @@ public class Portal : MonoBehaviour
     private void TeleportObject()
     {
         usePortal.CurrentValue = false;
-        
-        var rb = objectToTeleport.GetComponent<Rigidbody>();
+
         LeanForceRigidbodyCustom leanForce = objectToTeleport.GetComponent<LeanForceRigidbodyCustom>();
         
         visualEffects.PlayEffect(visualEffects.pePortalEffects, objectToTeleport.transform.position, portalExit.transform.rotation);
@@ -100,19 +106,19 @@ public class Portal : MonoBehaviour
         objectToTeleport.transform.localScale = Vector3.zero;
         objectToTeleport.transform.position = portalExit.transform.position;
         objectToTeleport.transform.rotation = Quaternion.Euler(0,0,Random.Range(0, 360));
-        rb.isKinematic = true;
+        cubeyRb.isKinematic = true;
         
-        StartCoroutine(DelayTeleport(leanForce, rb));
+        StartCoroutine(DelayTeleport(leanForce));
     }
 
     private float delayTeleportTime = 0.7f;
     
-    private IEnumerator DelayTeleport(LeanForceRigidbodyCustom leanForce, Rigidbody rb)
+    private IEnumerator DelayTeleport(LeanForceRigidbodyCustom leanForce)
     {
         yield return new WaitForSeconds(delayTeleportTime);
         
         objectToTeleport.transform.localScale = Vector3.one;
-        rb.isKinematic = false;
+        cubeyRb.isKinematic = false;
         
         /*if (objectColour != null)
         {
@@ -125,17 +131,17 @@ public class Portal : MonoBehaviour
             autoRotation.AddRotation(Random.Range(-4, 4));
         
         cubeyForce = 0f;
-        if (rb != null)
+        if (cubeyRb != null)
         {
-            if (leanForce != null)
+            if (leanForce != null) // in game
             {
-                cubeyForce = Mathf.Max(rb.velocity.magnitude, minVelocityForce);
+                cubeyForce = Mathf.Max(cubeyMagnitude, minVelocityForce);
                 cubeyForce = Mathf.Min(cubeyForce, maxVelocityForce);
-                rb.AddForce(portalExit.transform.up * cubeyForce, ForceMode.Impulse); // 6
+                cubeyRb.AddForce(portalExit.transform.up * cubeyForce, ForceMode.Impulse); // 6
             }
-            else
+            else // main menu
             {
-                rb.AddForce(portalExit.transform.up * portalForceMultiply, ForceMode.Impulse);
+                cubeyRb.AddForce(portalExit.transform.up * portalForceMultiply, ForceMode.Impulse);
             }
         }
     

@@ -1139,14 +1139,6 @@
       <Project>{69b54684-4de2-f444-2e69-8ebbe5a2e807}</Project>
       <Name>Assembly-CSharp-firstpass</Name>
     </ProjectReference>
-    <ProjectReference Include="MeshBakerEditor.csproj">
-      <Project>{db9cf94b-17e3-a739-a878-cd5fdfefd59f}</Project>
-      <Name>MeshBakerEditor</Name>
-    </ProjectReference>
-    <ProjectReference Include="MeshBakerCore.csproj">
-      <Project>{f0f07a84-4d09-6621-a316-1470a5c48cc7}</Project>
-      <Name>MeshBakerCore</Name>
-    </ProjectReference>
     <ProjectReference Include="GoogleMobileAdsAssembly.Editor.csproj">
       <Project>{c9d2fdad-bd45-4fe1-c914-035e6cf9d67d}</Project>
       <Name>GoogleMobileAdsAssembly.Editor</Name>

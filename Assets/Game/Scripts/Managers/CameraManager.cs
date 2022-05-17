@@ -103,13 +103,13 @@ public class CameraManager : MonoBehaviour
     {
         if (panToCubey != null)
         {
-            if (panToCubey.IsPlaying() && Input.GetMouseButtonDown(0))
+            if (Input.GetMouseButtonDown(0))
             {
                 KillSequence();
             }
         }
         
-        if (autoPanToCubey && !mapManager.enabled && gameManager.GameLevel && !panningFromExit) 
+        if (autoPanToCubey && !mapManager.enabled && gameManager.GameLevel && !panningFromExit && !FingerPos.abovePlayer && !FingerPos.belowPlayer) 
         {
             transform.position = Vector3.SmoothDamp(transform.position, CubeyPlayer.transform.position, ref velocity, defaultGameCamTime);
         }
@@ -117,7 +117,9 @@ public class CameraManager : MonoBehaviour
 
     public void KillSequence()
     {
+        if (panToCubey == null) return;
         panToCubey.Kill();
+        panToCubey = null;
         panningFromExit = false;
     }
     

@@ -177,8 +177,17 @@ public class SaveLoadManager : MonoBehaviour
                     showSaveData[i].levels.Add(new ChapterLevelData.LevelInfo());
                 
                 SaveStaticList[i].levels.Add(new ChapterLevelData.LevelInfo());
+                
             }   
         }
+        
+        /*for (int i = 0; i < SaveStaticList.Count; i++)
+        {
+            for (int j = 0; j < SaveStaticList[i].levels.Count; j++)
+            {
+                SaveStaticList[i].levels[j].timeTaken = 0;
+            }
+        }*/
     }
 
     private void LoadSaves()
@@ -193,7 +202,7 @@ public class SaveLoadManager : MonoBehaviour
     
     public static void SaveGameInfo()
     {
-        // Debug.Log("Saving game at... " + SaveGame.PersistentDataPath);
+        Debug.Log("Saving game at... " + SaveGame.PersistentDataPath);
 
         for (int i = 0; i < 6; i++)
         {
@@ -279,7 +288,7 @@ public class SaveLoadManager : MonoBehaviour
         {
             SaveStaticList[lastChapterPlayed].levels[level].levelUnlocked = true;
             LastLevelUnlocked = level;
-            SaveGameInfo();
+            // SaveGameInfo();
         }
     }
     
@@ -310,6 +319,9 @@ public class SaveLoadManager : MonoBehaviour
             SaveGame.Delete("GamePurchased");
 
         LastLevelUnlocked = 0;
+
+
+
     }
 
     public static void SaveGamePurchased(bool state)
@@ -326,18 +338,32 @@ public class SaveLoadManager : MonoBehaviour
 
     public static void LevelTimeTaken(int chapter, int level, float time)
     {
-        float t = SaveGame.Load("TimeTaken" + level, 0);
+        float t = SaveStaticList[chapter].levels[level].timeTaken;
+        if (t == 0)
+        {
+            t = 1000;
+        }
+        
         if (time < t)
         {
-            
-            SaveGame.Save("TimeTaken" + level, time);
+            SaveStaticList[chapter].levels[level].timeTaken = time;
         }
 
-        Debug.Log("Level time taken: " + time + ", previous time: " + t);
+        ChapterTimeTaken(chapter, level, time);
+        
+        Debug.Log("Level time taken: " + time + ", previous: " + t);
     }
     
-    public static void ChapterTimeTaken(int chapter, float time)
+    public static void ChapterTimeTaken(int chapter, int level, float time)
     {
-        SaveGame.Save("TimeTaken" + chapter, time);
+        float totalChapterTime = 0;
+        for (int i = 0; i < SaveStaticList[chapter].levels.Count; i++)
+        {
+            totalChapterTime += SaveStaticList[chapter].levels[i].timeTaken;
+        }
+
+        SaveStaticList[chapter].chapterTimeTaken = totalChapterTime; 
+        
+        Debug.Log("Total chapter time? " + totalChapterTime);
     }
 }

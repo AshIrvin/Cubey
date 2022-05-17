@@ -28,7 +28,7 @@ public class MapManager : MonoBehaviour
     [SerializeField] private GameObject bgAdBlocker;
     [SerializeField] private GameObject shopButton;
     [SerializeField] private List<GameObject> chapterMaps;
-    [SerializeField] private int manyLevelsBeforeAds = 5;
+    public int manyLevelsBeforeAds = 3;
     
     private List<GameObject> levelButtons;
     private int levelToLoad;
@@ -39,9 +39,11 @@ public class MapManager : MonoBehaviour
     public bool mapActive;
     
     public static Action LoadAd;
-    public static Action PrepareAd;
+    // public static Action PrepareAd;
     public static Action MapOpened;
-    
+
+    private BoxCollider levelCollision;
+
     private bool GameLevel
     {
         set => gameLevel.CurrentValue = value;
@@ -68,6 +70,7 @@ public class MapManager : MonoBehaviour
 
     public GameObject CubeyOnMap => cubeyOnMap;
 
+
     public bool GamePurchased
     {
         get => SaveLoadManager.GamePurchased;
@@ -78,7 +81,7 @@ public class MapManager : MonoBehaviour
     {
         AddChapterMaps();
 
-        InitialiseAds.LoadLevel += LoadLevel;
+        // InitialiseAds.LoadLevel += LoadLevel;
 
         if (deleteLevelsPlayed)
         {
@@ -97,13 +100,16 @@ public class MapManager : MonoBehaviour
 
     private void OnEnable()
     {
+        InitialiseAds.LoadLevel += LoadLevel;
         levelToLoad = 0;
+        // initialiseAds
         EnableMap(SaveLoadManager.LastChapterPlayed);
+        
         mapActive = true;
         SetCubeyMapPosition(false);
         VisualEffects.Instance.PlayEffect(VisualEffects.Instance.peNewLevel);
 
-        MapOpened.Invoke();
+        MapOpened?.Invoke();
     }
 
     /// <summary>
@@ -112,7 +118,8 @@ public class MapManager : MonoBehaviour
     /// <param name="reset">Disables Cubey</param>
     private void SetCubeyMapPosition(bool reset)
     {
-        cubeyOnMap.SetActive(!reset);
+        if (cubeyOnMap != null)
+            cubeyOnMap.SetActive(!reset);
         
         var chapter = allChapters[SaveLoadManager.LastChapterPlayed];
         var currentLevelNo = SaveLoadManager.LastLevelPlayed;
@@ -172,9 +179,10 @@ public class MapManager : MonoBehaviour
         mainMenuManager.EnableGoldAwardsButton(true);
         mainMenuManager.TryChapterFinishScreen();
         
-        if(!SaveLoadManager.GamePurchased)
+        if(!SaveLoadManager.GamePurchased && levelsPlayed >= manyLevelsBeforeAds)
         {
-            PrepareGoogleAds();
+            initialiseAds.enabled = true;
+            // PrepareAd?.Invoke();
         }
     }
 
@@ -195,7 +203,7 @@ public class MapManager : MonoBehaviour
     {
         if (SaveLoadManager.GamePurchased)
         {
-            LoadLevel(n);
+            LoadLevelNumber(n);
             return;
         }
         
@@ -209,30 +217,26 @@ public class MapManager : MonoBehaviour
 
             if (played >= manyLevelsBeforeAds)
             {
-                // shopButton.SetActive(false);
                 mainMenuManager.NavButtons = false;
                 PlayerPrefs.SetInt("levelsPlayed", 0);
                 levelsPlayed = 0;
-                // bgAdBlocker.SetActive(true);
                 Debug.Log("Ad 1. Invoking ad...");
                 LoadAd?.Invoke();
-                // LoadLevel(n);
             }
             else
             {
-                LoadLevel(n);
+                LoadLevelNumber(n);
             }
         }
         else
         {
             levelsPlayed = 1;
             PlayerPrefs.SetInt("levelsPlayed", 1);
-            LoadLevel(n);
+            LoadLevelNumber(n);
         }
     }
 
     // comes from level buttons on map
-
     public void GetLevelNoToLoad()
     {
         var levelButtonClicked = EventSystem.current.currentSelectedGameObject.gameObject.transform.Find("LevelText_no").GetComponent<Text>().text.ToString();
@@ -260,7 +264,7 @@ public class MapManager : MonoBehaviour
         enabled = false;
     }
 
-    private void LoadLevel()
+    public void LoadLevel()
     {
         Debug.Log("Ad 5 - finished. Loading level: " + levelToLoad);
         if (bgAdBlocker == null)
@@ -272,19 +276,18 @@ public class MapManager : MonoBehaviour
         {
             bgAdBlocker.SetActive(false);
         }
-        
-        LoadLevel(levelToLoad);
+
+        initialiseAds.enabled = false;
+        LoadLevelNumber(levelToLoad);
     }
 
-    private void PrepareGoogleAds()
+    /*private void PrepareGoogleAds()
     {
         Debug.Log("Preparing ad...");
         PrepareAd?.Invoke();
-    }
+    }*/
 
-    private BoxCollider levelCollision;
-
-    private void LoadLevel(int levelNumber)
+    private void LoadLevelNumber(int levelNumber)
     {
         var l = levelNumber.ToString();
 
@@ -314,9 +317,11 @@ public class MapManager : MonoBehaviour
     // Comes from end screen continue button
     public void QuitToMap()
     {
+        InitialiseAds.LoadLevel -= LoadLevel;
         GameObject cubey = GameObject.FindWithTag("Player").transform.gameObject;
         cubey.transform.SetParent(null, true);
         VisualEffects.Instance.peExitSwirl.transform.SetParent(VisualEffects.Instance.ParticleEffectsGo.transform, true);
+
         GameLevel = false;
         Time.timeScale = 1;
         enabled = true;
@@ -437,6 +442,7 @@ public class MapManager : MonoBehaviour
             var sGrp = levelButtons[i].transform.GetChild(4);
 
             var awardForLevel = SaveLoadManager.GetAwards(i);
+
             starImages.Clear();
             
             for (int j = 0; j < 3; j++)
@@ -459,7 +465,10 @@ public class MapManager : MonoBehaviour
                     starImages[1].color = ColourManager.starSilver;
                     starImages[2].color = ColourManager.starGold;
                     if (level == i)
-                        starImages[2].transform.localScale = Vector3.Lerp(lerpPos1, lerpPos2, Mathf.PingPong(Time.time, 1));
+                    {
+                        starImages[2].transform.localScale =
+                            Vector3.Lerp(lerpPos1, lerpPos2, Mathf.PingPong(Time.time, 1));
+                    }
                     break;
                 default:
                     break;

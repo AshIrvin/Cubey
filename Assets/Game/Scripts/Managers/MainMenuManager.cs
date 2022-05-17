@@ -119,6 +119,7 @@ public class MainMenuManager : MonoBehaviour
 
     private void OnEnable()
     {
+        InitialiseAds.LoadLevel -= mapManager.LoadLevel;
         backButton.gameObject.SetActive(true);
     }
 
@@ -146,14 +147,9 @@ public class MainMenuManager : MonoBehaviour
         }
     }
 
-    public IEnumerator LoadingScene(bool on)
+    public void LoadingScene(bool state)
     {
-        if (loadingScreen != null)
-        {
-            loadingScreen.SetActive(on);
-            yield return new WaitForSeconds(0.2f);
-            loadingScreen.SetActive(false);
-        }
+        loadingScreen.SetActive(state);
     }
     
     public void ToggleGameObject(GameObject gameObject)
@@ -358,7 +354,7 @@ public class MainMenuManager : MonoBehaviour
                 if (goldFinishScreen == 0)
                 {
                     PlayerPrefs.SetInt("chapterFinishScreenGold" + SaveLoadManager.LastChapterPlayed, 1);
-                    chapterFinishScreen.GetComponent<ChapterComplete>().TogglePopup();
+                    chapterFinishScreen.GetComponent<ChapterComplete>().OpenPopup();
                 }
             }
         }
@@ -366,11 +362,13 @@ public class MainMenuManager : MonoBehaviour
 
     public void EnableGoldAwardsButton(bool state)
     {
-        chapterFinishScreen.GetComponent<ChapterComplete>().UpdateButtonAward();
-        chapterFinishScreen.SetActive(state);
+        if (chapterFinishScreen != null)
+        {
+            chapterFinishScreen.SetActive(state);
+            chapterFinishScreen.GetComponent<ChapterComplete>().ShowCompleteScreen(state);
+        }
     }
     
-    // TODO - Finish reset saves
     public void ResetSaves()
     {
         screenDeleteSaveData.SetActive(false);

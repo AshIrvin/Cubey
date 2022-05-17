@@ -4,15 +4,15 @@ using UnityEngine;
 
 public class SpriteChangerManager : MonoBehaviour
 {
-    public float timeMin;
-    public float timeMax;
-    private float time;
-    private float smileTime;
-    public float timeSpriteDisabled = 0.2f;
+    [SerializeField] private float timeMin;
+    [SerializeField] private float timeMax;
+    public float time;
+    [SerializeField] private float smileTime;
+    [SerializeField] private float timeSpriteDisabled = 0.2f;
 
-    public bool blinkEyes;
-    public bool smiles;
-    public GameObject[] sprites;
+    [SerializeField] private bool blinkEyes;
+    [SerializeField] private bool smiles;
+    [SerializeField] private GameObject[] sprites;
     
     private SpriteRenderer spr;
     private Color colour;
@@ -66,7 +66,6 @@ public class SpriteChangerManager : MonoBehaviour
             if (time < 0)
             {
                 SetSprite(0, 2);
-                //SetSprite(2);
 
                 time = SetRandomTime();
                 timerEnabled = false;
@@ -108,28 +107,51 @@ public class SpriteChangerManager : MonoBehaviour
             go.SetActive(false);
 
         }
-
-        if (n >= 0 && n < sprites.Length)
+        switch (n)
         {
-            sprites[n].SetActive(true);
-            try
-            {
+            case -1:
+                sprites[Random.Range(0, sprites.Length-1)]?.SetActive(true);
+                break;
+            case 0:
+                sprites[n]?.SetActive(true);
+                break;
+            case 1:
                 if (sprites.Length > 1)
                 {
-                    if (m == 2)
-                        sprites[m].SetActive(true);
+                    sprites[n]?.SetActive(true);
                 }
-            }
-            catch (System.Exception ex)
-            {
-                Debug.Log("sprite changer error: " + ex.Message);
-            }
+                break;
         }
 
-        if (n == -1 && sprites.Length > 0)
+        switch (m)
         {
-            sprites[Random.Range(0, sprites.Length)].SetActive(true);
+            case 0:
+                break;
+            case 1:
+                break;
+            case 2:
+                if (sprites.Length > 2)
+                    sprites[m]?.SetActive(true);
+                break;
         }
+        
+        // if (n >= 0 && n < sprites.Length)
+        // {
+        //     sprites[n].SetActive(true);
+        // }
+        
+        // if (n == 0 && sprites.Length >= m)
+        // {
+        //     if (m == 2)
+        //     {
+        //         sprites[m].SetActive(true);
+        //     }
+        // }
+
+        // if (n == -1 && sprites.Length > 0)
+        // {
+        //     sprites[Random.Range(0, sprites.Length)].SetActive(true);
+        // }
 
     }
 

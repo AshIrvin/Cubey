@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using DG.Tweening;
+using UnityEditor.Rendering;
 
 public class GravityManager : MonoBehaviour
 {
@@ -25,6 +26,8 @@ public class GravityManager : MonoBehaviour
     public float delay = 1.8f;
     public float resetWait = 0.2f;
 
+    [SerializeField] private int currentAngle;
+    
     private void OnEnable()
     {
         if (mapManager == null)
@@ -34,25 +37,8 @@ public class GravityManager : MonoBehaviour
 
         targetDirection = transform.Find("GravityDirection").transform;
         target = Quaternion.Euler(targetDirection.eulerAngles);
-    }
 
-    private void Update()
-    {
-        RotateLevel();
-    }
-
-    private void RotateLevel()
-    {
-        if (cubePivot != null && 
-            cubePivot.transform.rotation != target && 
-            target != null &&
-            allowLevelRotation)
-        {
-            cubePivot.transform.DOLocalRotate(target.eulerAngles, turnDuration, RotateMode.Fast).SetEase(Ease.OutCubic).onComplete = () =>
-            {
-                StartCoroutine(WaitBeforeResetingParent());
-            };
-        }
+        currentAngle = 0;
     }
 
     private IEnumerator WaitBeforeResetingParent()
@@ -95,6 +81,8 @@ public class GravityManager : MonoBehaviour
         if (cubePivot == null)
         {
             cubePivot = Instantiate(pivotObject, pos, Quaternion.identity);
+            cubePivot.transform.Rotate(targetDirection.eulerAngles);
+            Debug.Log("cubePivot rotate: " + cubePivot.transform.eulerAngles);
         }
         
         cubePivot.transform.SetParent(mapManager.LevelParent.transform);
@@ -105,6 +93,23 @@ public class GravityManager : MonoBehaviour
 
     private IEnumerator Wait()
     {
+        Vector3 newAngle = new Vector3(0,0, currentAngle - (int)target.eulerAngles.z);
+
+        if (newAngle.z > 180 && newAngle.z < 360)
+        {
+            newAngle.z -= 360;
+        }
+        else if (newAngle.z < -180 && newAngle.z > -360)
+        {
+            newAngle.z += 360;
+        }
+        
+        cubePivot.transform.DORotate(newAngle, turnDuration, RotateMode.WorldAxisAdd).SetEase(Ease.OutCubic).onComplete = () =>
+        {
+            StartCoroutine(WaitBeforeResetingParent());
+            currentAngle = (int)newAngle.z;
+        };
+        
         yield return new WaitForSeconds(delay);
 
         rb.drag = defaultDrag;

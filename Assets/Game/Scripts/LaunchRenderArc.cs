@@ -63,6 +63,7 @@ public class LaunchRenderArc : MonoBehaviour
     {
         launchArc.OnValueChanged += EnableLaunchArc;
         FingerPos.belowCubey += DelayBeforeRenderArc;
+        MapManager.MapOpened += SubDisableArc;
     }
 
     private void Start()
@@ -92,10 +93,21 @@ public class LaunchRenderArc : MonoBehaviour
         EnableLaunchArc(false);
     }
 
+    private void OnEnable()
+    {
+        SubDisableArc();
+    }
+
     private void OnDestroy()
     {
         launchArc.OnValueChanged -= EnableLaunchArc;
         FingerPos.belowCubey -= DelayBeforeRenderArc;
+        MapManager.MapOpened -= SubDisableArc;
+    }
+
+    private void OnDisable()
+    {
+        SubDisableArc();
     }
 
     private void DelayBeforeRenderArc()
@@ -155,7 +167,6 @@ public class LaunchRenderArc : MonoBehaviour
         if (!allowFade) yield break;
         tween.Kill();
         tween = DOTween.To(() => canvasGroup.alpha, x => canvasGroup.alpha = x, 0, fadeSpeed);
-        // tween = DOTween.Sequence().Append(DOTween.To(() => canvasGroup.alpha, x => canvasGroup.alpha = x, 0, fadeSpeed));
 
         yield return null;
     }
@@ -169,16 +180,29 @@ public class LaunchRenderArc : MonoBehaviour
 
     private void PositionArcSprites(Vector3[] positions)
     {
-        // Debug.Log("dotSprites length: " + dotSprites.Count + ", positions.length: " + positions.Length);
         for (int i = 0; i < positions.Length-1; i++)
         {
             dotSprites[i].transform.position = positions[i];
         }
     }
 
+    private void SubDisableArc()
+    {
+        if (lr != null)
+        {
+            lr.positionCount = 0;
+        }
+        SetCanvasAlpha(0);
+        dottedLineArcGroup.SetActive(false);
+    }
+    
     public void EnableArc(bool enable)
     {
-        lr.positionCount = 0;
+        if (lr != null)
+        {
+            lr.positionCount = 0;
+        }
+
         dottedLineArcGroup.SetActive(enable);
         
         if (!enable)
@@ -189,8 +213,16 @@ public class LaunchRenderArc : MonoBehaviour
 
     private void SetCanvasAlpha(float alpha)
     {
-        tween.Kill();
-        canvasGroup.alpha = alpha;
+        if (canvasGroup != null)
+        {
+            canvasGroup.alpha = alpha;
+        }
+        
+        if (tween != null)
+        {
+            tween.Kill();
+            tween = null;
+        }
     }
 
     private float CalculateMouseAngle()

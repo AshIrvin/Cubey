@@ -7,6 +7,7 @@ using UnityEngine.UI;
 
 public class ShopManager : MonoBehaviour
 {
+    [SerializeField] private MapManager mapManager;
     [SerializeField] private GameObject restoreButton;
     [SerializeField] private GameObject demoButton;
     [SerializeField] private Text purchaseText;
@@ -31,6 +32,7 @@ public class ShopManager : MonoBehaviour
         {
             testPurchaseText.transform.parent.gameObject.SetActive(false);
             demoButton.SetActive(false);
+            mapManager.manyLevelsBeforeAds = 3;
         }
     }
 

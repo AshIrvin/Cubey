@@ -84,7 +84,7 @@ public class GameManager : MonoBehaviour
     
     private bool camMovement;
     private bool gameLevelEnabled;
-    private float playerGooDrag = 35f;
+    private float playerGooDrag = 40f;
     private ParticleSystem pe;
     private float cubeyJumpMagValue = 0.5f;
     public Rigidbody playerRb;
@@ -239,7 +239,7 @@ public class GameManager : MonoBehaviour
             cubeyPlayer.SetActive(false);
         PlayerAllowedJump(false);
         SetGameCanvases(false);
-        starGold_anim.Play("mapStarGoldBounce");
+        // starGold_anim.Play("mapStarGoldBounce");
     }
     
     private void LoadGameLevel(bool enable)
@@ -424,7 +424,6 @@ public class GameManager : MonoBehaviour
         {
             StartCoroutine(DelayFailedScreen());
         }
-        
     }
 
     private IEnumerator DelayFailedScreen()
@@ -448,6 +447,7 @@ public class GameManager : MonoBehaviour
     public void RestartLevel()
     {
         playerRb.drag = 0;
+        playerRb.angularDrag = 0;
         stickyObject.CurrentValue = false;
         playerRb.isKinematic = false;
         HideScreens();
@@ -460,12 +460,13 @@ public class GameManager : MonoBehaviour
     // Used as failed screen button
     public void LoadMainMenu()
     {
+        StartCoroutine(LoadingScene(true));
         for (int i = 0; i < mapManager.LevelParent.transform.childCount; i++)
         {
             Destroy(mapManager.LevelParent.transform.GetChild(i).gameObject);
         }
-        GameLevel = false;
-        StartCoroutine(LoadingScene(true));
+
+        // GameLevel = false;
         HideScreens();
         SceneManager.LoadScene("CubeyGame");
     }
@@ -487,6 +488,7 @@ public class GameManager : MonoBehaviour
             EndScreen(true);
             
             ShowStarsAchieved();
+            SaveLoadManager.SaveGameInfo();
         }
     }
     
@@ -762,9 +764,16 @@ public class GameManager : MonoBehaviour
 
         SetAwardForLevel(award);
 
-        if (award > 0 && SaveLoadManager.SaveStaticList[chapterNo].levels[levelNo].levelUnlocked)
+        if (award > 0)
         {
-            SaveLoadManager.UnlockLevel(SaveLoadManager.LastLevelPlayed + 1);
+            if (SaveLoadManager.SaveStaticList[chapterNo].levels[levelNo].levelUnlocked)
+            {
+                SaveLoadManager.UnlockLevel(SaveLoadManager.LastLevelPlayed + 1);
+            }
+            else
+            {
+                SaveLoadManager.SaveGameInfo();
+            }
         }
 
         starImages[0].color = ColourManager.starDefault;
@@ -923,7 +932,10 @@ public class GameManager : MonoBehaviour
 
     public void FailedScreen(bool on)
     {
-        failedScreen.SetActive(on);
+        if (failedScreen != null)
+        {
+            failedScreen.SetActive(on);
+        }
         Time.timeScale = on ? 0f : 1f;
     }
 

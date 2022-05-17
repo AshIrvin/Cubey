@@ -13,7 +13,8 @@ public class ChapterLevelData
     public int allBronze;
     public int allSilver;
     public int allStars;
-
+    public float chapterTimeTaken;
+    
     public List<LevelInfo> levels;
 
     [Serializable]
