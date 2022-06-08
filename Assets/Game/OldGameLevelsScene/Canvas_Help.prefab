@@ -2893,6 +2893,7 @@ Canvas:
   m_OverridePixelPerfect: 0
   m_SortingBucketNormalizedSize: 0
   m_AdditionalShaderChannelsFlag: 0
+  m_UpdateRectTransformForStandalone: 0
   m_SortingLayerID: 0
   m_SortingOrder: 100
   m_TargetDisplay: 0
@@ -4679,6 +4680,7 @@ PrefabInstance:
   m_ObjectHideFlags: 0
   serializedVersion: 2
   m_Modification:
+    serializedVersion: 2
     m_TransformParent: {fileID: 5525364918747776821}
     m_Modifications:
     - target: {fileID: 8865702362117585196, guid: 5a933f961ca5f43219e2ad8ec35c925a,
@@ -4827,6 +4829,7 @@ PrefabInstance:
       value: UnityEngine.Object, UnityEngine
       objectReference: {fileID: 0}
     m_RemovedComponents: []
+    m_AddedGameObjects: []
   m_SourcePrefab: {fileID: 100100000, guid: 5a933f961ca5f43219e2ad8ec35c925a, type: 3}
 --- !u!224 &7683120918151234852 stripped
 RectTransform:

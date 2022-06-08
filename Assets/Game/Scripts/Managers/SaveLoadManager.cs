@@ -143,7 +143,6 @@ public class SaveLoadManager : MonoBehaviour
         if (DateTime.Now.Month >= xmasStartMonth &&
             DateTime.Now.Month <= xmasEndMonth && LoadGamePurchased())
         {
-            // TODO - show popup once that it's been unlocked for purchasers 
             SaveStaticList[0].chapterUnlocked = true;
             showSaveData[0].chapterUnlocked = true;
         }

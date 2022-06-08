@@ -76,6 +76,7 @@ public class MainMenuManager : MonoBehaviour
 
     private void Awake()
     {
+        MapManager.TimeDuration(true);
         SetNavButtons(false);
         LoadingScene(true);
         
@@ -100,6 +101,7 @@ public class MainMenuManager : MonoBehaviour
         {
             SetRefreshRate(PlayerPrefs.GetInt("RefreshRate"));
         }
+        MapManager.TimeDuration(false, "Menu");
     }
 
     void Start()

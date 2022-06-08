@@ -34,6 +34,7 @@ public class StickyObject : MonoBehaviour
     {
         if (collision.gameObject.CompareTag("Player") && !stickyObject.CurrentValue && allowPlayerToStick)
         {
+            AudioManager.Instance.PlayAudio(AudioManager.Instance.sticky);
             stickyObject.CurrentValue = true;
             allowPlayerToStick = false;
         }
@@ -51,6 +52,7 @@ public class StickyObject : MonoBehaviour
     {
         if (!stickyObject.CurrentValue)
         {
+            AudioManager.Instance.PlayAudio(AudioManager.Instance.sticky);
             yield return new WaitForSeconds(delayTime);
             allowPlayerToStick = true;
             
@@ -70,6 +72,8 @@ public class StickyObject : MonoBehaviour
     {
         if (other.gameObject.CompareTag("Player") && !stickyObject.CurrentValue && allowPlayerToStick)
         {
+            AudioManager.Instance.PlayAudio(AudioManager.Instance.sticky);
+            
             other.transform.SetParent(parent, true);
             stickyObject.CurrentValue = true;
             allowPlayerToStick = false;

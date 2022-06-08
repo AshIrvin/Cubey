@@ -1,7 +1,9 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using Random = UnityEngine.Random;
 
 
 public class AudioManager : MonoBehaviour
@@ -24,12 +26,18 @@ public class AudioManager : MonoBehaviour
     public AudioSource[] cubeyLand;
     public AudioSource[] cubeyPowerUp;
     public AudioSource[] cubey;
-    public AudioSource[] itemPickup;
-    public AudioSource[] snowThrowing;
     public AudioSource[] cubeyLandingSnow;
     public AudioSource[] cubeyExitOpen;
     public AudioSource[] cubeyCelebration;
 
+    [Header("Level Sounds")]
+    public AudioSource[] waterSplash;
+    public AudioSource[] sticky;
+    public AudioSource[] bounce;
+    public AudioSource[] itemPickup;
+    public AudioSource[] snowThrowing;
+
+    [Header("Other")]
     [SerializeField] private Camera cam;
     [SerializeField] private AudioListener audioListener;
 
@@ -45,7 +53,12 @@ public class AudioManager : MonoBehaviour
         get => audioButtons;
         set => audioButtons = value;
     }
-    
+
+    private void Awake()
+    {
+        Instance = this;
+    }
+
     private void Start()
     {
         var m = PlayerPrefs.GetInt("music", 1);

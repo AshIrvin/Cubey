@@ -62,7 +62,6 @@ namespace Game.Scripts
         {
             DisableStoryScreen();
 
-            // Todo remove story
             // MainMenuManager.Instance.chapterButtons.SetActive(true);
 
             StoryScreens[0].SetActive(true);
@@ -78,7 +77,6 @@ namespace Game.Scripts
         {
             //DisableStoryScreen();
 
-            // Todo remove story
             // MainMenuManager.Instance.chapterButtons.SetActive(true);
 
             StoryEndScreens[0].SetActive(true);
@@ -110,7 +108,6 @@ namespace Game.Scripts
         {
             cameraManager.storyMode = false;
             DisableStoryScreen();
-            // Todo fix close button
             // MainMenuManager.Instance.chapterButtons.SetActive(true);
             // MainMenuManager.Instance.ShowMap(1);
 

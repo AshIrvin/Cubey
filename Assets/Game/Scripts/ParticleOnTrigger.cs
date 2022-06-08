@@ -8,6 +8,7 @@ public class ParticleOnTrigger : MonoBehaviour
     [SerializeField] private ParticleSystem visualEffect;
     [SerializeField] private Vector3 offset;
     [SerializeField] private bool useLocal;
+    [SerializeField] private bool playAudio;
     
     private void Start()
     {
@@ -37,6 +38,10 @@ public class ParticleOnTrigger : MonoBehaviour
         {
             if (visualEffect != null)
             {
+                if (playAudio)
+                {
+                    AudioManager.Instance.PlayAudio(AudioManager.Instance.waterSplash);
+                }
                 VisualEffects.Instance.PlayEffect(visualEffect, other.transform.position + offset);
             }
         }

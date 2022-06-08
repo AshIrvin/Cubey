@@ -14,6 +14,10 @@ public class InitialiseAds : MonoBehaviour
     private void Awake()
     {
         enabled = false;
+        
+        MobileAds.Initialize((initStatus) => {
+            Debug.Log("Initialized MobileAds");
+        });
     }
 
     private void OnEnable()
@@ -23,7 +27,6 @@ public class InitialiseAds : MonoBehaviour
         
         MapManager.LoadAd += ShowAd;
         MapManager.MapOpened += GetAd;
-        // GetAd();
     }
 
     private void Start()
@@ -33,10 +36,6 @@ public class InitialiseAds : MonoBehaviour
         
         fullscreenAd = MobileAds.Instance
             .GetAd<InterstitialAdGameObject>("InterstitialAd");
-
-        MobileAds.Initialize((initStatus) => {
-            Debug.Log("Initialized MobileAds");
-        });
     }
 
     #region Manual Setup
@@ -85,8 +84,9 @@ public class InitialiseAds : MonoBehaviour
 
     private IEnumerator WaitToGetAd()
     {
-        yield return new WaitUntil(() => fullscreenAd != null &&
-                                         fullscreenAd.InterstitialAd.IsLoaded());
+        yield return new WaitUntil(() => fullscreenAd != null && 
+                                         fullscreenAd.InterstitialAd != null &&
+                                         fullscreenAd.InterstitialAd.IsLoaded()); // crashed here
         
         if (fullscreenAd != null && fullscreenAd.InterstitialAd.IsLoaded())
         {
@@ -101,15 +101,19 @@ public class InitialiseAds : MonoBehaviour
     
     public void ShowAd()
     {
-        fullscreenAd?.ShowIfLoaded();
-        Debug.Log("Ad 2 - show if loaded: " + fullscreenAd.name);
+        if (fullscreenAd != null && fullscreenAd.InterstitialAd != null && fullscreenAd.InterstitialAd.IsLoaded())
+        {
+            fullscreenAd.ShowIfLoaded(); // crashed here
+            Debug.Log("Ad 2 - show if loaded: " + fullscreenAd.name);
+        }
+        
         StartCoroutine(DelayToCheckAd());
     }
 
     IEnumerator DelayToCheckAd()
     {
         yield return new WaitForSeconds(0.5f);
-        if (fullscreenAd == null)
+        if (fullscreenAd == null || fullscreenAd.InterstitialAd == null)
         {
             Debug.Log("Ad 3 - failed! Continuing to level");
             AdFailed();

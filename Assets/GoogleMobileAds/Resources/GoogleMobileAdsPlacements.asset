@@ -13,27 +13,9 @@ MonoBehaviour:
   m_Name: GoogleMobileAdsPlacements
   m_EditorClassIdentifier: 
   allPlacements:
-  - placementName: AdMob Demo Banner Ad
-    adType: 0
-    androidAdUnitId: ca-app-pub-3940256099942544/6300978111
-    iOSAdUnitId: ca-app-pub-3940256099942544/2934735716
-    persistent: 0
-    autoLoadEnabled: 1
-  - placementName: AdMob Demo Interstitial Ad
+  - placementName: AdMob Interstitial Ad
     adType: 1
-    androidAdUnitId: ca-app-pub-3940256099942544/1033173712
+    androidAdUnitId: ca-app-pub-7847363984248010/1601099898
     iOSAdUnitId: ca-app-pub-3940256099942544/4411468910
     persistent: 0
     autoLoadEnabled: 1
-  - placementName: AdMob Demo Rewarded Ad
-    adType: 2
-    androidAdUnitId: ca-app-pub-3940256099942544/5224354917
-    iOSAdUnitId: ca-app-pub-3940256099942544/1712485313
-    persistent: 0
-    autoLoadEnabled: 0
-  - placementName: AdMob Demo Rewarded Interstitial Ad
-    adType: 3
-    androidAdUnitId: ca-app-pub-3940256099942544/5354046379
-    iOSAdUnitId: ca-app-pub-3940256099942544/6978759866
-    persistent: 0
-    autoLoadEnabled: 0

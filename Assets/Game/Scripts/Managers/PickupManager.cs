@@ -7,7 +7,7 @@ public class PickupManager : MonoBehaviour
 {
     [SerializeField] private IntGlobalVariable pickupCountProperty;
     
-    [SerializeField] private AudioManager audioManager;
+    // [SerializeField] private AudioManager audioManager;
     [SerializeField] private Vector3 startPos;
 
     [SerializeField] private bool levelPickup; // increases jumps
@@ -44,9 +44,6 @@ public class PickupManager : MonoBehaviour
 
     private void Start()
     {
-        if (audioManager == null)
-            audioManager = GameObject.Find("AudioManager").GetComponent<AudioManager>();
-
         startPos = transform.position;
     }
 
@@ -106,7 +103,7 @@ public class PickupManager : MonoBehaviour
         {
             if (levelPickup)
             {
-                audioManager.PlayAudio(audioManager.itemPickup);
+                AudioManager.Instance.PlayAudio(AudioManager.Instance.itemPickup);
                 VisualEffects.Instance.PlayEffect(VisualEffects.Instance.peSweetPickup, transform.position);
 
                 PickupCountProperty--;

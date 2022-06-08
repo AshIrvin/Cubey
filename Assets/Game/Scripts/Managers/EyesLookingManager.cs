@@ -94,7 +94,6 @@ public class EyesLookingManager : MonoBehaviour
         // showPupilMovement = false;
     }
 
-    // Todo - can I do something about this? use actions??
     private void Update()
     {
         if (!gameObject.activeInHierarchy)
@@ -131,7 +130,6 @@ public class EyesLookingManager : MonoBehaviour
         RandomEyeReset();
     }
 
-    // Todo - this is awful
     private void FindPointsOfInterests()
     {
         pointsOfInterestList.Clear();

@@ -482,7 +482,6 @@ public class GameManager : MonoBehaviour
         else
         {
             TimeTaken(false);
-            // Todo change end text to COMPLETED? 
             audioManager.PlayAudio(audioManager.cubeyCelebration);
             ReParentExitSwirl(false);
             EndScreen(true);

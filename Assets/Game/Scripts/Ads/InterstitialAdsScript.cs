@@ -11,8 +11,8 @@ public class InterstitialAdsScript : MonoBehaviour
     void Start()
     {
         // Initialize the Ads service:
-        Advertisement.Initialize(gameId, testMode);
+        // Advertisement.Initialize(gameId, testMode);
         // Show an ad:
-        Advertisement.Show();
+        // Advertisement.Show();
     }
 }

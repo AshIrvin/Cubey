@@ -79,6 +79,7 @@ public class MapManager : MonoBehaviour
 
     private void Awake()
     {
+        TimeDuration(true);
         AddChapterMaps();
 
         // InitialiseAds.LoadLevel += LoadLevel;
@@ -96,6 +97,8 @@ public class MapManager : MonoBehaviour
         bgAdBlocker?.SetActive(false);
 
         shopButton.SetActive(true);
+        
+        TimeDuration(false, "Add Chapters etc");
     }
 
     private void OnEnable()
@@ -143,7 +146,7 @@ public class MapManager : MonoBehaviour
     private void AddChapterMaps()
     {
         chapterMaps.Clear();
-        
+
         for (int i = 0; i < allChapters.Count; i++)
         {
             allChapters[i].InGameMapButtonList.Clear();
@@ -155,17 +158,38 @@ public class MapManager : MonoBehaviour
             {
                 if (mapButtons.transform.GetChild(j).name.Contains("Leveln"))
                 {
-                    allChapters[i].InGameMapButtonList.Add(mapButtons.transform.GetChild(j).gameObject);
-                    var button = mapButtons.transform.GetChild(j).GetComponent<Button>();
-                    string levelNumber = (j+1).ToString();
+                    GameObject levelButton = mapButtons.transform.GetChild(j).gameObject;
+                    allChapters[i].InGameMapButtonList.Add(levelButton);
+                    levelButton.GetComponent<Button>().onClick.AddListener(GetLevelNoToLoad);
+                    /*string levelNumber = (j+1).ToString();
                     button.transform.GetChild(1).GetComponent<Text>().text = levelNumber;
+                    
                     if (allChapters[i].LevelList[j].LevelSprite != null)
-                        button.transform.Find("Mask/Screenshot").GetComponent<Image>().sprite = allChapters[i].LevelList[j].LevelSprite;
-                    button.onClick.AddListener(GetLevelNoToLoad);
+                    {
+                        button.transform.Find("Mask/Screenshot").GetComponent<Image>().sprite =
+                            allChapters[i].LevelList[j].LevelSprite;
+                    }*/
+                    
                 }
             }
             
             map.SetActive(false);
+        }
+    }
+    
+    private static float timeDuration = 0;
+    public static void TimeDuration(bool start, string methodName = "", Action callback = null)
+    {
+        if (start)
+        {
+            Debug.Log("Time started");
+            timeDuration = Time.time;
+        }
+        else
+        {
+            float duration = Mathf.Abs(timeDuration - Time.time);
+            Debug.Log(methodName + " time taken: " + Mathf.Round(duration * 100) /100 + ", duration: " + duration);
+            callback?.Invoke();
         }
     }
 
@@ -217,7 +241,7 @@ public class MapManager : MonoBehaviour
 
             if (played >= manyLevelsBeforeAds)
             {
-                mainMenuManager.NavButtons = false;
+                // mainMenuManager.NavButtons = false;
                 PlayerPrefs.SetInt("levelsPlayed", 0);
                 levelsPlayed = 0;
                 Debug.Log("Ad 1. Invoking ad...");
@@ -266,6 +290,7 @@ public class MapManager : MonoBehaviour
 
     public void LoadLevel()
     {
+        mainMenuManager.NavButtons = false;
         Debug.Log("Ad 5 - finished. Loading level: " + levelToLoad);
         if (bgAdBlocker == null)
         {
