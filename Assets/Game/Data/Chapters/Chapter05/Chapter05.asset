@@ -1,0 +1,87 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9994f75f442ab0444bb747cfa8b3682f, type: 3}
+  m_Name: Chapter05
+  m_EditorClassIdentifier: 
+  menuEnvironment: {fileID: 7326525578732712116, guid: 1176ffdaa0eb34546ad12b1364af555b,
+    type: 3}
+  chapterNumber: 5
+  chapterName: In Space
+  pickupIcon: {fileID: 0}
+  chapterMap: {fileID: 3336618370525336414, guid: 32d8215d4ec24a8448158e4156485f34,
+    type: 3}
+  cubeyPlayer: {fileID: 0}
+  levelList: {fileID: 11400000, guid: fe13c102a64d7bf4790cbbf43e2661bc, type: 2}
+  menuZoomLevel: 69
+  chapterMapButtonList:
+  - {fileID: 3048560092421161362, guid: 32d8215d4ec24a8448158e4156485f34, type: 3}
+  - {fileID: 3048560094105800295, guid: 32d8215d4ec24a8448158e4156485f34, type: 3}
+  - {fileID: 3048560094294945454, guid: 32d8215d4ec24a8448158e4156485f34, type: 3}
+  - {fileID: 3048560093633351155, guid: 32d8215d4ec24a8448158e4156485f34, type: 3}
+  - {fileID: 3048560093859319454, guid: 32d8215d4ec24a8448158e4156485f34, type: 3}
+  - {fileID: 3048560092945636355, guid: 32d8215d4ec24a8448158e4156485f34, type: 3}
+  - {fileID: 3048560093937185484, guid: 32d8215d4ec24a8448158e4156485f34, type: 3}
+  - {fileID: 3048560093158600985, guid: 32d8215d4ec24a8448158e4156485f34, type: 3}
+  - {fileID: 3048560092681129287, guid: 32d8215d4ec24a8448158e4156485f34, type: 3}
+  - {fileID: 3048560094392781994, guid: 32d8215d4ec24a8448158e4156485f34, type: 3}
+  - {fileID: 3048560092826029341, guid: 32d8215d4ec24a8448158e4156485f34, type: 3}
+  - {fileID: 3048560094127762778, guid: 32d8215d4ec24a8448158e4156485f34, type: 3}
+  - {fileID: 3048560094396838122, guid: 32d8215d4ec24a8448158e4156485f34, type: 3}
+  - {fileID: 3048560092759492352, guid: 32d8215d4ec24a8448158e4156485f34, type: 3}
+  - {fileID: 3048560092331863297, guid: 32d8215d4ec24a8448158e4156485f34, type: 3}
+  - {fileID: 3048560093414446765, guid: 32d8215d4ec24a8448158e4156485f34, type: 3}
+  - {fileID: 3048560093913594846, guid: 32d8215d4ec24a8448158e4156485f34, type: 3}
+  - {fileID: 3048560094148507564, guid: 32d8215d4ec24a8448158e4156485f34, type: 3}
+  - {fileID: 3048560093847278672, guid: 32d8215d4ec24a8448158e4156485f34, type: 3}
+  - {fileID: 3048560092302953403, guid: 32d8215d4ec24a8448158e4156485f34, type: 3}
+  - {fileID: 3048560093502730252, guid: 32d8215d4ec24a8448158e4156485f34, type: 3}
+  - {fileID: 3048560094175240524, guid: 32d8215d4ec24a8448158e4156485f34, type: 3}
+  - {fileID: 3048560093128213557, guid: 32d8215d4ec24a8448158e4156485f34, type: 3}
+  - {fileID: 3048560093443920326, guid: 32d8215d4ec24a8448158e4156485f34, type: 3}
+  - {fileID: 3048560093701806905, guid: 32d8215d4ec24a8448158e4156485f34, type: 3}
+  - {fileID: 3048560094075397982, guid: 32d8215d4ec24a8448158e4156485f34, type: 3}
+  - {fileID: 3048560093646978957, guid: 32d8215d4ec24a8448158e4156485f34, type: 3}
+  - {fileID: 3048560093519214562, guid: 32d8215d4ec24a8448158e4156485f34, type: 3}
+  - {fileID: 3048560092468122650, guid: 32d8215d4ec24a8448158e4156485f34, type: 3}
+  - {fileID: 3048560093007694142, guid: 32d8215d4ec24a8448158e4156485f34, type: 3}
+  inGameMapButtonList:
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  fullPathName: Assets/Src_Images/MainMenu/MapLevelImages/Chapter05/

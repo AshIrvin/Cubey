@@ -1,0 +1,87 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9994f75f442ab0444bb747cfa8b3682f, type: 3}
+  m_Name: Chapter03
+  m_EditorClassIdentifier: 
+  menuEnvironment: {fileID: 7326525578732712116, guid: 9909e099995efd5419fdbb8bb973db0e,
+    type: 3}
+  chapterNumber: 3
+  chapterName: Canyon
+  pickupIcon: {fileID: 0}
+  chapterMap: {fileID: 5135766238846940214, guid: fba14e94f4946fb40928697011b97cd2,
+    type: 3}
+  cubeyPlayer: {fileID: 0}
+  levelList: {fileID: 11400000, guid: 4b2fed2b37fa5654b8e89c0a02f77bc0, type: 2}
+  menuZoomLevel: 68
+  chapterMapButtonList:
+  - {fileID: 4847366152404377121, guid: fba14e94f4946fb40928697011b97cd2, type: 3}
+  - {fileID: 4847366151684063132, guid: fba14e94f4946fb40928697011b97cd2, type: 3}
+  - {fileID: 4847366151571146018, guid: fba14e94f4946fb40928697011b97cd2, type: 3}
+  - {fileID: 4847366152799034807, guid: fba14e94f4946fb40928697011b97cd2, type: 3}
+  - {fileID: 4847366152715764945, guid: fba14e94f4946fb40928697011b97cd2, type: 3}
+  - {fileID: 4847366152960013120, guid: fba14e94f4946fb40928697011b97cd2, type: 3}
+  - {fileID: 4847366151262341343, guid: fba14e94f4946fb40928697011b97cd2, type: 3}
+  - {fileID: 4847366151729035499, guid: fba14e94f4946fb40928697011b97cd2, type: 3}
+  - {fileID: 4847366152266275744, guid: fba14e94f4946fb40928697011b97cd2, type: 3}
+  - {fileID: 4847366153042876491, guid: fba14e94f4946fb40928697011b97cd2, type: 3}
+  - {fileID: 4847366152715499756, guid: fba14e94f4946fb40928697011b97cd2, type: 3}
+  - {fileID: 4847366152394786490, guid: fba14e94f4946fb40928697011b97cd2, type: 3}
+  - {fileID: 4847366151636113822, guid: fba14e94f4946fb40928697011b97cd2, type: 3}
+  - {fileID: 4847366151496849374, guid: fba14e94f4946fb40928697011b97cd2, type: 3}
+  - {fileID: 4847366152729370713, guid: fba14e94f4946fb40928697011b97cd2, type: 3}
+  - {fileID: 4847366152098909783, guid: fba14e94f4946fb40928697011b97cd2, type: 3}
+  - {fileID: 4847366153258745951, guid: fba14e94f4946fb40928697011b97cd2, type: 3}
+  - {fileID: 4847366153268983665, guid: fba14e94f4946fb40928697011b97cd2, type: 3}
+  - {fileID: 4847366153166341270, guid: fba14e94f4946fb40928697011b97cd2, type: 3}
+  - {fileID: 4847366151669508793, guid: fba14e94f4946fb40928697011b97cd2, type: 3}
+  - {fileID: 4847366152815353120, guid: fba14e94f4946fb40928697011b97cd2, type: 3}
+  - {fileID: 4847366151162746267, guid: fba14e94f4946fb40928697011b97cd2, type: 3}
+  - {fileID: 4847366151273255569, guid: fba14e94f4946fb40928697011b97cd2, type: 3}
+  - {fileID: 4847366151494120752, guid: fba14e94f4946fb40928697011b97cd2, type: 3}
+  - {fileID: 4847366152339739236, guid: fba14e94f4946fb40928697011b97cd2, type: 3}
+  - {fileID: 4847366151946056035, guid: fba14e94f4946fb40928697011b97cd2, type: 3}
+  - {fileID: 4847366151244762584, guid: fba14e94f4946fb40928697011b97cd2, type: 3}
+  - {fileID: 4847366153161400567, guid: fba14e94f4946fb40928697011b97cd2, type: 3}
+  - {fileID: 4847366153291001784, guid: fba14e94f4946fb40928697011b97cd2, type: 3}
+  - {fileID: 4847366151209257252, guid: fba14e94f4946fb40928697011b97cd2, type: 3}
+  inGameMapButtonList:
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  fullPathName: Assets/Src_Images/MainMenu/MapLevelImages/Chapter03/

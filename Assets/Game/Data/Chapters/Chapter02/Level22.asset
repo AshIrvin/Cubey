@@ -1,0 +1,32 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8a68e27eb77129047b6bb6ccf2d31997, type: 3}
+  m_Name: Level22
+  m_EditorClassIdentifier: 
+  chapterNumber: 0
+  levelName: Level 22
+  levelNumber: 22
+  timer: 99
+  jumpsForGold: 3
+  jumpsForSilver: 5
+  jumpsForBronze: 9
+  levelSprite: {fileID: 21300000, guid: eaa4e1184532a1147909b0cc2132e3ce, type: 3}
+  levelPrefab: {fileID: 8222787552579192851, guid: 44dac340ff79eb445b2edeadd114c4e2,
+    type: 3}
+  startPosition: {fileID: 7777879465800581613, guid: 44dac340ff79eb445b2edeadd114c4e2,
+    type: 3}
+  exitPosition: {fileID: 3341673973003340012, guid: 44dac340ff79eb445b2edeadd114c4e2,
+    type: 3}
+  portalEnter: []
+  portalExit: []
+  pathName: Assets/Game/Prefabs/LevelPrefabs/Chapter02
+  mapSpritePathName: Assets/Src_Images/MainMenu/MapLevelImages/Chapter02

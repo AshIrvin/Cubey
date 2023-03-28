@@ -1,20 +1,34 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
 
-namespace Assets.Game.Scripts
+namespace Game.Scripts
 {
     public class DeathVolume : MonoBehaviour
     {
+        private GameManager gameManager;
+        [SerializeField] private bool autoRestart;
 
+        private void Awake()
+        {
+            gameManager = FindObjectOfType<GameManager>();
+        }
 
         private void OnCollisionEnter(Collision collision)
         {
             if (collision.collider.CompareTag("Player"))
             {
-                GameManager.Instance.FailedScreen(true);
+                if (autoRestart)
+                {
+                    gameManager.RestartLevel();
+                }
+                else
+                {
+                    gameManager.FailedScreen(true);
+                }
             }
         }
 
@@ -22,7 +36,14 @@ namespace Assets.Game.Scripts
         {
             if (other.gameObject.CompareTag("Player"))
             {
-                GameManager.Instance.FailedScreen(true);
+                if (autoRestart)
+                {
+                    gameManager.RestartLevel();
+                }
+                else
+                {
+                    gameManager.FailedScreen(true);
+                }
             }
         }
 

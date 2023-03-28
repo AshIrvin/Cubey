@@ -1,0 +1,32 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8a68e27eb77129047b6bb6ccf2d31997, type: 3}
+  m_Name: Level08
+  m_EditorClassIdentifier: 
+  chapterNumber: 0
+  levelName: Level 8
+  levelNumber: 8
+  timer: 99
+  jumpsForGold: 3
+  jumpsForSilver: 5
+  jumpsForBronze: 9
+  levelSprite: {fileID: 21300000, guid: 10d8808b3b88246f2ba1e2ae68931658, type: 3}
+  levelPrefab: {fileID: 1390751379959659718, guid: 248146f701f2ea246afcb9da933b4e44,
+    type: 3}
+  startPosition: {fileID: 765982054348427800, guid: 248146f701f2ea246afcb9da933b4e44,
+    type: 3}
+  exitPosition: {fileID: 5706560399389251772, guid: 248146f701f2ea246afcb9da933b4e44,
+    type: 3}
+  portalEnter: []
+  portalExit: []
+  pathName: Assets/Game/Prefabs/LevelPrefabs/Chapter01
+  mapSpritePathName: Assets/Src_Images/MainMenu/MapLevelImages/Chapter01

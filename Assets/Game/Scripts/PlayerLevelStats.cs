@@ -1,106 +1,92 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using BayatGames.SaveGamePro;
+/*using BayatGames.SaveGamePro;
 
 
-namespace Assets.Game.Scripts
+namespace Game.Scripts
 {
     public class PlayerLevelStats : MonoBehaviour
     {
-        public static PlayerLevelStats Instance { get; set; }
-
-        private GameManager gameManager;
-        private bool menuManagerFound;
-
-        [Header("Save info")]
+        private int chapter;
+        private bool chapterUnlocked;        
         private int levelNo;
+        private bool unlocked;
         private float time, t;
-        private int star, s;
-        private int items, i;
+        private int award, a;
+        private int pickups, p;
         private int jumped, j;
         private int restarted, r;
-        public int score, sc;
+        private int score, sc;
 
-        public List<PlayerLevelStats> levelStats = new List<PlayerLevelStats>();
 
-        private void Awake()
-        {
-            gameManager = gameObject.GetComponent<GameManager>();
-
-            if (!menuManagerFound)
-                menuManagerFound = GameObject.Find("MainMenuManager");
-        }
-
-        private void SaveLevelStats(float time, int star, int items, int jumped, int restarted, int score)
+        private void SaveLevelStats(float time, int award, int pickups, int jumped, int restarted, int score)
         {
             this.time = time;
-            this.star = star;
-            this.items = items;
+            this.award = award;
+            this.pickups = pickups;
             this.jumped = jumped;
             this.restarted = restarted;
             this.score = score;
         }
 
-        public void SaveLevel(int _levelNo, float _time, int _star, int _items, int _jumped, int _restarted, int _score)
+        public void SaveLevel(int _levelNo, float _time, int _award, int _pickups, int _jumped, int _restarted, int _score)
         {
-            var chapter = MainMenuManager.Instance.chapter.ToString("0");
+            var chapter = SaveLoadManager.LastChapterPlayed;
             var levelString = chapter + levelNo.ToString("00");
 
             if (int.TryParse(levelString, out _levelNo))
             {
-                if (SaveGame.Exists("Level" + _levelNo))
+                if (SaveGame.Exists("ChapterLevel" + _levelNo))
                 {
                     time = CheckBest(
-                        SaveGame.Load<float>("Level" + levelNo + "/Time", t),
+                        SaveGame.Load<float>("ChapterLevel" + _levelNo + "/Time", t),
                         _time);
 
-                    star = (int)CheckBest(
-                        SaveGame.Load<int>("Level" + levelNo + "/Star", s),
-                        _star);
+                    award = (int)CheckBest(
+                        SaveGame.Load<int>("ChapterLevel" + _levelNo + "/Award", a),
+                        _award);
 
-                    items = (int)CheckBest(
-                        SaveGame.Load<int>("Level" + levelNo + "/Items", i),
-                        _items);
+                    pickups = (int)CheckBest(
+                        SaveGame.Load<int>("ChapterLevel" + _levelNo + "/Pickups", p),
+                        _pickups);
 
                     jumped = (int)CheckBest(
-                        SaveGame.Load<int>("Level" + levelNo + "/Jumped", j),
+                        SaveGame.Load<int>("ChapterLevel" + _levelNo + "/Jumped", j),
                         _jumped);
 
                     restarted = (int)CheckBest(
-                        SaveGame.Load<int>("Level" + levelNo + "/Restarted", r),
+                        SaveGame.Load<int>("ChapterLevel" + _levelNo + "/Restarted", r),
                         _restarted);
                     score = (int)CheckBest(
-                        SaveGame.Load<int>("Level" + levelNo + "/Score", sc),
+                        SaveGame.Load<int>("ChapterLevel" + _levelNo + "/Score", sc),
                         _score);
 
-                    SaveLevelStats(time, star, items, jumped, restarted, score);
+                    SaveLevelStats(time, award, pickups, jumped, restarted, score);
                 }
                 else
                 {
                     PlayerLevelStats playerLevelStats = new PlayerLevelStats
                     {
                         time = _time,
-                        star = _star,
-                        items = _items,
+                        award = _award,
+                        pickups = _pickups,
                         jumped = _jumped,
                         restarted = _restarted,
                         score = _score
                     };
-
                 }
             }
 
-            print("2b. Saved levelStats. Level: " + _levelNo + ", Time: " + _time + ", star: " + _star + ", items: " + _items +
+            print("2b. Saved levelStats. Level: " + _levelNo + ", Time: " + _time + ", award: " + _award + ", pickups: " + _pickups +
                 ", jumped: " + _jumped + ", restarted: " + _restarted + ", score: " + _score);
 
-            SaveGame.Save("Level" + _levelNo + "/Time", _time);
-            SaveGame.Save("Level" + _levelNo + "/Star", _star);
-            SaveGame.Save("Level" + _levelNo + "/Items", _items);
-            SaveGame.Save("Level" + _levelNo + "/Jumped", _jumped);
-            SaveGame.Save("Level" + _levelNo + "/Restarted", _restarted);
-            SaveGame.Save("Level" + _levelNo + "/Score", _score);
-            
+            SaveGame.Save("ChapterLevel" + _levelNo + "/Time", _time);
+            SaveGame.Save("ChapterLevel" + _levelNo + "/Award", _award);
+            SaveGame.Save("ChapterLevel" + _levelNo + "/Pickups", _pickups);
+            SaveGame.Save("ChapterLevel" + _levelNo + "/Jumped", _jumped);
+            SaveGame.Save("ChapterLevel" + _levelNo + "/Restarted", _restarted);
+            SaveGame.Save("ChapterLevel" + _levelNo + "/Score", _score);
         }
 
         public void ClearStats()
@@ -108,8 +94,8 @@ namespace Assets.Game.Scripts
             SaveGame.Clear();
 
             time = 0;
-            star = 0;
-            items = 0;
+            award = 0;
+            pickups = 0;
             jumped = 0;
             restarted = 0;
             score = 0;
@@ -125,22 +111,6 @@ namespace Assets.Game.Scripts
             return latest;
         }
 
-        // Todo - not used?
-        public int FindActiveChapter()
-        {
-            GameObject chapterFolder = GameObject.Find("Chapters").gameObject;
-            
-            // get all children and check if name starts with chapter_
-            for (int i = 0; i < chapterFolder.transform.childCount; i++)
-            {
-
-            }
-
-            // if chapter_ is active, return
-
-            return 0;
-        }
-
         public void LoadLevelStats(int levelNo)
         {
             int chapter = ChaptersAndLevels.chapterNo;
@@ -149,38 +119,28 @@ namespace Assets.Game.Scripts
 
             if (int.TryParse(levelString, out levelNo))
             {
-                if (SaveGame.Exists("Level" + levelNo))
+                if (SaveGame.Exists("ChapterLevel" + levelNo))
                 {
-                    //print("loading stats for level" + LevelNo);
                     // 101 = chapter 1, level 01
 
-                    time = SaveGame.Load<float>("Level" + levelNo + "/Time", t);
-                    star = SaveGame.Load<int>("Level" + levelNo + "/Star", s);
-                    items = SaveGame.Load<int>("Level" + levelNo + "/Items", i);
-                    jumped = SaveGame.Load<int>("Level" + levelNo + "/Jumped", j);
-                    restarted = SaveGame.Load<int>("Level" + levelNo + "/Restarted", r);
-                    score = SaveGame.Load<int>("Level" + levelNo + "/Score", sc);
-
-                    //print("3. Load stats level" + LevelNo + " Time: " + Time + ", star: " + Star + ", items: " + Items +
-                        //", jumped: " + Jumped + ", restarted: " + Restarted + ", score: " + Score);
-
-                    if (gameManager != null)
-                        gameManager.bestTime.text = "Best " + time.ToString("#0"); // "#0"
+                    time = SaveGame.Load<float>("ChapterLevel" + levelNo + "/Time", t);
+                    award = SaveGame.Load<int>("ChapterLevel" + levelNo + "/Award", a);
+                    pickups = SaveGame.Load<int>("ChapterLevel" + levelNo + "/Pickups", p);
+                    jumped = SaveGame.Load<int>("ChapterLevel" + levelNo + "/Jumped", j);
+                    restarted = SaveGame.Load<int>("ChapterLevel" + levelNo + "/Restarted", r);
+                    score = SaveGame.Load<int>("ChapterLevel" + levelNo + "/Score", sc);
                 } else
                 {
-                    SaveGame.Save("Level" + levelNo + "/Time", time);
-                    SaveGame.Save("Level" + levelNo + "/Star", star);
-                    SaveGame.Save("Level" + levelNo + "/Items", items);
-                    SaveGame.Save("Level" + levelNo + "/Jumped", jumped);
-                    SaveGame.Save("Level" + levelNo + "/Restarted", restarted);
-                    SaveGame.Save("Level" + levelNo + "/Score", score);
+                    SaveGame.Save("ChapterLevel" + levelNo + "/Time", time);
+                    SaveGame.Save("ChapterLevel" + levelNo + "/Star", award);
+                    SaveGame.Save("ChapterLevel" + levelNo + "/Items", pickups);
+                    SaveGame.Save("ChapterLevel" + levelNo + "/Jumped", jumped);
+                    SaveGame.Save("ChapterLevel" + levelNo + "/Restarted", restarted);
+                    SaveGame.Save("ChapterLevel" + levelNo + "/Score", score);
 
                     print("New Level saved: " + levelNo);
                 }
-
             }
-
         }
-
     }
-}
+}*/

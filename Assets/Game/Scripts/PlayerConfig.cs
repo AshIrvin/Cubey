@@ -2,20 +2,20 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Assets.Game.Scripts
+namespace Game.Scripts
 {
     public class PlayerConfig : MonoBehaviour
     {
-        // Todo - move player related setup methods here
         // or change name of script
-
-        private void OnCollisionEnter(Collision collision)
+        
+        /*private void OnCollisionEnter(Collision collision)
         {
             if (collision.collider.CompareTag("Platform"))
             {
-                VisualEffects.Instance.LandingDust();
+                // VisualEffects.Instance.LandingDust();
+                VisualEffects.Instance.PlayEffect(VisualEffects.Instance.peLandingDust, transform.position);
             }
-        }
+        }*/
 
     }
 }

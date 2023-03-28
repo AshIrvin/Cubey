@@ -1,57 +1,80 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
+using DG.Tweening;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
 
 public class PointOfInterest : MonoBehaviour
 {
-    //public readonly static HashSet<PointOfInterest> Pool = new HashSet<PointOfInterest>();
+    // currently for the Alien eyes only
+    [SerializeField] private Transform transformToMove;
+    [SerializeField] private Transform[] pointOfInterests;
 
-    //GameObject[] go;
-    //int randomInterest;
-    //GameObject newInterestGO;
+    [SerializeField] private float eyeSpeed = 12f;
+    [SerializeField] private float minTime = 2;
+    [SerializeField] private float maxTime = 5;
+    [SerializeField] private bool timerEnabled;
+    [SerializeField] private float countdown;
+    [SerializeField] private Vector3 newPos;
+    [SerializeField] private Vector3 localPos;
 
-    //void OnEnable()
-    //{
-    //    Pool.Add(this);
-    //}
+    private float minEyeSpeed = 10;
+    private float maxEyeSpeed = 20;
 
-    //void OnDisable()
-    //{
-    //    Pool.Remove(this);
-    //}
-
-    void Start()
+    public bool objectMoving;
+    
+    private void Start()
     {
-        //go = GameObject.FindGameObjectsWithTag("PointOfInterest");
-
+        GetNewPosition();
+        countdown = GetRandomNumber(0, 2);
+        eyeSpeed = GetRandomNumber(minEyeSpeed, maxEyeSpeed);
     }
 
-    //public static PointOfInterest FindClosestTarget(Vector3 pos)
-    //{
-        //PointOfInterest result = null;
-        //float dist = float.PositiveInfinity;
-        //var e = Pool.GetEnumerator();
+    private void LateUpdate()
+    {
+        if (timerEnabled)
+            CountdownTimer();
+    }
 
-        //print("hashset count: " + Pool.Count);
+    private void CountdownTimer()
+    {
+        countdown -= Time.deltaTime;
 
-        //foreach (var go in Pool)
-        //{
-        //    print("go: " + go);
-        //}
+        if (countdown < 0)
+        {
+            // MoveObject();
+            StartCoroutine(MoveObject());
+        }
+    }
 
-        //// finds the closet gameobject
-        //while (e.MoveNext())
-        //{
-        //    float d = (e.Current.transform.position - pos).sqrMagnitude;
-        //    if (d < dist)
-        //    {
-        //        result = e.Current;
-        //        dist = d;
-        //    }
-        //}
-        ////print("returned length: " + result);
-        //return result;
-    //}
+    private IEnumerator MoveObject()
+    {
+        if (transformToMove == null || objectMoving)
+        {
+            yield break;
+        }
 
+        objectMoving = true;
+        
+        transformToMove.DOLocalMove(localPos, eyeSpeed).SetEase(Ease.InOutBack).onComplete = () =>
+        {
+            countdown = GetRandomNumber(minTime, maxTime);
+            GetNewPosition();
+            eyeSpeed = GetRandomNumber(minEyeSpeed, maxEyeSpeed);
+            objectMoving = false;
+        };
+    }
+
+    private float GetRandomNumber(float min, float max)
+    {
+        return Random.Range(min, max);
+    }
+
+    private void GetNewPosition()
+    {
+        localPos = pointOfInterests[Random.Range(0, pointOfInterests.Length)].localPosition;
+    }
 }
