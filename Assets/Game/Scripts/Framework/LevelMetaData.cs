@@ -66,11 +66,6 @@ public class LevelMetaData : ScriptableObject
 #endif
     }
 
-    private void OnValidate()
-    {
-
-    }
-
     public void AssignPath(int chapter)
     {
 #if UNITY_EDITOR

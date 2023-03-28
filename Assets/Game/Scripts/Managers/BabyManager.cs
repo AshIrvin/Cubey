@@ -22,6 +22,12 @@ namespace Game.Scripts
             flip = transform.localScale;
 
             RandomTime();
+
+            var n = Random.Range(0, 2);
+            if (n == 1)
+            {
+                gameObject.SetActive(false);
+            }
         }
 
         private void Update()
@@ -30,9 +36,9 @@ namespace Game.Scripts
 
             if (time < 0 && allowJump)
             {
-                MakeCharacterJump();
-                
                 RandomTime();
+                
+                MakeCharacterJump();
 
                 ChangeDirection();
             }

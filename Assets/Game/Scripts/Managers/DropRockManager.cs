@@ -11,33 +11,31 @@ public class DropRockManager : MonoBehaviour
     private Vector3 defaultRockPosition;
     private Rigidbody rockRb;
 
-    private void OnEnable()
+    private GameObject rock01;
+    private GameObject rock02;
+
+    private void Start()
     {
-        defaultRockPosition = transform.position;
+        rock01 = transform.GetChild(0).gameObject;
+        rock02 = transform.GetChild(1).gameObject;
         rockRb = GetComponent<Rigidbody>();
+        defaultRockPosition = transform.position;
     }
 
     private void OnCollisionEnter(Collision collision)
     {
-        // if (!collision.collider.CompareTag("Player"))
-        // {
-            VisualEffects.Instance.PlayEffect(VisualEffects.Instance.peRockBreakage, transform.position, Quaternion.Euler(0,0,0));
-            ToggleObjectImage();
-            StartCoroutine(WaitToReset());
-        /*}
-        else
-        {
-            Debug.Log("Hit player! Should this reset the player?");
-        }*/
+        VisualEffects.Instance.PlayEffect(VisualEffects.Instance.peRockBreakage, transform.position, Quaternion.Euler(0,0,0));
+        ToggleObjectImage(false);
+        StartCoroutine(WaitToReset());
     }
-    
+
     private IEnumerator WaitToReset()
     {
         yield return new WaitForSeconds(rockHitReset);
         rockRb.velocity = Vector3.zero;
         transform.position = defaultRockPosition;
-        transform.rotation = GetRandomRotation();
-        ToggleObjectImage();
+        ToggleObjectImage(true);
+        // transform.rotation = GetRandomRotation();
     }
 
     private Quaternion GetRandomRotation()
@@ -46,9 +44,12 @@ public class DropRockManager : MonoBehaviour
         return Quaternion.Euler(0,0, rot);
     }
 
-    private void ToggleObjectImage()
+    private void ToggleObjectImage(bool state)
     {
-        transform.GetChild(0).gameObject.SetActive(!transform.GetChild(0).gameObject.activeInHierarchy);
-        transform.GetChild(1).gameObject.SetActive(!transform.GetChild(1).gameObject.activeInHierarchy);
+        // transform.GetChild(0).gameObject.SetActive(!transform.GetChild(0).gameObject.activeInHierarchy);
+        // transform.GetChild(1).gameObject.SetActive(!transform.GetChild(1).gameObject.activeInHierarchy);
+        
+        rock01.SetActive(state);
+        rock02.SetActive(state);
     }
 }

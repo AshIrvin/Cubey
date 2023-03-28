@@ -18,7 +18,9 @@ public class StickyObject : MonoBehaviour
     private HingeJoint hinge;
     [SerializeField] private float massEnter;
     [SerializeField] private float massExit;
-    
+
+    public bool allowJointNudge = true;
+
     private void OnEnable()
     {
         allowPlayerToStick = true;
@@ -95,8 +97,6 @@ public class StickyObject : MonoBehaviour
         }
     }
 
-    public bool allowJointNudge = true;
-    
     // For wakening the rb
     private IEnumerator ToggleFreezePosition(bool state)
     {
@@ -113,12 +113,16 @@ public class StickyObject : MonoBehaviour
     {
         if (other.gameObject.CompareTag("Player"))
         {
-            StartCoroutine(DelayBelowActivatingSticky(null));
+            if (!spindle)
+            {
+                stickyObject.CurrentValue = false;
+            }
             
+            StartCoroutine(DelayBelowActivatingSticky(null));
+
             if (drawBridge && allowJointNudge)
             {
                 StartCoroutine(ToggleFreezePosition(false));
-                stickyObject.CurrentValue = false;
                 allowPlayerToStick = true;
             }
         }

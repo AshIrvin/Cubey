@@ -8,13 +8,22 @@ using UnityEngine;
 public class InitialiseAds : MonoBehaviour
 {
     public InterstitialAd interstitial;
+    // public BannerAdGameObject bannerAdGameObject;
     public static Action LoadLevel;
     public static Action LoadAd;
+
+    private InterstitialAdGameObject fullscreenAd;
+    public BannerAdGameObject bannerAd;
 
     private void Awake()
     {
         enabled = false;
-        
+
+        if (bannerAd == null)
+        {
+            bannerAd = transform.GetComponentInChildren<BannerAdGameObject>();
+        }
+
         MobileAds.Initialize((initStatus) => {
             Debug.Log("Initialized MobileAds");
         });
@@ -23,19 +32,36 @@ public class InitialiseAds : MonoBehaviour
     private void OnEnable()
     {
         if (SaveLoadManager.GamePurchased)
+        {
+            // bannerAd.gameObject.SetActive(false);
+            DestroyTopBannerAd();
             return;
+        }
         
         MapManager.LoadAd += ShowAd;
         MapManager.MapOpened += GetAd;
+        
+        bannerAd.gameObject.SetActive(true);
+        bannerAd.enabled = true;
+        bannerAd?.LoadAd();
+        
     }
 
     private void Start()
     {
         if (SaveLoadManager.GamePurchased)
+        {
             return;
+        }
         
         fullscreenAd = MobileAds.Instance
             .GetAd<InterstitialAdGameObject>("InterstitialAd");
+
+        bannerAd = MobileAds.Instance
+            .GetAd<BannerAdGameObject>("TopBannerAd");
+
+        bannerAd.gameObject.SetActive(true);
+        bannerAd?.LoadAd();
     }
 
     #region Manual Setup
@@ -74,11 +100,11 @@ public class InitialiseAds : MonoBehaviour
 
     // ******** Placement ads ********** //
 
-    InterstitialAdGameObject fullscreenAd;
-    
+
     public void GetAd()
     {
         fullscreenAd?.LoadAd();
+        
         StartCoroutine(WaitToGetAd());
     }
 
@@ -140,10 +166,23 @@ public class InitialiseAds : MonoBehaviour
         LoadLevel?.Invoke();
     }
 
+    public void DestroyTopBannerAd()
+    {
+        bannerAd.gameObject.SetActive(false);
+        bannerAd?.DestroyAd();
+        bannerAd.enabled = false;
+    }
+
+    public void LoadTopBannerAd()
+    {
+        bannerAd?.LoadAd();
+    }
+    
     private void OnDisable()
     {
         MapManager.LoadAd -= ShowAd;
         MapManager.MapOpened -= GetAd;
+        // bannerAdGameObject.gameObject.SetActive(false);
     }
 
     private void OnDestroy()

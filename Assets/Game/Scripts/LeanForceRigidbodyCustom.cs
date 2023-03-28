@@ -20,7 +20,7 @@ namespace Lean.Touch
         [SerializeField] private bool useMass;
         [SerializeField] private bool rotateToVelocity;
 
-        // public float playerMagnitude;
+        public float playerMagnitude;
 
         [SerializeField] private Vector3 direction;
         [SerializeField] private Vector3 directionNormalised;
@@ -38,12 +38,9 @@ namespace Lean.Touch
         protected virtual void OnEnable()
         {
             cachedBody = GetComponent<Rigidbody>();
-            if (gameManager == null)
-                gameManager = FindObjectOfType<GameManager>();
-            if (audioManager == null)
-                audioManager = FindObjectOfType<AudioManager>();
-            if (launchRenderArc == null)
-                launchRenderArc = FindObjectOfType<LaunchRenderArc>();
+            if (gameManager == null) gameManager = FindObjectOfType<GameManager>();
+            if (audioManager == null) audioManager = FindObjectOfType<AudioManager>();
+            if (launchRenderArc == null) launchRenderArc = FindObjectOfType<LaunchRenderArc>();
         }
 
         // comes from leanFingerLine in game
@@ -53,7 +50,7 @@ namespace Lean.Touch
             if (cachedBody == null || !cachedBody.gameObject.activeInHierarchy)
                 return;
 
-            if (canJump && FingerPos.belowPlayer && Time.timeScale > 0.2f)
+            if (/*canJump &&*/ FingerPos.belowPlayer && Time.timeScale > 0.2f)
             {
                 ApplyBetweenOpposite(transform.position, end);
             }
@@ -89,6 +86,7 @@ namespace Lean.Touch
                 stickyObject.CurrentValue = false;
                 cachedBody.AddForce(direction * velocityMultiplier, forceMode);
                 onGround?.Invoke(false);
+                canJump = false;
                 
                 gameManager.PlayerFaceDirection(direction.x > 0);
                 StartCoroutine(PlayerJumped());
@@ -101,34 +99,45 @@ namespace Lean.Touch
             gameManager.PlayerJumped();
         }
 
+        private void Update()
+        {
+            playerMagnitude = cachedBody.velocity.sqrMagnitude;
+        }
+
+        public float cubeyJumpMagValue = 0.4f;
+
         private void OnCollisionEnter(Collision collision)
         {
-            // Debug.Log("cubey hit collision: " + collision.collider.name);
+            if (cachedBody.velocity.sqrMagnitude < cubeyJumpMagValue)
+            {
+                CheckGroundBeforeJump();
+            }
+            
             if (collision.collider.CompareTag("Sticky"))
             {
                 // Debug.Log("Hit sticky object");
-                onGround?.Invoke(true);
+                // onGround?.Invoke(true);
             }
             else if (collision.collider.CompareTag("Platform") || collision.collider.CompareTag("MovingPlatform"))
             {
                 // Debug.Log("Hit a platform");
                 audioManager.PlayAudio(audioManager.cubeyLand);
                 VisualEffects.Instance.PlayEffect(VisualEffects.Instance.peLandingGrass, transform.position);
-                onGround?.Invoke(true);
+                // onGround?.Invoke(true);
             }
             else if (collision.collider.CompareTag("GroundGrass"))
             {
                 // Debug.Log("Hit grass");
                 audioManager.PlayAudio(audioManager.cubeyLand);
                 VisualEffects.Instance.PlayEffect(VisualEffects.Instance.peLandingGrass, transform.position);
-                onGround?.Invoke(true);
+                // onGround?.Invoke(true);
             }
             else if (collision.collider.CompareTag("GroundNormal"))
             {
                 // Debug.Log("Hit normal ground");
                 audioManager.PlayAudio(audioManager.cubeyLand);
                 VisualEffects.Instance.PlayEffect(VisualEffects.Instance.peLandingDust, transform.position);
-                onGround?.Invoke(true);
+                // onGround?.Invoke(true);
             }
             else if (collision.collider.CompareTag("GroundSnow"))
             {
@@ -136,7 +145,33 @@ namespace Lean.Touch
                 // audioManager.PlayAudio(audioManager.cubeyLand);
                 audioManager.PlayAudio(audioManager.cubeyLandingSnow);
                 // VisualEffects.Instance.PlayEffect(VisualEffects.Instance.pe, transform.position);
+                // onGround?.Invoke(true);
+            }
+        }
+
+        public void CheckGroundBeforeJump()
+        {
+            if (stickyObject.CurrentValue)
+            {
                 onGround?.Invoke(true);
+                canJump = true;
+                return;
+            }
+            
+            if (canJump) return;
+            
+            RaycastHit hit;
+            bool hitGround = false;
+            if (Physics.Raycast(transform.position, Vector3.down, out hit, 1.2f))
+            {
+                Debug.DrawRay(transform.position, Vector3.down * hit.distance, Color.blue);
+                hitGround = true;
+            }
+            
+            if (hitGround)
+            {
+                onGround?.Invoke(true);
+                canJump = true;
             }
         }
     }

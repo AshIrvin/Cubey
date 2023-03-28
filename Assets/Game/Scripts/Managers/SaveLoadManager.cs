@@ -68,11 +68,10 @@ public class SaveLoadManager : MonoBehaviour
         set => chapterLevelSaved = value;
     }
 
-
     private void Awake()
     {
         LoadGamePurchased();
-        
+
         if (SaveGame.Exists($"SaveChapters{0}.txt"))
         {
             SetupSaveClass();
@@ -92,6 +91,8 @@ public class SaveLoadManager : MonoBehaviour
         
         if (GamePurchased)
             UnlockedPurchasedChapters();
+
+        UnlockSeasonalChapter();
     }
 
     private void FirstTimeUse()
@@ -105,8 +106,8 @@ public class SaveLoadManager : MonoBehaviour
         Debug.Log("Setting up 1st time use");
         SaveStaticList[0].chapterUnlocked = false;
         SaveStaticList[1].chapterUnlocked = true;
-        SaveStaticList[2].chapterUnlocked = true;
-        SaveStaticList[3].chapterUnlocked = true;
+        SaveStaticList[2].chapterUnlocked = false;
+        SaveStaticList[3].chapterUnlocked = false;
         
         for (int i = 0; i < chapterAmount; i++)
         {
@@ -118,8 +119,8 @@ public class SaveLoadManager : MonoBehaviour
         {
             showSaveData[0].chapterUnlocked = false;
             showSaveData[1].chapterUnlocked = true;
-            showSaveData[2].chapterUnlocked = true;
-            showSaveData[3].chapterUnlocked = true;
+            showSaveData[2].chapterUnlocked = false;
+            showSaveData[3].chapterUnlocked = false;
             
             for (int i = 0; i < chapterAmount; i++)
             {
@@ -127,6 +128,12 @@ public class SaveLoadManager : MonoBehaviour
             }
         }
     }
+
+    /*public void UnlockAfterTutorial()
+    {
+        showSaveData[2].chapterUnlocked = true;
+        showSaveData[3].chapterUnlocked = true;
+    }*/
 
     private void UnlockedPurchasedChapters()
     {
@@ -140,16 +147,29 @@ public class SaveLoadManager : MonoBehaviour
     
     private void UnlockSeasonalChapter()
     {
-        if (DateTime.Now.Month >= xmasStartMonth &&
-            DateTime.Now.Month <= xmasEndMonth && LoadGamePurchased())
+        if (DateTime.Now.Month >= xmasStartMonth || // 11 >= 11 and <= 12
+            DateTime.Now.Month <= xmasEndMonth) // 11 <= 1
         {
-            SaveStaticList[0].chapterUnlocked = true;
-            showSaveData[0].chapterUnlocked = true;
+            if (LoadGamePurchased())
+            {
+                SaveStaticList[0].chapterUnlocked = true;
+                if (viewSavesInInspector)
+                    showSaveData[0].chapterUnlocked = true;
+                Debug.Log("Xmas chapter unlocked");
+                // UnlockChapter(0);
+            }
+            else
+            {
+                Debug.Log("Not purchased. Xmas chapter not unlocked");
+            }
         }
         else
         {
             SaveStaticList[0].chapterUnlocked = false;
-            showSaveData[0].chapterUnlocked = false;
+            if (viewSavesInInspector)
+                showSaveData[0].chapterUnlocked = false;
+
+            Debug.Log("Xmas chapter locked. Month: " + DateTime.Now.Month);
         }
     }
     
@@ -179,14 +199,6 @@ public class SaveLoadManager : MonoBehaviour
                 
             }   
         }
-        
-        /*for (int i = 0; i < SaveStaticList.Count; i++)
-        {
-            for (int j = 0; j < SaveStaticList[i].levels.Count; j++)
-            {
-                SaveStaticList[i].levels[j].timeTaken = 0;
-            }
-        }*/
     }
 
     private void LoadSaves()
@@ -195,7 +207,8 @@ public class SaveLoadManager : MonoBehaviour
         for (int i = 0; i < chapterAmount; i++)
         {
             SaveStaticList[i] = SaveGame.Load<ChapterLevelData>($"SaveChapters{i}.txt");
-            showSaveData[i] = SaveGame.Load<ChapterLevelData>($"SaveChapters{i}.txt");
+            if (viewSavesInInspector)
+                showSaveData[i] = SaveGame.Load<ChapterLevelData>($"SaveChapters{i}.txt");
         }
     }
     
@@ -318,9 +331,6 @@ public class SaveLoadManager : MonoBehaviour
             SaveGame.Delete("GamePurchased");
 
         LastLevelUnlocked = 0;
-
-
-
     }
 
     public static void SaveGamePurchased(bool state)

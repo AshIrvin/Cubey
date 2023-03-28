@@ -158,7 +158,6 @@ public class GameManager : MonoBehaviour
     private int jumpsToStartWith = 10;
     private int time;
     private int countdown = 60;
-
     private SaveLoadManager.Awards award;
 
     [Header("Animation")]
@@ -170,9 +169,6 @@ public class GameManager : MonoBehaviour
     private Vector3 cubeyPosition;
     public float cubeyMagnitude;
     private Vector3 flip;
-    // private bool isPlayerRbNotNull;
-    // private bool isPlayerCubeNotNull;
-
 
     private void Awake()
     {
@@ -181,6 +177,7 @@ public class GameManager : MonoBehaviour
         exitProperty.OnValueChanged += LoadEndScreen;
         stickyObject.OnValueChanged += ToggleSticky;
         leanForceRb.onGround += PlayerAllowedJump;
+        // FingerPos.allowedJump += PlayerAllowedJump;
         
         if (leanForceRb == null)
             leanForceRb = FindObjectOfType<LeanForceRigidbodyCustom>();
@@ -189,7 +186,6 @@ public class GameManager : MonoBehaviour
             gameFolder = GameObject.Find("Game").transform;
         
         GameLevel = false;
-
         visualEffects.peExitSwirl.SetActive(false);
 
         jumpLeft = jumpsToStartWith;
@@ -219,8 +215,6 @@ public class GameManager : MonoBehaviour
         twoStars = levelMetaData.JumpsForSilver;
         threeStars = levelMetaData.JumpsForGold;
         levelName = levelMetaData.LevelName;
-        
-        // Debug.Log($"Level {levelNo}s info received.");
     }
 
     private void OnEnable()
@@ -229,17 +223,14 @@ public class GameManager : MonoBehaviour
         exitProperty.CurrentValue = false;
         GetLevelInfo();
         StartLevel();
-        
     }
 
     private void OnDisable()
     {
-        // Debug.Log("GameManager disabled");
         if (cubeyPlayer != null)
             cubeyPlayer.SetActive(false);
         PlayerAllowedJump(false);
         SetGameCanvases(false);
-        // starGold_anim.Play("mapStarGoldBounce");
     }
     
     private void LoadGameLevel(bool enable)
@@ -303,8 +294,6 @@ public class GameManager : MonoBehaviour
         
         if (cubeyPlayer != null)
             flip = cubeyPlayer.transform.localScale;
-        // else
-        //     Debug.LogError("Can't find Cubey!!");
         
         DisableStartPosition();
         UpdateLevelText(levelNo);
@@ -324,9 +313,16 @@ public class GameManager : MonoBehaviour
         LevelLoaded?.Invoke();
     }
 
+    // Todo - can this be an action? 
+    // needs fixed - can jump at top of jump
     public void Update()
     {
-        if (playerRb.velocity.magnitude < cubeyJumpMagValue)
+        // SetPlayerJump();
+    }
+
+    private void SetPlayerJump()
+    {
+        if (playerRb.velocity.sqrMagnitude < cubeyJumpMagValue)
         {
             PlayerAllowedJump(true);
         }
@@ -336,6 +332,7 @@ public class GameManager : MonoBehaviour
             {
                 return;
             }
+
             PlayerAllowedJump(false);
         }
     }
@@ -351,17 +348,14 @@ public class GameManager : MonoBehaviour
         
         if (jumpsToStartWith - jumpLeft <= levelMetaData.JumpsForGold) // 10 - 8 < 3
         {
-            // awardToGet.text = levelMetaData.JumpsForGold + " jumps for gold";
             ChangeTextColour(jumpAmountText, ColourManager.starGold);
         }
         else if (jumpsToStartWith - jumpLeft <= levelMetaData.JumpsForSilver)
         {
-            // awardToGet.text = levelMetaData.JumpsForSilver + " jumps for silver";
             ChangeTextColour(jumpAmountText, ColourManager.starSilver);
         }
         else if (jumpsToStartWith - jumpLeft <= levelMetaData.JumpsForBronze) // 9 - 9 <= 9
         {
-            // awardToGet.text = levelMetaData.JumpsForBronze + " jumps for bronze";
             ChangeTextColour(jumpAmountText, ColourManager.starBronze);
         }
         else
@@ -416,11 +410,11 @@ public class GameManager : MonoBehaviour
 
     private void CheckJumpCount() 
     {
-        if (jumpCountIncreases && jumpLeft == 0 && leanForceRb.canJump && !onBreakablePlatform && !CheckJumpMagnitude())
+        if (jumpCountIncreases && jumpLeft == 0 && /*leanForceRb.canJump &&*/ !onBreakablePlatform && !CheckJumpMagnitude())
         {
             FailedScreen(true);
         }
-        else if (jumpCountIncreases && jumpLeft == 0 && leanForceRb.canJump && onBreakablePlatform)
+        else if (jumpCountIncreases && jumpLeft == 0 && /*leanForceRb.canJump &&*/ onBreakablePlatform)
         {
             StartCoroutine(DelayFailedScreen());
         }
@@ -687,9 +681,19 @@ public class GameManager : MonoBehaviour
     public void PlayerAllowedJump(bool state)
     {
         allowPlayerMovement = state;
-        leanForceRb.canJump = state;
         LaunchArc = state;
-        // Debug.Log("allowed jump: " + state);
+        leanForceRb.canJump = state;
+    }
+
+    IEnumerator DelayBeforeJump(bool state)
+    {
+        if(state)
+        {
+            yield return new WaitForSeconds(0.3f);
+        }
+        allowPlayerMovement = state;
+        LaunchArc = state;
+        leanForceRb.canJump = state;
     }
 
     public void PlayerVelocity(float n)

@@ -8,12 +8,9 @@ using UnityEngine.UI;
 public class ChapterComplete : MonoBehaviour
 {
     [SerializeField] private Text chapterNumberText;
-    // [SerializeField] private Text bronzeCollected;
-    // [SerializeField] private Text silverCollected;
     [SerializeField] private Text goldCollected;
     [SerializeField] private Text goldButtonCollected;
     [SerializeField] private Text goldLeftToCollect;
-    // [SerializeField] private GameObject gotThemAll;
     [SerializeField] private GameObject popup;
     [SerializeField] private GameObject completedChapter100;
     [SerializeField] private ChapterList chapterList;
@@ -26,22 +23,13 @@ public class ChapterComplete : MonoBehaviour
     private void Awake()
     {
         if (gameManager == null) gameManager = FindObjectOfType<GameManager>();        
-        // if (chapterNumberText == null) transform.Find("");
         if (goldCollected == null) transform.Find("GoldCollected_text");
         if (goldLeftToCollect == null) transform.Find("MoreToCollectNumber_text");
-        // if (gotThemAll == null) transform.Find("YouGotThemAll_text");
-        // gotThemAll.gameObject.SetActive(false);
-    }
-
-    private void Start()
-    {
-        // ShowCompleteScreen(false);
     }
 
     private void OnEnable()
     {
         goldStarButton.SetActive(true);
-        // completedChapter100.SetActive(false);
     }
 
     public void ShowCompleteScreen(bool state)
@@ -99,8 +87,6 @@ public class ChapterComplete : MonoBehaviour
                 chapterNumberText.text = "Chapter " + chapter.ToString() + " Complete!";
             }
         }
-        
-
     }
 
     public void ClosePopup()

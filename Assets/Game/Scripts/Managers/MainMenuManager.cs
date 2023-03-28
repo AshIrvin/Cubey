@@ -244,7 +244,6 @@ public class MainMenuManager : MonoBehaviour
                 leanConstrainToBox.Target.enabled = false;
                 leanConstrainToBox.Target = null;
             }
-            Debug.Log("No Collision box found!");
         }
     }
 
