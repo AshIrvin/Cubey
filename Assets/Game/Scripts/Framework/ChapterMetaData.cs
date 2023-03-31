@@ -12,18 +12,12 @@ public class ChapterMetaData : ScriptableObject
     [SerializeField] private int chapterNumber;
     [SerializeField] private string chapterName;
     [SerializeField] private GameObject pickupIcon;
-    // [SerializeField] private int lastLevelPlayed;
-    // [SerializeField] private int lastLevelUnlocked;
-    // [SerializeField] private bool chapterUnlocked;
     [SerializeField] private GameObject chapterMap;
     [SerializeField] private GameObject cubeyPlayer;
     [SerializeField] private LevelList levelList;
     [SerializeField] private float menuZoomLevel;
     [SerializeField] private List<GameObject> chapterMapButtonList;
     [SerializeField] private List<GameObject> inGameMapButtonList;
-    // [SerializeField] private int awardsBronze;
-    // [SerializeField] private int awardsSilver;
-    // [SerializeField] private int awardsGold;
     [SerializeField] private string fullPathName = "Assets/Src_Images/MainMenu/MapLevelImages/Chapter";
     
     private readonly string levelButton = "Leveln_button";

@@ -11,6 +11,11 @@ using UnityEngine.SceneManagement;
 
 public class MainMenuManager : MonoBehaviour
 {
+    // TODO - a general refactor needed for this script
+    /// <summary>
+    /// 
+    /// </summary>
+    
     [SerializeField] private MapManager mapManager;
     [SerializeField] private CameraManager cameraManager;
     [SerializeField] private SaveMetaData saveMetaData;
@@ -104,13 +109,12 @@ public class MainMenuManager : MonoBehaviour
         MapManager.TimeDuration(false, "Menu");
     }
 
-    void Start()
+    private void Start()
     {
         versionNo.text = "v: " + Application.version;
 
         AddMenuEnvironments();
         SetColours();
-        // anim = menuButtonAnim.transform.parent.GetComponent<Animator>();
         ButtonSizePong();
         SetMenuEnvironment(SaveLoadManager.LastChapterPlayed);
         chapterFinishScreen.SetActive(false);
@@ -244,7 +248,6 @@ public class MainMenuManager : MonoBehaviour
                 leanConstrainToBox.Target.enabled = false;
                 leanConstrainToBox.Target = null;
             }
-            Debug.Log("No Collision box found!");
         }
     }
 
@@ -305,8 +308,6 @@ public class MainMenuManager : MonoBehaviour
         menuEnvironmentParent.SetActive(true);
         mapManager.enabled = false;
         audioManager.AudioButtons.SetActive(enable);
-        // cameraManager.panToLevel = false;
-        // cameraManager.disableAutoPanMapCam = false;
         
         leanZoom.enabled = false;
         backButton.onClick.AddListener(MainMenuScreen);

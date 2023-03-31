@@ -7,27 +7,30 @@ using UnityEngine.Events;
 
 public class FingerPos : MonoBehaviour
 {
+    private LeanForceRigidbodyCustom leanForceRigidbodyCustom;
+    
     private static Vector3 fingerPosition;
     private static Vector3 playerPosition;
     public static Vector3 FingerPosition => fingerPosition;
     public static Vector3 FingerPlayerDirection => fingerPosition - playerPosition;
     public static bool belowPlayer;
     public static bool abovePlayer;
-    // public static bool screenTouched;
     private float fingerOffset = 1.2f;
     
     private LeanFingerLine leanFingerLine;
-    // [SerializeField] private GameObject screenPosGo2;
 
     public Vector3 GetPlayerPosition => transform.position;
 
     public static Action belowCubey;
     public static Action aboveCubey;
+    // public static Action<bool> allowedJump;
     
     private void Awake()
     {
         if (leanFingerLine == null)
             leanFingerLine = FindObjectOfType<LeanFingerLine>();
+
+        leanForceRigidbodyCustom = GetComponent<LeanForceRigidbodyCustom>();
     }
 
     private void OnEnable()
@@ -55,6 +58,7 @@ public class FingerPos : MonoBehaviour
             if (belowPlayer)
             {
                 belowCubey?.Invoke();
+                leanForceRigidbodyCustom.CheckGroundBeforeJump();
             }
             else
             {
@@ -72,5 +76,5 @@ public class FingerPos : MonoBehaviour
     public static float GetCameraPlayerDistance()
     {
         return Vector3.Distance(playerPosition, Camera.main.transform.position);
-    }
+    }   
 }

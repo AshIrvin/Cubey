@@ -19,3 +19,9 @@ MonoBehaviour:
     iOSAdUnitId: ca-app-pub-3940256099942544/4411468910
     persistent: 0
     autoLoadEnabled: 1
+  - placementName: AdMob Banner Ad
+    adType: 0
+    androidAdUnitId: ca-app-pub-7847363984248010/4487759288
+    iOSAdUnitId: ca-app-pub-3940256099942544/4411468910
+    persistent: 0
+    autoLoadEnabled: 1

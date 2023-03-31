@@ -35,14 +35,14 @@ public class MapManager : MonoBehaviour
     private GameObject mapPickup;
     private Vector3 lerpPos1 = new Vector3(0.9f, 0.9f, 0.9f);
     private Vector3 lerpPos2 = new Vector3(1f, 1f, 1f);
+    private BoxCollider levelCollision;
 
     public bool mapActive;
-    
+
+    private static float timeDuration = 0;
     public static Action LoadAd;
-    // public static Action PrepareAd;
     public static Action MapOpened;
 
-    private BoxCollider levelCollision;
 
     private bool GameLevel
     {
@@ -60,8 +60,7 @@ public class MapManager : MonoBehaviour
         get
         {
             if (levelParent == null)
-            {
-                Debug.Log("Finding LevelParent...");
+            { // if forgotten to assign in the inspector...
                 levelParent = GameObject.Find("Game/LevelParent");
             }
             return levelParent;
@@ -71,18 +70,10 @@ public class MapManager : MonoBehaviour
     public GameObject CubeyOnMap => cubeyOnMap;
 
 
-    public bool GamePurchased
-    {
-        get => SaveLoadManager.GamePurchased;
-        set => SaveLoadManager.SaveGamePurchased(value);
-    }
-
     private void Awake()
     {
         TimeDuration(true);
         AddChapterMaps();
-
-        // InitialiseAds.LoadLevel += LoadLevel;
 
         if (deleteLevelsPlayed)
         {
@@ -95,9 +86,7 @@ public class MapManager : MonoBehaviour
         }
         
         bgAdBlocker?.SetActive(false);
-
         shopButton.SetActive(true);
-        
         TimeDuration(false, "Add Chapters etc");
     }
 
@@ -161,23 +150,13 @@ public class MapManager : MonoBehaviour
                     GameObject levelButton = mapButtons.transform.GetChild(j).gameObject;
                     allChapters[i].InGameMapButtonList.Add(levelButton);
                     levelButton.GetComponent<Button>().onClick.AddListener(GetLevelNoToLoad);
-                    /*string levelNumber = (j+1).ToString();
-                    button.transform.GetChild(1).GetComponent<Text>().text = levelNumber;
-                    
-                    if (allChapters[i].LevelList[j].LevelSprite != null)
-                    {
-                        button.transform.Find("Mask/Screenshot").GetComponent<Image>().sprite =
-                            allChapters[i].LevelList[j].LevelSprite;
-                    }*/
-                    
                 }
             }
             
             map.SetActive(false);
         }
     }
-    
-    private static float timeDuration = 0;
+
     public static void TimeDuration(bool start, string methodName = "", Action callback = null)
     {
         if (start)
@@ -220,9 +199,6 @@ public class MapManager : MonoBehaviour
         mainMenuManager.EnableGoldAwardsButton(false);
     }
 
-    /// <summary>
-    /// Checks when to display ADs
-    /// </summary>
     private void CheckLevelsPlayed(int n)
     {
         if (SaveLoadManager.GamePurchased)
@@ -306,12 +282,6 @@ public class MapManager : MonoBehaviour
         LoadLevelNumber(levelToLoad);
     }
 
-    /*private void PrepareGoogleAds()
-    {
-        Debug.Log("Preparing ad...");
-        PrepareAd?.Invoke();
-    }*/
-
     private void LoadLevelNumber(int levelNumber)
     {
         var l = levelNumber.ToString();
@@ -334,6 +304,7 @@ public class MapManager : MonoBehaviour
         
         levelGameObject?.SetActive(true);
         bgAdBlocker.SetActive(false);
+        initialiseAds.DestroyTopBannerAd();
         GameLevel = true;
         enabled = false;
         mainMenuManager?.SetCollisionBox("LevelCollision", levelCollision);
@@ -347,14 +318,32 @@ public class MapManager : MonoBehaviour
         cubey.transform.SetParent(null, true);
         VisualEffects.Instance.peExitSwirl.transform.SetParent(VisualEffects.Instance.ParticleEffectsGo.transform, true);
 
+        if (!SaveLoadManager.GamePurchased)
+        {
+            initialiseAds.LoadTopBannerAd();
+        }
+        
         GameLevel = false;
         Time.timeScale = 1;
         enabled = true;
         DestroyLevels();
         mainMenuManager.NavButtons = true;
         mainMenuManager?.SetCollisionBox("CollisionMap");
+        
+        // TODO: check if the last level was chapter 1, level 5 that completes the tutorial
+        if (SaveLoadManager.LastChapterPlayed == 1 && SaveLoadManager.GetLevelAward(4) > 1
+                                                   && PlayerPrefs.GetInt("tutorialFinished", 0) == 0)
+        {
+            PlayerPrefs.SetInt("tutorialFinished", 1);
+            SaveLoadManager.UnlockChapter(2);
+            SaveLoadManager.UnlockChapter(3);
+            SaveLoadManager.SaveGameInfo();
+            tutoralCompleteGo.SetActive(true);
+        }
     }
 
+    [SerializeField] private GameObject tutoralCompleteGo;
+    
     private void DestroyLevels()
     {
         for (int i = 0; i < LevelParent.transform.childCount; i++)
@@ -367,19 +356,6 @@ public class MapManager : MonoBehaviour
 
     private int maxDemoLevel = 10;
 
-    public void PurchaseGameButton()
-    {
-        GamePurchased = true;
-        // SceneManager.LoadScene("CubeyGame");
-        Debug.Log("Game Purchased: " + GamePurchased);
-    }
-
-    public void DemoMode()
-    {
-        GamePurchased = false;
-        Debug.Log("Demo mode. Purchased: " + GamePurchased);
-    }
-    
     // Check which levels are unlocked inside the chapter
     private void CycleButtonLocks()
     {
@@ -439,19 +415,24 @@ public class MapManager : MonoBehaviour
     
     private void SetButtonToShopButton(Button button)
     {
-        // move the shop button over level 10
-        if (!GamePurchased)
+        if (!ShopManager.GamePurchased)
         {
             var pos = button.transform.position;
             var b = button.GetComponent<Button>();
             b.onClick.RemoveAllListeners();
-            b.onClick.AddListener(() => mainMenuManager.ToggleGameObject(shopMenu));
+            b.onClick.AddListener(() => EnableShopMenu());
             b.interactable = true;
             b.image = shopButton.GetComponent<Image>();
             GameObject level10 = b.transform.GetChild(2).GetChild(0).gameObject;
             level10.GetComponent<Image>().sprite = b.image.sprite;
             level10.GetComponent<Image>().color = Color.white;
         }
+    }
+
+    private void EnableShopMenu()
+    {
+        mainMenuManager.ToggleGameObject(shopMenu);
+        mainMenuManager.BackButton = false;
     }
     
     List<SpriteRenderer> starImages = new (3);
