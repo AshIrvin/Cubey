@@ -7,8 +7,11 @@ using UnityEngine;
 
 public class InitialiseAds : MonoBehaviour
 {
+    /// <summary>
+    /// Half of this is Googles code, the other half is me trying to get it to work...
+    /// </summary>
+    
     public InterstitialAd interstitial;
-    // public BannerAdGameObject bannerAdGameObject;
     public static Action LoadLevel;
     public static Action LoadAd;
 
@@ -44,7 +47,6 @@ public class InitialiseAds : MonoBehaviour
         bannerAd.gameObject.SetActive(true);
         bannerAd.enabled = true;
         bannerAd?.LoadAd();
-        
     }
 
     private void Start()
@@ -54,12 +56,8 @@ public class InitialiseAds : MonoBehaviour
             return;
         }
         
-        fullscreenAd = MobileAds.Instance
-            .GetAd<InterstitialAdGameObject>("InterstitialAd");
-
-        bannerAd = MobileAds.Instance
-            .GetAd<BannerAdGameObject>("TopBannerAd");
-
+        fullscreenAd = MobileAds.Instance.GetAd<InterstitialAdGameObject>("InterstitialAd");
+        bannerAd = MobileAds.Instance.GetAd<BannerAdGameObject>("TopBannerAd");
         bannerAd.gameObject.SetActive(true);
         bannerAd?.LoadAd();
     }
@@ -99,8 +97,6 @@ public class InitialiseAds : MonoBehaviour
     #endregion
 
     // ******** Placement ads ********** //
-
-
     public void GetAd()
     {
         fullscreenAd?.LoadAd();
@@ -182,7 +178,6 @@ public class InitialiseAds : MonoBehaviour
     {
         MapManager.LoadAd -= ShowAd;
         MapManager.MapOpened -= GetAd;
-        // bannerAdGameObject.gameObject.SetActive(false);
     }
 
     private void OnDestroy()

@@ -15,6 +15,10 @@ using Random = System.Random;
 
 public class GameManager : MonoBehaviour
 {
+    // TODO - class is too big. Needs split up. Game levels, UI, player?
+    // Messy - once split up, order the properties, variables etc
+    // Remove as many serialisedFields as possible
+    
     [Header("Metadata")]    
     [SerializeField] private SaveMetaData saveMetaData;
     [SerializeField] private LevelMetaData levelMetaData;
@@ -169,6 +173,15 @@ public class GameManager : MonoBehaviour
     private Vector3 cubeyPosition;
     public float cubeyMagnitude;
     private Vector3 flip;
+    
+    [SerializeField] private List<Image> starImages;
+    [SerializeField] private List<string> finishedInfoText;
+    [SerializeField] private List<string> nearlyFinishedInfoText;
+    [SerializeField] private List<string> failedFinishedInfoText;
+
+    private float timeStarted;
+    private float durationInLevel;
+
 
     private void Awake()
     {
@@ -203,7 +216,7 @@ public class GameManager : MonoBehaviour
         stickyObject.OnValueChanged -= ToggleSticky;
         leanForceRb.onGround -= PlayerAllowedJump;
     }
-    
+
     private void GetLevelInfo()
     {
         levelNo = SaveLoadManager.LastLevelPlayed;
@@ -232,7 +245,7 @@ public class GameManager : MonoBehaviour
         PlayerAllowedJump(false);
         SetGameCanvases(false);
     }
-    
+
     private void LoadGameLevel(bool enable)
     {
         enabled = enable;
@@ -314,7 +327,9 @@ public class GameManager : MonoBehaviour
     }
 
     // Todo - can this be an action? 
+
     // needs fixed - can jump at top of jump
+
     public void Update()
     {
         // SetPlayerJump();
@@ -341,7 +356,9 @@ public class GameManager : MonoBehaviour
     {
         text.color = color;
     }
-    
+
+    // TODO - does this need to be coroutine?
+
     private IEnumerator UpdateAwardsNeeded()
     {
         yield return new WaitUntil(() => levelMetaData != null);
@@ -372,7 +389,7 @@ public class GameManager : MonoBehaviour
         silverPodium.text = levelMetaData.JumpsForSilver.ToString();
         goldPodium.text = levelMetaData.JumpsForGold.ToString();
     }
-    
+
     public void ToggleSticky(bool state)
     {
         if (!state)
@@ -390,7 +407,7 @@ public class GameManager : MonoBehaviour
         playerRb.velocity = Vector3.zero;
         playerRb.angularVelocity = Vector3.zero;
     }
-    
+
     public void LoadHelpScreen(bool on)
     {
         helpScreen.SetActive(on);
@@ -452,6 +469,7 @@ public class GameManager : MonoBehaviour
     }
 
     // Used as failed screen button
+
     public void LoadMainMenu()
     {
         StartCoroutine(LoadingScene(true));
@@ -460,12 +478,12 @@ public class GameManager : MonoBehaviour
             Destroy(mapManager.LevelParent.transform.GetChild(i).gameObject);
         }
 
-        // GameLevel = false;
         HideScreens();
         SceneManager.LoadScene("CubeyGame");
     }
 
     // loads from exiting or timer ending
+
     private void LoadEndScreen(bool won)
     {
         if (!won)
@@ -484,7 +502,7 @@ public class GameManager : MonoBehaviour
             SaveLoadManager.SaveGameInfo();
         }
     }
-    
+
     private void ResetCubeyPlayer(bool disable)
     {
         if (disable)
@@ -535,14 +553,14 @@ public class GameManager : MonoBehaviour
             image.gameObject.SetActive(false);
         }
     }
-    
+
     private void PickupGraphic(int n)
     {
         DisablePickupGraphics();
         
         pickupUiImages[n].gameObject.SetActive(true);
     }
-    
+
     private void PickupText()
     {
         if (itemText != null)
@@ -599,7 +617,9 @@ public class GameManager : MonoBehaviour
     }
 
     // Need to get actual in game object.
+
     // 1st child in level for the exit, or find it under the spindle
+
     private GameObject FindExit()
     {
         if (mapManager.LevelGameObject.transform.GetChild(0).name.Contains("MovingExitPlatform"))
@@ -624,7 +644,7 @@ public class GameManager : MonoBehaviour
             return null;
         }
     }
-    
+
     private void SetupExit()
     {
         exitObject = FindExit();
@@ -725,7 +745,7 @@ public class GameManager : MonoBehaviour
 
         return SaveLoadManager.Awards.NoAward;
     }
-    
+
     private void SetAwardForLevel(SaveLoadManager.Awards award)
     {
         int chapter = SaveLoadManager.LastChapterPlayed;
@@ -733,7 +753,8 @@ public class GameManager : MonoBehaviour
         
         SetStarAward(level, award);
     }
-    
+
+
     private void SetStarAward(int level, SaveLoadManager.Awards award)
     {
         var levelAward = SaveLoadManager.GetLevelAward(level);
@@ -741,9 +762,8 @@ public class GameManager : MonoBehaviour
         if (levelAward < (int)award)
             SaveLoadManager.SetAward(level, award);
     }
-    
-    [SerializeField] private List<Image> starImages;
-    
+
+
     private void SetupStarFinishImages()
     {
         if (starImages != null) 
@@ -757,8 +777,9 @@ public class GameManager : MonoBehaviour
             starImages[i].color = ColourManager.starDefault;
         }
     }
-    
+
     // Shows stars on finished screen
+
     private void ShowStarsAchieved()
     {
         award = StarsGiven();
@@ -853,10 +874,6 @@ public class GameManager : MonoBehaviour
         Nearly,
         Completed
     }
-    
-    [SerializeField] private List<string> finishedInfoText;
-    [SerializeField] private List<string> nearlyFinishedInfoText;
-    [SerializeField] private List<string> failedFinishedInfoText;
 
     private void UpdateEndScreenInfoText(FinishedInfo info)
     {
@@ -891,7 +908,7 @@ public class GameManager : MonoBehaviour
             PauseMenu(true);
         }
     }
-    
+
     public void PauseMenu(bool state)
     {
         LaunchArc = !state;
@@ -908,10 +925,7 @@ public class GameManager : MonoBehaviour
             audioManager.MuteAudio(audioManager.gameMusic, state);
         }
     }
-    
-    private float timeStarted;
-    private float durationInLevel;
-    
+
     private void TimeTaken(bool start)
     {
         if (start)
@@ -977,6 +991,7 @@ public class GameManager : MonoBehaviour
         playerRb.gameObject.transform.localScale = flip;
     }
 
+    // TODO - no longer needed?
     public void HideGameObject(GameObject go)
     {
         StartCoroutine(HideObject(go));

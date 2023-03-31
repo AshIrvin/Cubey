@@ -8,6 +8,11 @@ using Object = UnityEngine.Object;
 
 public class FindTextureFormat : MonoBehaviour
 {
+    /// <summary>
+    /// There was a strange bug with the amazon fire table
+    /// This script was created to try and find a rogue texture format
+    /// </summary>
+    
     public List<Shader> shadersInScene;
     public List<Texture2D> texturesInScene;
     public List<Material> materialsInScene;

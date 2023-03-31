@@ -8,6 +8,13 @@ using UnityEngine.UI;
 [CreateAssetMenu(menuName = "Cubey/Level")]
 public class LevelMetaData : ScriptableObject
 {
+    /// <summary>
+    /// This Scriptable Object is for auto assigning objects to the level
+    /// It gets the correct level image, prefab and searches through the prefab
+    /// to get the different data to be assigned in here, so when the game is running
+    /// it can quickly get the information for each level
+    /// </summary>
+    
     [SerializeField] private int chapterNumber;
     [SerializeField] private string levelName = "Level ";
     [SerializeField] private int levelNumber;

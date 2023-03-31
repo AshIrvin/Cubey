@@ -8,6 +8,10 @@ using UnityEngine.UI;
 
 public class ShopManager : MonoBehaviour
 {
+    /// <summary>
+    /// A simple shop popup menu to allow the user to purchase the game
+    /// </summary>
+    
     [SerializeField] private MapManager mapManager;
     [SerializeField] private GameObject restoreButton;
     [SerializeField] private GameObject demoButton;
@@ -44,13 +48,11 @@ public class ShopManager : MonoBehaviour
     }
 
     private void GameDemoMode()
-    {
-        // show purchase button
+    { // show purchase button
         purchaseText.text = "Purchase";
         testPurchaseText.text = "Test Purchase";
         purchaseText.transform.parent.gameObject.SetActive(true);
         testPurchaseText.transform.parent.gameObject.SetActive(true);
-        // restoreButton.SetActive(false);
         shopText.text = "Purchase full game";
     }
 
@@ -75,10 +77,8 @@ public class ShopManager : MonoBehaviour
     
     public void GameIsPurchased()
     {
-        // remove purchase text, add purchased and restore text and button
         purchaseText.text = "Purchased";
         testPurchaseText.text = "Purchased";
-        // purchaseText.transform.parent.gameObject.SetActive(false);
         purchaseText.transform.parent.GetComponent<Button>().interactable = false;
         var tc = purchaseText.color;
         purchaseText.color = new Color(tc.r, tc.g, tc.b, 0.5f);   
@@ -87,7 +87,6 @@ public class ShopManager : MonoBehaviour
         purchaseText.transform.parent.transform.GetChild(0).GetComponent<Image>().color =
             new Color(c.r, c.g, c.b, 0.5f);            
         testPurchaseText.transform.parent.gameObject.SetActive(false);
-        // restoreButton.SetActive(true);
         shopText.text = "Game Purchased";
     }
 
@@ -100,6 +99,4 @@ public class ShopManager : MonoBehaviour
     {
         SceneManager.LoadScene("CubeyGame");
     }
-
-    
 }

@@ -35,14 +35,14 @@ public class MapManager : MonoBehaviour
     private GameObject mapPickup;
     private Vector3 lerpPos1 = new Vector3(0.9f, 0.9f, 0.9f);
     private Vector3 lerpPos2 = new Vector3(1f, 1f, 1f);
+    private BoxCollider levelCollision;
 
     public bool mapActive;
-    
+
+    private static float timeDuration = 0;
     public static Action LoadAd;
-    // public static Action PrepareAd;
     public static Action MapOpened;
 
-    private BoxCollider levelCollision;
 
     private bool GameLevel
     {
@@ -60,8 +60,7 @@ public class MapManager : MonoBehaviour
         get
         {
             if (levelParent == null)
-            {
-                // Debug.Log("Finding LevelParent...");
+            { // if forgotten to assign in the inspector...
                 levelParent = GameObject.Find("Game/LevelParent");
             }
             return levelParent;
@@ -70,12 +69,11 @@ public class MapManager : MonoBehaviour
 
     public GameObject CubeyOnMap => cubeyOnMap;
 
+
     private void Awake()
     {
         TimeDuration(true);
         AddChapterMaps();
-
-        // InitialiseAds.LoadLevel += LoadLevel;
 
         if (deleteLevelsPlayed)
         {
@@ -88,9 +86,7 @@ public class MapManager : MonoBehaviour
         }
         
         bgAdBlocker?.SetActive(false);
-
         shopButton.SetActive(true);
-        
         TimeDuration(false, "Add Chapters etc");
     }
 
@@ -154,23 +150,13 @@ public class MapManager : MonoBehaviour
                     GameObject levelButton = mapButtons.transform.GetChild(j).gameObject;
                     allChapters[i].InGameMapButtonList.Add(levelButton);
                     levelButton.GetComponent<Button>().onClick.AddListener(GetLevelNoToLoad);
-                    /*string levelNumber = (j+1).ToString();
-                    button.transform.GetChild(1).GetComponent<Text>().text = levelNumber;
-                    
-                    if (allChapters[i].LevelList[j].LevelSprite != null)
-                    {
-                        button.transform.Find("Mask/Screenshot").GetComponent<Image>().sprite =
-                            allChapters[i].LevelList[j].LevelSprite;
-                    }*/
-                    
                 }
             }
             
             map.SetActive(false);
         }
     }
-    
-    private static float timeDuration = 0;
+
     public static void TimeDuration(bool start, string methodName = "", Action callback = null)
     {
         if (start)
@@ -213,9 +199,6 @@ public class MapManager : MonoBehaviour
         mainMenuManager.EnableGoldAwardsButton(false);
     }
 
-    /// <summary>
-    /// Checks when to display ADs
-    /// </summary>
     private void CheckLevelsPlayed(int n)
     {
         if (SaveLoadManager.GamePurchased)
