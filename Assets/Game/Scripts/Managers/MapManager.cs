@@ -161,13 +161,13 @@ public class MapManager : MonoBehaviour
     {
         if (start)
         {
-            Debug.Log("Time started");
+            Logger.Instance.ShowDebugLog("Time started");
             timeDuration = Time.time;
         }
         else
         {
             float duration = Mathf.Abs(timeDuration - Time.time);
-            Debug.Log(methodName + " time taken: " + Mathf.Round(duration * 100) /100 + ", duration: " + duration);
+            Logger.Instance.ShowDebugLog(methodName + " time taken: " + Mathf.Round(duration * 100) /100 + ", duration: " + duration);
             callback?.Invoke();
         }
     }
@@ -220,7 +220,7 @@ public class MapManager : MonoBehaviour
                 // mainMenuManager.NavButtons = false;
                 PlayerPrefs.SetInt("levelsPlayed", 0);
                 levelsPlayed = 0;
-                Debug.Log("Ad 1. Invoking ad...");
+                Logger.Instance.ShowDebugLog("Ad 1. Invoking ad...");
                 LoadAd?.Invoke();
             }
             else
@@ -247,7 +247,7 @@ public class MapManager : MonoBehaviour
 
     public void RestartLevel()
     {
-        Debug.Log("Restarting Level");
+        Logger.Instance.ShowDebugLog("Restarting Level");
         GameLevel = false;
         Destroy(levelGameObject);
         if (LevelParent.transform.childCount > 0)
@@ -267,7 +267,7 @@ public class MapManager : MonoBehaviour
     public void LoadLevel()
     {
         mainMenuManager.NavButtons = false;
-        Debug.Log("Ad 5 - finished. Loading level: " + levelToLoad);
+        Logger.Instance.ShowDebugLog("Ad 5 - finished. Loading level: " + levelToLoad);
         if (bgAdBlocker == null)
         {
             bgAdBlocker = GameObject.Find("GoogleAds/Canvas/BlockBg").gameObject;

@@ -78,7 +78,7 @@ public class LevelMetaData : ScriptableObject
 #if UNITY_EDITOR
         pathName = "Assets/Game/Prefabs/LevelPrefabs/Chapter0" + chapter;
         mapSpritePathName = "Assets/Src_Images/MainMenu/MapLevelImages/Chapter0" + chapter;
-        Debug.Log("path updated to: " + pathName);
+        Logger.Instance.ShowDebugLog("path updated to: " + pathName);
 
         EditorUtil.ApplyChanges(this);
 #endif
@@ -96,7 +96,7 @@ public class LevelMetaData : ScriptableObject
             var itemName = item.name.Replace("Level0", "Level ");
             var itemName2 = item.name.Replace("Level ", "Level");
             
-            Debug.Log("item.name: " + item.name + ", name: " + name + ", itemName2: " + itemName2); // level 11, level11 <- S.O
+            Logger.Instance.ShowDebugLog("item.name: " + item.name + ", name: " + name + ", itemName2: " + itemName2); // level 11, level11 <- S.O
             
             if (item.name == name || itemName == name || itemName2 == name) // checks against name of Scriptable Object
             {
@@ -104,7 +104,7 @@ public class LevelMetaData : ScriptableObject
             }
             else
             {
-                Debug.Log("Wrong sprite name: " + item.name);
+                Logger.Instance.ShowDebugLog("Wrong sprite name: " + item.name);
             }
         }
         #endregion
@@ -118,7 +118,7 @@ public class LevelMetaData : ScriptableObject
             {
                 levelPrefab = item;
                 int.TryParse(name[name.Length-2].ToString() + name[name.Length-1].ToString(), out int n);
-                Debug.Log("name: " + name + ", n: " + n);
+                Logger.Instance.ShowDebugLog("name: " + name + ", n: " + n);
                 levelNumber = n;
                 levelName = "Level " + levelNumber;
             }
@@ -126,7 +126,7 @@ public class LevelMetaData : ScriptableObject
 
         if (levelPrefab == null)
         {
-            Debug.Log("Issue with prefab: " + name);
+            Logger.Instance.ShowDebugLog("Issue with prefab: " + name);
             return;
         }
         #endregion

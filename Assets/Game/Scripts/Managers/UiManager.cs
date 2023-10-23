@@ -1,12 +1,12 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿//using System.Collections;
+//using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
 public class UiManager : MonoBehaviour
 {
     // public static UiManager Instance { get; set; }
-
+    // No longer used?
     
     // old
     [SerializeField] private Toggle debugConsoleToggle;

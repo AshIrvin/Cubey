@@ -41,22 +41,22 @@ namespace TMPro.Examples
 
         void OnCharacterSelection(char c, int index)
         {
-            Debug.Log("Character [" + c + "] at Index: " + index + " has been selected.");
+            Logger.Instance.ShowDebugLog("Character [" + c + "] at Index: " + index + " has been selected.");
         }
 
         void OnSpriteSelection(char c, int index)
         {
-            Debug.Log("Sprite [" + c + "] at Index: " + index + " has been selected.");
+            Logger.Instance.ShowDebugLog("Sprite [" + c + "] at Index: " + index + " has been selected.");
         }
 
         void OnWordSelection(string word, int firstCharacterIndex, int length)
         {
-            Debug.Log("Word [" + word + "] with first character index of " + firstCharacterIndex + " and length of " + length + " has been selected.");
+            Logger.Instance.ShowDebugLog("Word [" + word + "] with first character index of " + firstCharacterIndex + " and length of " + length + " has been selected.");
         }
 
         void OnLineSelection(string lineText, int firstCharacterIndex, int length)
         {
-            Debug.Log("Line [" + lineText + "] with first character index of " + firstCharacterIndex + " and length of " + length + " has been selected.");
+            Logger.Instance.ShowDebugLog("Line [" + lineText + "] with first character index of " + firstCharacterIndex + " and length of " + length + " has been selected.");
         }
 
         void OnLinkSelection(string linkID, string linkText, int linkIndex)
@@ -66,7 +66,7 @@ namespace TMPro.Examples
                 TMP_LinkInfo linkInfo = m_TextComponent.textInfo.linkInfo[linkIndex];
             }
             
-            Debug.Log("Link Index: " + linkIndex + " with ID [" + linkID + "] and Text \"" + linkText + "\" has been selected.");
+            Logger.Instance.ShowDebugLog("Link Index: " + linkIndex + " with ID [" + linkID + "] and Text \"" + linkText + "\" has been selected.");
         }
 
     }

@@ -1,23 +1,25 @@
-using System;
 using UnityEngine;
-using System.Collections.Generic;
 
 [RequireComponent(typeof(LineRenderer))]
 public class Bezier : MonoBehaviour
 {
-    public Transform[] controlPoints;
-    public LineRenderer lineRenderer;
+    [SerializeField]
+    private Transform[] controlPoints;
+    [SerializeField]
+    private LineRenderer lineRenderer;
     
     private int curveCount = 0;    
     private int layerOrder = 0;
-    private int SEGMENT_COUNT = 50;
+
+    private const int SEGMENT_COUNT = 50;
 
     private void Start()
     {
-        if (!lineRenderer)
+        if (lineRenderer == null)
         {
             lineRenderer = GetComponent<LineRenderer>();
         }
+
         lineRenderer.sortingLayerID = layerOrder;
         curveCount = (int)controlPoints.Length / 3;
     }
@@ -28,30 +30,35 @@ public class Bezier : MonoBehaviour
     
     private void DrawCurve()
     {
-        for (int j = 0; j < curveCount; j++)
+        for (int curve = 0; curve < curveCount; curve++)
         {
-            for (int i = 1; i <= SEGMENT_COUNT; i++)
+            for (int segment = 1; segment <= SEGMENT_COUNT; segment++)
             {
-                float t = i / (float)SEGMENT_COUNT;
-                int nodeIndex = j * 3;
-                
-                Vector3 pixel = CalculateCubicBezierPoint(t, 
-                    controlPoints [nodeIndex].position, 
-                    controlPoints [nodeIndex + 1].position, 
-                    controlPoints [nodeIndex + 2].position, 
-                    controlPoints [nodeIndex + 3].position
-                    );
-                
-                lineRenderer.SetVertexCount(((j * SEGMENT_COUNT) + i));
-                lineRenderer.SetPosition((j * SEGMENT_COUNT) + (i - 1), pixel);
+                SetControlPointPositions(segment, curve);
             }
         }
     }
 
+    private void SetControlPointPositions(int curve, int segment) 
+    {
+        float t = curve / (float)SEGMENT_COUNT;
+        int nodeIndex = segment * 3;
+
+        Vector3 pixel = CalculateCubicBezierPoint(t,
+            controlPoints[nodeIndex].position,
+            controlPoints[nodeIndex + 1].position,
+            controlPoints[nodeIndex + 2].position,
+            controlPoints[nodeIndex + 3].position
+            );
+
+        var n = (segment * SEGMENT_COUNT) + curve;
+        //lineRenderer.SetVertexCount(((j * SEGMENT_COUNT) + i));
+        lineRenderer.positionCount = n;
+        lineRenderer.SetPosition((segment * SEGMENT_COUNT) + (curve - 1), pixel);
+    }
+
     private Vector3 CalculateCubicBezierPoint(float t, Vector3 p0, Vector3 p1, Vector3 p2, Vector3 p3)
     {
-        // Debug.Log($"p0:{p0}, p1:{p1}, p2:{p2}, p3:{p3}");
-        
         float u = 1 - t;
         float tt = t * t;
         float uu = u * u;
@@ -65,8 +72,8 @@ public class Bezier : MonoBehaviour
         
         return p;
     }
-    
-    void OnDrawGizmos()
+
+    private void OnDrawGizmos()
     {
         foreach (Transform marker in controlPoints)
         {

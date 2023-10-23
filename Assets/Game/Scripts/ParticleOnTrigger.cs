@@ -19,7 +19,7 @@ public class ParticleOnTrigger : MonoBehaviour
 
         if (ParticleEffectsGroup == null)
         {
-            Debug.LogError("Can't find Particle Effects object");
+            Logger.Instance.ShowDebugError("Can't find Particle Effects object");
             return;
         }
         

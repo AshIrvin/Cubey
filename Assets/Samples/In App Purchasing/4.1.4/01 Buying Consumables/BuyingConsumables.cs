@@ -49,13 +49,18 @@ namespace Samples.Purchasing.Core.BuyingConsumables
 
         public void OnInitialized(IStoreController controller, IExtensionProvider extensions)
         {
-            Debug.Log("In-App Purchasing successfully initialized");
+            Logger.Instance.ShowDebugLog("In-App Purchasing successfully initialized");
             m_StoreController = controller;
         }
 
         public void OnInitializeFailed(InitializationFailureReason error)
         {
-            Debug.Log($"In-App Purchasing initialize failed: {error}");
+            Logger.Instance.ShowDebugLog($"In-App Purchasing initialize failed: {error}");
+        }
+
+        public void OnInitializeFailed(InitializationFailureReason error, string text)
+        {
+            Logger.Instance.ShowDebugLog($"In-App Purchasing initialize failed: {error}. Info: {text}");
         }
 
         public PurchaseProcessingResult ProcessPurchase(PurchaseEventArgs args)
@@ -73,7 +78,7 @@ namespace Samples.Purchasing.Core.BuyingConsumables
                 AddDiamond();
             }
 
-            Debug.Log($"Purchase Complete - Product: {product.definition.id}");
+            Logger.Instance.ShowDebugLog($"Purchase Complete - Product: {product.definition.id}");
 
             //We return Complete, informing IAP that the processing on our side is done and the transaction can be closed.
             return PurchaseProcessingResult.Complete;
@@ -81,7 +86,7 @@ namespace Samples.Purchasing.Core.BuyingConsumables
 
         public void OnPurchaseFailed(Product product, PurchaseFailureReason failureReason)
         {
-            Debug.Log($"Purchase failed - Product: '{product.definition.id}', PurchaseFailureReason: {failureReason}");
+            Logger.Instance.ShowDebugLog($"Purchase failed - Product: '{product.definition.id}', PurchaseFailureReason: {failureReason}");
         }
 
         void AddGold()

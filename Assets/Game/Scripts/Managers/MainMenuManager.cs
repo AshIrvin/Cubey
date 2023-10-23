@@ -94,7 +94,7 @@ public class MainMenuManager : MonoBehaviour
         if (chapterFinishScreen == null) chapterFinishScreen = GameObject.Find("ChapterFinishScreen");
         if (chapterButtons.Count == 0)
         {
-            Debug.LogError("Assign chapter buttons to list!");
+            Logger.Instance.ShowDebugError("Assign chapter buttons to list!");
         }
 
         if (deleteLastChapterFinishScreenData)

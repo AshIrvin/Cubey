@@ -210,13 +210,13 @@ namespace TMPro
 
         public void OnPointerEnter(PointerEventData eventData)
         {
-            //Debug.Log("OnPointerEnter()");
+            //Logger.Instance.ShowDebugLog("OnPointerEnter()");
         }
 
 
         public void OnPointerExit(PointerEventData eventData)
         {
-            //Debug.Log("OnPointerExit()");
+            //Logger.Instance.ShowDebugLog("OnPointerExit()");
         }
 
 

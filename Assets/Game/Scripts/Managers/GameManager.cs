@@ -1,24 +1,32 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections;
-using System.Diagnostics;
-using Game.Scripts;
-using IngameDebugConsole;
+//using System.Diagnostics;
+//using Game.Scripts;
+//using IngameDebugConsole;
 using UnityEngine;
 using Lean.Touch;
-using UnityEditor;
+//using UnityEditor;
 using UnityEngine.SceneManagement;
-using UnityEngine.Serialization;
+//using UnityEngine.Serialization;
 using UnityEngine.UI;
-using Debug = UnityEngine.Debug;
-using Random = System.Random;
+//using Debug = UnityEngine.Debug;
+//using Random = System.Random;
+using System.Threading.Tasks;
 
 public class GameManager : MonoBehaviour
 {
     // TODO - class is too big. Needs split up. Game levels, UI, player?
     // Messy - once split up, order the properties, variables etc
     // Remove as many serialisedFields as possible
-    
+
+    private enum FinishedInfo
+    {
+        Failed,
+        Nearly,
+        Completed
+    }
+
     [Header("Metadata")]    
     [SerializeField] private SaveMetaData saveMetaData;
     [SerializeField] private LevelMetaData levelMetaData;
@@ -35,6 +43,7 @@ public class GameManager : MonoBehaviour
     [SerializeField] private MapManager mapManager;
     [SerializeField] private MainMenuManager mainMenuManager;
     [SerializeField] private VisualEffects visualEffects;
+    [SerializeField] private AwardManager awardManager;
 
     [Header("Player")]
     [SerializeField] private GameObject cubeyPlayer;
@@ -46,8 +55,8 @@ public class GameManager : MonoBehaviour
     [SerializeField] private AudioSource gameMusic;
 
     public static Transform gameFolder;
-    private float timer;
-    private string levelName;
+    //private float timer;
+    //private string levelName;
 
     private int threeStars;
     private int twoStars;
@@ -83,26 +92,24 @@ public class GameManager : MonoBehaviour
     private GameObject exitPrezzie;
     [SerializeField] private GameObject exitObject;
     
-    public float cubeyJumpHeight = 2.6f;
-    public bool useTimer;
-    
-    private bool camMovement;
-    private bool gameLevelEnabled;
-    private float playerGooDrag = 40f;
-    private ParticleSystem pe;
-    private float cubeyJumpMagValue = 0.5f;
-    public Rigidbody playerRb;
-
     [Header("UI Pickups")]
     [SerializeField] private List<Image> pickupUiImages;
 
-    public static Action LevelLoaded;
-    
+    private bool camMovement;
+    //private bool gameLevelEnabled;
+    private float playerGooDrag = 40f;
+    //private ParticleSystem pe;
+    private float cubeyJumpMagValue = 0.5f;
+
+
+
+    #region Getters,Setters
+
     public bool GameLevel
     {
         get
         {
-            gameLevelEnabled = gameLevel.CurrentValue;
+            //gameLevelEnabled = gameLevel.CurrentValue;
             return gameLevel.CurrentValue;
         }
         set => gameLevel.CurrentValue = value;
@@ -147,13 +154,15 @@ public class GameManager : MonoBehaviour
         set => cubeyPlayer = value;
     }
 
+    #endregion
+
     public LevelMetaData LevelMetaData => levelMetaData;
     public SaveMetaData SaveMetaData => saveMetaData;
 
     public bool playSingleLevel = false;
 
     [SerializeField] public bool allowPlayerMovement;
-    [SerializeField] private bool jumpCountIncreases;
+    [SerializeField] private bool jumpCounting;
     [SerializeField] private bool onBreakablePlatform;
     [SerializeField] private bool onMovingPlatform;
 
@@ -170,7 +179,7 @@ public class GameManager : MonoBehaviour
     [SerializeField] private Animator starBronze_anim;
 
     [Header("Other")]
-    private Vector3 cubeyPosition;
+    //private Vector3 cubeyPosition;
     public float cubeyMagnitude;
     private Vector3 flip;
     
@@ -181,7 +190,12 @@ public class GameManager : MonoBehaviour
 
     private float timeStarted;
     private float durationInLevel;
+    private int delayFailedScreenInSeconds = 4;
 
+    public float cubeyJumpHeight = 2.6f;
+    public bool useTimer;
+    public Rigidbody playerRb;
+    public static Action LevelLoaded;
 
     private void Awake()
     {
@@ -197,7 +211,12 @@ public class GameManager : MonoBehaviour
 
         if (gameFolder == null)
             gameFolder = GameObject.Find("Game").transform;
-        
+
+        CheckScripts();
+    }
+
+    private void Start()
+    {
         GameLevel = false;
         visualEffects.peExitSwirl.SetActive(false);
 
@@ -217,17 +236,23 @@ public class GameManager : MonoBehaviour
         leanForceRb.onGround -= PlayerAllowedJump;
     }
 
+    private void CheckScripts()
+    {
+        if (awardManager == null || visualEffects == null)
+            Logger.Instance.ShowDebugError("Missing script");
+    }
+
     private void GetLevelInfo()
     {
         levelNo = SaveLoadManager.LastLevelPlayed;
         chapterNo = SaveLoadManager.LastChapterPlayed;
         levelMetaData = chapterList[SaveLoadManager.LastChapterPlayed].LevelList[SaveLoadManager.LastLevelPlayed];
         
-        timer = levelMetaData.Timer;
+        //timer = levelMetaData.Timer;
         oneStar = levelMetaData.JumpsForBronze;
         twoStars = levelMetaData.JumpsForSilver;
         threeStars = levelMetaData.JumpsForGold;
-        levelName = levelMetaData.LevelName;
+        //levelName = levelMetaData.LevelName;
     }
 
     private void OnEnable()
@@ -246,21 +271,20 @@ public class GameManager : MonoBehaviour
         SetGameCanvases(false);
     }
 
-    private void LoadGameLevel(bool enable)
+    private void LoadGameLevel(bool state)
     {
-        enabled = enable;
-        ResetCubeyPlayer(!enable);
-        LaunchArc = enable;
+        enabled = state;
+        ResetCubeyPlayer(!state);
+        LaunchArc = state;
 
-        mainMenuManager.mainMenu.SetActive(!enable);
-        mainMenuManager.enabled = !enable;
+        mainMenuManager.mainMenu.SetActive(!state);
+        mainMenuManager.enabled = !state;
+
         if (exitObject != null)
-        {
-            exitObject.SetActive(!enable);
-        }
+            exitObject.SetActive(!state);
 
-        SetGameCanvases(enable);
-        visualEffects.ParticleEffectsGo.SetActive(enable);
+        SetGameCanvases(state);
+        visualEffects.ParticleEffectsGo.SetActive(state);
     }
 
     private void SetGameCanvases(bool state)
@@ -273,25 +297,26 @@ public class GameManager : MonoBehaviour
 
     private void TopUi(bool state)
     {
-        if (topUi != null)
-        {
-            topUi.SetActive(state);
-            PickupGraphic(SaveLoadManager.LastChapterPlayed);
-        }
+        if (topUi == null) return;
+        
+        topUi.SetActive(state);
+        PickupGraphic(SaveLoadManager.LastChapterPlayed);
     }
 
     private void DisableStartPosition()
     {
-        if (mapManager.LevelGameObject != null && 
+        if (mapManager.LevelGameObject != null &&
             mapManager.LevelGameObject.transform.GetChild(1).name.Contains("Start"))
-            mapManager.LevelGameObject.transform.GetChild(1)?.GetChild(1)?.gameObject.SetActive(false);
+        { 
+            mapManager.LevelGameObject.transform.GetChild(1)?.GetChild(1)?.gameObject.SetActive(false); 
+        }
         else if (mapManager.LevelGameObject.transform.GetChild(0).name.Contains("Start"))
         {
             mapManager.LevelGameObject.transform.GetChild(0)?.GetChild(1)?.gameObject.SetActive(false);
         }
         else
         {
-            Debug.LogError("Can't find Start position");
+            Logger.Instance.ShowDebugError("Can't find Start position");
         }
     }
 
@@ -304,7 +329,7 @@ public class GameManager : MonoBehaviour
 
         if (pauseMenu != null)
             pauseMenu.SetActive(false);
-        
+
         if (cubeyPlayer != null)
             flip = cubeyPlayer.transform.localScale;
         
@@ -335,7 +360,7 @@ public class GameManager : MonoBehaviour
         // SetPlayerJump();
     }
 
-    private void SetPlayerJump()
+/*    private void SetPlayerJump()
     {
         if (playerRb.velocity.sqrMagnitude < cubeyJumpMagValue)
         {
@@ -350,7 +375,7 @@ public class GameManager : MonoBehaviour
 
             PlayerAllowedJump(false);
         }
-    }
+    }*/
 
     private void ChangeTextColour(Text text, Color color)
     {
@@ -358,11 +383,10 @@ public class GameManager : MonoBehaviour
     }
 
     // TODO - does this need to be coroutine?
-
     private IEnumerator UpdateAwardsNeeded()
     {
         yield return new WaitUntil(() => levelMetaData != null);
-        
+
         if (jumpsToStartWith - jumpLeft <= levelMetaData.JumpsForGold) // 10 - 8 < 3
         {
             ChangeTextColour(jumpAmountText, ColourManager.starGold);
@@ -418,31 +442,41 @@ public class GameManager : MonoBehaviour
         screen.SetActive(!screen.activeSelf);
     }
 
-    private bool CheckJumpMagnitude()
+    private bool IsJumpOverMagnitude()
     {
         if (playerRb.velocity.magnitude > cubeyJumpMagValue)
             return true;
+
         return false;
     }
 
     private void CheckJumpCount() 
     {
-        if (jumpCountIncreases && jumpLeft == 0 && /*leanForceRb.canJump &&*/ !onBreakablePlatform && !CheckJumpMagnitude())
+        if (jumpCounting && jumpLeft == 0 && /*leanForceRb.canJump &&*/ !onBreakablePlatform && !IsJumpOverMagnitude())
         {
             FailedScreen(true);
         }
-        else if (jumpCountIncreases && jumpLeft == 0 && /*leanForceRb.canJump &&*/ onBreakablePlatform)
+        else if (jumpCounting && jumpLeft == 0 && /*leanForceRb.canJump &&*/ onBreakablePlatform)
         {
-            StartCoroutine(DelayFailedScreen());
+            //StartCoroutine(DelayFailedScreen());
+            DelayAsyncFailedScreen();
         }
     }
 
-    private IEnumerator DelayFailedScreen()
+/*    private IEnumerator DelayFailedScreen()
     {
         yield return new WaitForSeconds(4);
         FailedScreen(true);
+    }*/
+
+    private async void DelayAsyncFailedScreen()
+    {
+        await Task.Delay(delayFailedScreenInSeconds * 1000);
+        FailedScreen(true);
     }
 
+
+    // TODO - what's this for? Special level?
     private void RestartTimer()
     {
         time = countdown;
@@ -472,8 +506,12 @@ public class GameManager : MonoBehaviour
 
     public void LoadMainMenu()
     {
-        StartCoroutine(LoadingScene(true));
-        for (int i = 0; i < mapManager.LevelParent.transform.childCount; i++)
+        //StartCoroutine(LoadingScene(true));
+        LoadingScene(true);
+
+        var childCount = mapManager.LevelParent.transform.childCount;
+
+        for (int i = 0; i < childCount; i++)
         {
             Destroy(mapManager.LevelParent.transform.GetChild(i).gameObject);
         }
@@ -483,29 +521,27 @@ public class GameManager : MonoBehaviour
     }
 
     // loads from exiting or timer ending
-
     private void LoadEndScreen(bool won)
     {
         if (!won)
         {
             // Time hits 0 - did not finish. Time??
             FailedScreen(true);
+            return;
         }
-        else
-        {
-            TimeTaken(false);
-            audioManager.PlayAudio(audioManager.cubeyCelebration);
-            ReParentExitSwirl(false);
-            EndScreen(true);
+
+        TimeTaken(false);
+        audioManager.PlayAudio(audioManager.cubeyCelebration);
+        ReParentExitSwirl(false);
+        EndScreen(true);
             
-            ShowStarsAchieved();
-            SaveLoadManager.SaveGameInfo();
-        }
+        ShowStarsAchieved();
+        SaveLoadManager.SaveGameInfo();
     }
 
-    private void ResetCubeyPlayer(bool disable)
+    private void ResetCubeyPlayer(bool state)
     {
-        if (disable)
+        if (state)
         {
             playerRb.useGravity = false;
             cubeyPlayer.SetActive(false);
@@ -514,7 +550,7 @@ public class GameManager : MonoBehaviour
         
         cubeyPlayer.SetActive(true);
         cubeyPlayer.transform.SetParent(gameFolder, true);
-        GetPlayerSpawn();
+        SetPlayerParentAndPos();
         playerRb = cubeyPlayer.gameObject.GetComponent<Rigidbody>();
         playerRb.freezeRotation = true;
         playerRb.velocity = new Vector3(0, 0, 0);
@@ -522,6 +558,7 @@ public class GameManager : MonoBehaviour
         playerRb.useGravity = true;
 
         playerRb.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationY | RigidbodyConstraints.FreezePositionZ;
+        
         if (leanForceRb == null)
             leanForceRb = cubeyPlayer.GetComponent<LeanForceRigidbodyCustom>();
 
@@ -536,15 +573,13 @@ public class GameManager : MonoBehaviour
     private void CheckPickupCount(int count)
     {
         PickupText();
-        
-        if (PickupCountProperty <= 0)
-        {
-            DisablePickupGraphics();
-            OpenExit();
-            itemText.text = "Go to Exit";
-        }
-    }
 
+        if (PickupCountProperty > 0) return;
+
+        DisablePickupGraphics();
+        OpenExit();
+        itemText.text = "Go to Exit";
+    }
 
     private void DisablePickupGraphics()
     {
@@ -573,7 +608,7 @@ public class GameManager : MonoBehaviour
 
         if (pickupGroup == null)
         {
-            // Debug.Log("<color:red>Setup pickups for level!</color>");
+            // Logger.Instance.ShowDebugLog("<color:red>Setup pickups for level!</color>");
             return;
         }
 
@@ -592,33 +627,24 @@ public class GameManager : MonoBehaviour
 
     private void OpenExit()
     {
-        // count sweets in level
         if (SaveLoadManager.LastChapterPlayed == 0)
         {
             audioManager.PlayAudio(audioManager.cubeyExitOpen);
             SetupExitXmas(false, true);
+            return;
         }
-        else
-        {
-            audioManager.PlayAudio(audioManager.cubeyExitOpen);
 
-            if (exitObject == null)
-                exitObject = FindExit();
+        audioManager.PlayAudio(audioManager.cubeyExitOpen);
+
+        if (exitObject == null)
+            exitObject = FindExit();
             
-            // play pe explosion
-            VisualEffects.Instance.PlayEffect(VisualEffects.Instance.peExitExplosion, exitObject.transform.position);
-            VisualEffects.Instance.peExitSwirl.SetActive(false);
+        VisualEffects.Instance.PlayEffect(VisualEffects.Instance.peExitExplosion, exitObject.transform.position);
+        VisualEffects.Instance.peExitSwirl.SetActive(false);
 
-            // enable and scale up exit to full size
-            exitObject.SetActive(true);
-            exitObject.transform.GetChild(0).gameObject.SetActive(true);
-            // Debug.Log("Open Exit");
-        }
+        exitObject.SetActive(true);
+        exitObject.transform.GetChild(0).gameObject.SetActive(true);
     }
-
-    // Need to get actual in game object.
-
-    // 1st child in level for the exit, or find it under the spindle
 
     private GameObject FindExit()
     {
@@ -640,7 +666,7 @@ public class GameManager : MonoBehaviour
         }
         else
         {
-            // Debug.LogError("Can't find the exit in: " + mapManager.LevelGameObject.name);
+            // Logger.Instance.ShowDebugError("Can't find the exit in: " + mapManager.LevelGameObject.name);
             return null;
         }
     }
@@ -673,11 +699,6 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// Find the exit in the xmas levels
-    /// </summary>
-    /// <param name="closed">Present hiding exit</param>
-    /// <param name="open">Flattened present with exit open</param>
     private void SetupExitXmas(bool closed, bool open)
     {
         exitPrezzie = FindExit();
@@ -705,7 +726,7 @@ public class GameManager : MonoBehaviour
         leanForceRb.canJump = state;
     }
 
-    IEnumerator DelayBeforeJump(bool state)
+/*    IEnumerator DelayBeforeJump(bool state)
     {
         if(state)
         {
@@ -714,14 +735,14 @@ public class GameManager : MonoBehaviour
         allowPlayerMovement = state;
         LaunchArc = state;
         leanForceRb.canJump = state;
-    }
+    }*/
 
-    public void PlayerVelocity(float n)
+/*    public void PlayerVelocity(float n)
     {
         leanForceRb.velocityMultiplier = n;
-    }
+    }*/
 
-    private void GetPlayerSpawn()
+    private void SetPlayerParentAndPos()
     {
         cubeyPlayer.transform.SetParent(gameFolder.transform);
 
@@ -734,8 +755,6 @@ public class GameManager : MonoBehaviour
     {
         var jumps = jumpsToStartWith - jumpLeft;
 
-        // print("jumps: " + jumps + ", jumpsToStartWith: " + jumpsToStartWith);
-
         if (jumps <= threeStars)
             return SaveLoadManager.Awards.ThreeStars;
         else if (jumps <= twoStars)
@@ -746,29 +765,12 @@ public class GameManager : MonoBehaviour
         return SaveLoadManager.Awards.NoAward;
     }
 
-    private void SetAwardForLevel(SaveLoadManager.Awards award)
-    {
-        int chapter = SaveLoadManager.LastChapterPlayed;
-        int level = SaveLoadManager.LastLevelPlayed;
-        
-        SetStarAward(level, award);
-    }
-
-
-    private void SetStarAward(int level, SaveLoadManager.Awards award)
-    {
-        var levelAward = SaveLoadManager.GetLevelAward(level);
-        
-        if (levelAward < (int)award)
-            SaveLoadManager.SetAward(level, award);
-    }
-
-
     private void SetupStarFinishImages()
     {
         if (starImages != null) 
             return;
-        
+
+        // TODO - Change this
         var sGrp = endScreen.transform.Find("StarsGrp");
 
         for (int i = 0; i < 3; i++)
@@ -778,15 +780,15 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    // Shows stars on finished screen
-
     private void ShowStarsAchieved()
     {
         award = StarsGiven();
         
+        // TODO - Change this
         endScreen.transform.Find("Buttons/Continue_button").gameObject.SetActive(award > 0);
 
-        SetAwardForLevel(award);
+        //SetAwardForLevel(award);
+        AwardManager.instance.SetAwardForLevel(award);
 
         if (award > 0)
         {
@@ -807,14 +809,19 @@ public class GameManager : MonoBehaviour
         starBronze_anim.StopPlayback();
         starSilver_anim.StopPlayback();
         starGold_anim.StopPlayback();
-        
+
+        SetStars();
+    }
+
+    private void SetStars()
+    {
         switch (award)
         {
             case SaveLoadManager.Awards.NoAward:
                 UpdateEndScreenInfoText(FinishedInfo.Failed);
                 break;
             case SaveLoadManager.Awards.OneStar:
-                // Debug.Log("Running bronze stars");
+                // Logger.Instance.ShowDebugLog("Running bronze stars");
                 starImages[0].color = ColourManager.starBronze;
                 starImages[1].color = ColourManager.starDefault;
                 starImages[2].color = ColourManager.starDefault;
@@ -831,7 +838,7 @@ public class GameManager : MonoBehaviour
                 UpdateEndScreenInfoText(FinishedInfo.Nearly);
                 break;
             case SaveLoadManager.Awards.TwoStars:
-                // Debug.Log("Running silver stars");
+                // Logger.Instance.ShowDebugLog("Running silver stars");
                 starImages[0].color = ColourManager.starBronze;
                 starImages[1].color = ColourManager.starSilver;
                 starImages[2].color = ColourManager.starDefault;
@@ -845,34 +852,27 @@ public class GameManager : MonoBehaviour
                 starGold_anim.StopPlayback();
                 starGold_anim.Play("StarGold", 0, 1);
                 starGold_anim.speed = 1;
-                
+
                 UpdateEndScreenInfoText(FinishedInfo.Nearly);
                 break;
             case SaveLoadManager.Awards.ThreeStars:
-                // Debug.Log("Running gold stars");
+                // Logger.Instance.ShowDebugLog("Running gold stars");
                 starImages[0].color = ColourManager.starBronze;
                 starImages[1].color = ColourManager.starSilver;
                 starImages[2].color = ColourManager.starGold;
 
                 starBronze_anim.Play("StarBronze", 0, 0);
                 starBronze_anim.speed = 1;
-                
+
                 starSilver_anim.Play("StarSilver", 0, 0f);
                 starSilver_anim.speed = 1;
-                
+
                 starGold_anim.Play("StarGold", 0, 0); // 0.4
                 starGold_anim.speed = 1;
-                
+
                 UpdateEndScreenInfoText(FinishedInfo.Completed);
                 break;
         }
-    }
-
-    private enum FinishedInfo
-    {
-        Failed,
-        Nearly,
-        Completed
     }
 
     private void UpdateEndScreenInfoText(FinishedInfo info)
@@ -891,14 +891,14 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    public IEnumerator LoadingScene(bool on)
+    public async void LoadingScene(bool on)
     {
-        if (loadingScreen != null)
-        {
-            loadingScreen.SetActive(on);
-            yield return new WaitForSeconds(0.2f);
-            loadingScreen.SetActive(false);
-        }
+        if (loadingScreen == null) return;
+
+        loadingScreen.SetActive(on);
+        //yield return new WaitForSeconds(0.2f);
+        await Task.Delay(200);
+        loadingScreen.SetActive(false);
     }
 
     private void OnApplicationFocus(bool hasFocus)
@@ -926,33 +926,36 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    private void TimeTaken(bool start)
+    private void TimeTaken(bool state)
     {
-        if (start)
+        if (state)
         {
             timeStarted = Time.time;
+            return;
         }
-        else
-        {
-            float duration = Mathf.Abs(timeStarted - Time.time);
-            durationInLevel = Mathf.Round(duration * 100) /100;
-            SaveLoadManager.LevelTimeTaken(chapterNo, levelNo, durationInLevel);
-        }
+
+        float duration = Mathf.Abs(timeStarted - Time.time);
+        durationInLevel = Mathf.Round(duration * 100) /100;
+        SaveLoadManager.LevelTimeTaken(chapterNo, levelNo, durationInLevel);
     }
 
-    private void EndScreen(bool on)
+    private void EndScreen(bool state)
     {
-        if (endScreen != null)
-            endScreen.SetActive(on);
-        Time.timeScale = on ? 0.1f : 1f;
+        if (endScreen == null)
+            Logger.Instance.ShowDebugError("Missing EndScreen object on GameManager script");
+        
+        endScreen.SetActive(state);
+
+        Time.timeScale = state ? 0.1f : 1f;
     }
 
     public void FailedScreen(bool on)
     {
-        if (failedScreen != null)
-        {
-            failedScreen.SetActive(on);
-        }
+        if (failedScreen == null)
+            Logger.Instance.ShowDebugError("Missing failedScreen object on GameManager script");
+
+        failedScreen.SetActive(on);
+
         Time.timeScale = on ? 0f : 1f;
     }
 
@@ -960,12 +963,12 @@ public class GameManager : MonoBehaviour
     {
         audioManager.PlayAudio(audioManager.cubeyJump);
 
-        if (!jumpCountIncreases)
+        if (!jumpCounting)
         {
-            if (jumpLeft == 0)
-                jumpLeft = 0;
-            else
+            if (jumpLeft != 0)
+            {
                 jumpLeft--;
+            }
         }
         else
         {
@@ -992,10 +995,10 @@ public class GameManager : MonoBehaviour
     }
 
     // TODO - no longer needed?
-    public void HideGameObject(GameObject go)
+/*    public void HideGameObject(GameObject go)
     {
         StartCoroutine(HideObject(go));
-    }
+    }*/
 
     private IEnumerator HideObject(GameObject go)
     {

@@ -148,12 +148,12 @@ public class AudioManager : MonoBehaviour
 
     public void PlayAudio(AudioSource[] audio)
     {
-        // Debug.Log("audio name: " + audio[0].name);
+        // Logger.Instance.ShowDebugLog("audio name: " + audio[0].name);
 
         var n = ChooseRandomClip(audio.Length);
         if (audio[n] == null)
         {
-            Debug.Log("No audio clips found");
+            Logger.Instance.ShowDebugLog("No audio clips found");
             return;
         }
 
@@ -166,7 +166,7 @@ public class AudioManager : MonoBehaviour
         /*else
         {
             // could be playing
-            Debug.LogError("Audio issue! - " + audio[n].name);
+            Logger.Instance.ShowDebugError("Audio issue! - " + audio[n].name);
         }*/
     }
 
@@ -189,12 +189,12 @@ public class AudioManager : MonoBehaviour
     {
         if (audio != null && audio.isPlaying)
         {
-            // Debug.Log("Mute audio: " + state);
+            // Logger.Instance.ShowDebugLog("Mute audio: " + state);
             audio.mute = state;    
         }
         /*else
         {
-            Debug.Log("Mute audio: " + audio + ", audio.isPlaying: " + audio.isPlaying);
+            Logger.Instance.ShowDebugLog("Mute audio: " + audio + ", audio.isPlaying: " + audio.isPlaying);
         }*/
     }
 

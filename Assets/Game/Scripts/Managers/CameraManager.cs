@@ -127,7 +127,7 @@ public class CameraManager : MonoBehaviour
     {
         autoPanToCubey = !state;
         PlayerPrefs.SetInt("autoPanToCubey", !state ? 1 : 0);
-        Debug.Log("autoPanToCubey saving: " + !state);
+        Logger.Instance.ShowDebugLog("autoPanToCubey saving: " + !state);
     }
 
     private void LoadAutoPanMode()

@@ -28,7 +28,7 @@ public class InitialiseAds : MonoBehaviour
         }
 
         MobileAds.Initialize((initStatus) => {
-            Debug.Log("Initialized MobileAds");
+            Logger.Instance.ShowDebugLog("Initialized MobileAds");
         });
     }
 
@@ -112,11 +112,11 @@ public class InitialiseAds : MonoBehaviour
         
         if (fullscreenAd != null && fullscreenAd.InterstitialAd.IsLoaded())
         {
-            Debug.Log("ad is loaded");
+            Logger.Instance.ShowDebugLog("ad is loaded");
         }
         else
         {
-            Debug.LogError("Ad errored out");
+            Logger.Instance.ShowDebugError("Ad errored out");
             DestroyAd();
         }
     }
@@ -126,7 +126,7 @@ public class InitialiseAds : MonoBehaviour
         if (fullscreenAd != null && fullscreenAd.InterstitialAd != null && fullscreenAd.InterstitialAd.IsLoaded())
         {
             fullscreenAd.ShowIfLoaded(); // crashed here
-            Debug.Log("Ad 2 - show if loaded: " + fullscreenAd.name);
+            Logger.Instance.ShowDebugLog("Ad 2 - show if loaded: " + fullscreenAd.name);
         }
         
         StartCoroutine(DelayToCheckAd());
@@ -137,14 +137,14 @@ public class InitialiseAds : MonoBehaviour
         yield return new WaitForSeconds(0.5f);
         if (fullscreenAd == null || fullscreenAd.InterstitialAd == null)
         {
-            Debug.Log("Ad 3 - failed! Continuing to level");
+            Logger.Instance.ShowDebugLog("Ad 3 - failed! Continuing to level");
             AdFailed();
         }
     }
 
     public void AdFailed()
     {
-        Debug.LogError("Ad 4 - has failed to load");
+        Logger.Instance.ShowDebugError("Ad 4 - has failed to load");
         ContinueToLevel();
     }
 
@@ -152,7 +152,7 @@ public class InitialiseAds : MonoBehaviour
     {
         fullscreenAd?.DestroyAd();
         
-        Debug.Log("Destroying ad. fullscreenAd null? " + fullscreenAd);
+        Logger.Instance.ShowDebugLog("Destroying ad. fullscreenAd null? " + fullscreenAd);
     }
     
     public void ContinueToLevel()

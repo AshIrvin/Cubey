@@ -1,56 +1,51 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 public class MouthManager : MonoBehaviour
 {
+    private Animator anim;
 
-    Animator anim;
-    Animation animation;
-    float frame = 2.3f;
-    float totalFrames;
-    float rand;
+    private float frame = 2.3f;
+    private float totalFrames;
+    private float rand;
+    private float startTimerRange = 4;
+    private float endTimerRange = 6;
 
-
-
-    // Start is called before the first frame update
-    void Start()
+    private void Start()
     {
         anim = GetComponent<Animator>();
 
         totalFrames = anim.GetCurrentAnimatorClipInfo(0)[0].clip.length;
 
-        ChangeMouth();
-
-        //print("frame set to: " + frame + ", out of: " + totalFrames);
+        ChangeMouthImage();
 
         SetRandomTimer();
     }
 
-    void FixedUpdate()
+    private void LateUpdate()
     {
+        MouthTimer();
+    }
 
+    private void MouthTimer()
+    {
         rand -= Time.deltaTime;
 
         if (rand < 0)
         {
-            ChangeMouth();
+            ChangeMouthImage();
             SetRandomTimer();
         }
     }
 
-    void SetRandomTimer() 
+    private void SetRandomTimer() 
     {
-        rand = Random.Range(4, 6);
-        //print("timer set to: " + rand);
+        rand = Random.Range(startTimerRange, endTimerRange);
     }
 
-    void ChangeMouth()
+    private void ChangeMouthImage()
     {
         frame = Random.Range(1, totalFrames);
         anim.Play("Cubey_mouth", 0, (1f / totalFrames) * frame);
         anim.speed = 0f;
     }
-
-
 }

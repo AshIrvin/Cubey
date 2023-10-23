@@ -42,6 +42,6 @@ public class PointsOfInterestManager : MonoBehaviour
                 pointsOfInterestList.Add(t.gameObject);
             }
         }
-        Debug.Log("Points of interests found: " + pointsOfInterestList.Count + " in " + go.name);
+        Logger.Instance.ShowDebugLog("Points of interests found: " + pointsOfInterestList.Count + " in " + go.name);
     }*/
 }

@@ -53,13 +53,13 @@ namespace Samples.Purchasing.Core.FetchingAdditionalProducts
                 new ProductDefinition(diamondProductId, diamondType)
             };
 
-            Debug.Log($"Fetching additional products in progress");
+            Logger.Instance.ShowDebugLog($"Fetching additional products in progress");
 
             m_StoreController.FetchAdditionalProducts(additionalProductsToFetch,
                 () =>
                 {
                     //Additional products fetched, they can now be purchased.
-                    Debug.Log($"Successfully fetched additional products");
+                    Logger.Instance.ShowDebugLog($"Successfully fetched additional products");
 
                     //We active the UI associated with the fetched product.
                     additionalProductsPanel.SetActive(true);
@@ -68,7 +68,7 @@ namespace Samples.Purchasing.Core.FetchingAdditionalProducts
                 },
                 reason =>
                 {
-                    Debug.Log($"Fetching additional products failed: {reason.ToString()}");
+                    Logger.Instance.ShowDebugLog($"Fetching additional products failed: {reason.ToString()}");
                 });
         }
 
@@ -84,13 +84,18 @@ namespace Samples.Purchasing.Core.FetchingAdditionalProducts
 
         public void OnInitialized(IStoreController controller, IExtensionProvider extensions)
         {
-            Debug.Log("In-App Purchasing successfully initialized");
+            Logger.Instance.ShowDebugLog("In-App Purchasing successfully initialized");
             m_StoreController = controller;
         }
 
         public void OnInitializeFailed(InitializationFailureReason error)
         {
-            Debug.Log($"In-App Purchasing initialize failed: {error}");
+            Logger.Instance.ShowDebugLog($"In-App Purchasing initialize failed: {error}");
+        }
+
+        public void OnInitializeFailed(InitializationFailureReason error, string text)
+        {
+            Logger.Instance.ShowDebugLog($"In-App Purchasing initialize failed: {error}. Info: {text}");
         }
 
         public PurchaseProcessingResult ProcessPurchase(PurchaseEventArgs args)
@@ -108,7 +113,7 @@ namespace Samples.Purchasing.Core.FetchingAdditionalProducts
                 AddDiamond();
             }
 
-            Debug.Log($"Purchase Complete - Product: {product.definition.id}");
+            Logger.Instance.ShowDebugLog($"Purchase Complete - Product: {product.definition.id}");
 
             //We return Complete, informing IAP that the processing on our side is done and the transaction can be closed.
             return PurchaseProcessingResult.Complete;
@@ -116,7 +121,7 @@ namespace Samples.Purchasing.Core.FetchingAdditionalProducts
 
         public void OnPurchaseFailed(Product product, PurchaseFailureReason failureReason)
         {
-            Debug.Log($"Purchase failed - Product: '{product.definition.id}', PurchaseFailureReason: {failureReason}");
+            Logger.Instance.ShowDebugLog($"Purchase failed - Product: '{product.definition.id}', PurchaseFailureReason: {failureReason}");
         }
 
         void AddGold()

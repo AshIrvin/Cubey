@@ -1,20 +1,16 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics;
 using BayatGames.SaveGamePro;
 using UnityEngine;
 using Debug = UnityEngine.Debug;
+using Unity.Services.Core;
+using Unity.Services.Authentication;
+using Unity.Services.CloudSave;
+using System.Threading.Tasks;
 
 [System.Serializable]
 public class SaveLoadManager : MonoBehaviour
 {
-    // TODO - this could use a tidy-up. Split up into other classes
-    // like awards, level times classes
-    /// <summary>
-    /// This is where everything is saved and loaded
-    /// </summary>
-    
     public enum Awards
     {
         NoAward,
@@ -26,20 +22,22 @@ public class SaveLoadManager : MonoBehaviour
     public List<ChapterLevelData> showSaveData = new (6);
     public static List<ChapterLevelData> SaveStaticList;
     
-    private static int lastChapterLevelPlayed;
-    private static int lastLevelUnlocked;
+    //private static int lastChapterLevelPlayed;
+    //private static int lastLevelUnlocked;
     private static int lastChapterPlayed;
     private static int chapterLevelSaved;
-    private static int awardsReceived;
-    private int xmasStartMonth = 11;
+    //private static int awardsReceived;
+    private int xmasStartMonth = 10;
     private int xmasEndMonth = 1;
+    private bool useCloudSaves = false;
 
     public int chapterAmount = 6;
-    public static int ChapterAmount = 6;
     public int levelAmount = 30;
+    public bool deleteAllSaves;
+
+    public static int ChapterAmount = 6;
     public static int LevelAmount = 30;
     public static bool GamePurchased = false;
-    public bool deleteAllSaves;
 
     [SerializeField] private bool viewSavesInInspector;
 
@@ -87,7 +85,7 @@ public class SaveLoadManager : MonoBehaviour
         }
         else
         {
-            Debug.Log("No save found");
+            Logger.Instance.ShowDebugLog("No save found");
             SetupSaveClass();
             FirstTimeUse();
             SaveGameInfo();
@@ -99,15 +97,39 @@ public class SaveLoadManager : MonoBehaviour
         UnlockSeasonalChapter();
     }
 
+    private async void Start()
+    {
+        await UnityServices.InitializeAsync();
+        await AuthenticationService.Instance.SignInAnonymouslyAsync();
+    }
+
+    private void EnableCloudSaving(bool state)
+    {
+
+    }
+
+    private void SaveToCloud(string text, object save)
+    {
+        var data = new Dictionary<string, object> { { text, save } };
+        //await CloudSaveService.Instance.Data.ForceSaveAsync(data);
+        
+        Task task = CloudSaveService.Instance.Data.Player.SaveAsync(data);
+    }
+
+    private void LoadFromCloud()
+    {
+
+    }
+
     private void FirstTimeUse()
     {
         if (SaveStaticList.Count == 0)
         {
-            Debug.LogError("SaveStaticList not created. Old data?");
+            Logger.Instance.ShowDebugError("SaveStaticList not created. Old data?");
             return;
         }
         
-        Debug.Log("Setting up 1st time use");
+        Logger.Instance.ShowDebugLog("Setting up 1st time use");
         SaveStaticList[0].chapterUnlocked = false;
         SaveStaticList[1].chapterUnlocked = true;
         SaveStaticList[2].chapterUnlocked = false;
@@ -143,6 +165,11 @@ public class SaveLoadManager : MonoBehaviour
         SaveGameInfo();
     }
     
+    public void PurchasedAndUnlockFestiveChapter()
+    {
+        UnlockSeasonalChapter();
+    }
+
     private void UnlockSeasonalChapter()
     {
         if (DateTime.Now.Month >= xmasStartMonth || // 11 >= 11 and <= 12
@@ -151,29 +178,36 @@ public class SaveLoadManager : MonoBehaviour
             if (LoadGamePurchased())
             {
                 SaveStaticList[0].chapterUnlocked = true;
+
                 if (viewSavesInInspector)
-                    showSaveData[0].chapterUnlocked = true;
-                Debug.Log("Xmas chapter unlocked");
-                // UnlockChapter(0); <- is this to unlock the festive chapter or done elsewhere?
+                { 
+                    showSaveData[0].chapterUnlocked = true; 
+                }
+
+                Logger.Instance.ShowDebugLog("Xmas chapter unlocked");
             }
             else
             {
-                Debug.Log("Not purchased. Xmas chapter not unlocked");
+                Logger.Instance.ShowDebugLog("Not purchased. Xmas chapter not unlocked");
             }
         }
         else
         {
             SaveStaticList[0].chapterUnlocked = false;
-            if (viewSavesInInspector)
-                showSaveData[0].chapterUnlocked = false;
 
-            Debug.Log("Xmas chapter locked. Month: " + DateTime.Now.Month);
+            if (viewSavesInInspector)
+            { 
+                showSaveData[0].chapterUnlocked = false; 
+            }
+
+            Logger.Instance.ShowDebugLog("Xmas chapter locked. Month: " + DateTime.Now.Month);
         }
     }
     
     private void SetupSaveClass()
     {
         SaveStaticList = new List<ChapterLevelData>(chapterAmount);
+
         if (viewSavesInInspector) showSaveData = new List<ChapterLevelData>(chapterAmount);
 
         for (int i = 0; i < chapterAmount; i++)
@@ -206,22 +240,39 @@ public class SaveLoadManager : MonoBehaviour
 
     private void LoadSaves()
     {
-        Debug.Log("Found save, loading...");
-        
+        Logger.Instance.ShowDebugLog($"Found save, {(useCloudSaves ? "loading cloud saves." : "loading local saves.")}");
+
+        if (useCloudSaves)
+        {
+            GetCloudSaves();
+            return;
+        }
+
+        GetLocalSaves();
+    }
+
+    private void GetCloudSaves()
+    {
+
+    }
+
+    private void GetLocalSaves()
+    {
         for (int i = 0; i < chapterAmount; i++)
         {
             SaveStaticList[i] = SaveGame.Load<ChapterLevelData>($"SaveChapters{i}.txt");
-            
+
             if (viewSavesInInspector)
             {
                 showSaveData[i] = SaveGame.Load<ChapterLevelData>($"SaveChapters{i}.txt");
             }
         }
+
     }
     
     public static void SaveGameInfo()
     {
-        Debug.Log("Saving game at... " + SaveGame.PersistentDataPath);
+        Logger.Instance.ShowDebugLog("Saving game at... " + SaveGame.PersistentDataPath);
 
         for (int i = 0; i < 6; i++)
         {
@@ -230,13 +281,13 @@ public class SaveLoadManager : MonoBehaviour
     }
 
     // TODO - Still needed?
-    private void RefreshShowSaveData()
+/*    private void RefreshShowSaveData()
     {
         for (int i = 0; i < chapterAmount; i++)
         {
             showSaveData[i] = SaveGame.Load<ChapterLevelData>($"SaveChapters{i}.txt");
         }
-    }
+    }*/
 
     // TODO - Still needed?
     public static void SaveChapterAndLevel(int n)
@@ -245,10 +296,10 @@ public class SaveLoadManager : MonoBehaviour
     }
     
     // TODO - Still needed?
-    public static void SaveLastChapterLevelPlayed(int n)
+/*    public static void SaveLastChapterLevelPlayed(int n)
     {
         lastChapterLevelPlayed = n;
-    }
+    }*/
     
     /// <summary>
     /// Pass chapter and level to get award. 1 = bronze. 3 = gold
@@ -375,7 +426,7 @@ public class SaveLoadManager : MonoBehaviour
 
         ChapterTimeTaken(chapter, level, time);
         
-        Debug.Log("Level time taken: " + time + ", previous: " + t);
+        Logger.Instance.ShowDebugLog("Level time taken: " + time + ", previous: " + t);
     }
     
     public static void ChapterTimeTaken(int chapter, int level, float time)
@@ -388,6 +439,6 @@ public class SaveLoadManager : MonoBehaviour
 
         SaveStaticList[chapter].chapterTimeTaken = totalChapterTime; 
         
-        Debug.Log("Total chapter time? " + totalChapterTime);
+        Logger.Instance.ShowDebugLog("Total chapter time? " + totalChapterTime);
     }
 }

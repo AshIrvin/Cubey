@@ -48,7 +48,7 @@ namespace Samples.Purchasing.GooglePlay.RestoringTransactions
 
         public void OnInitialized(IStoreController controller, IExtensionProvider extensions)
         {
-            Debug.Log("In-App Purchasing successfully initialized");
+            Logger.Instance.ShowDebugLog("In-App Purchasing successfully initialized");
 
             m_StoreController = controller;
             m_GooglePlayStoreExtensions = extensions.GetExtension<IGooglePlayStoreExtensions>();
@@ -63,7 +63,7 @@ namespace Samples.Purchasing.GooglePlay.RestoringTransactions
 
         void OnRestore(bool success)
         {
-            Debug.Log("Trying to restore purchase...");
+            Logger.Instance.ShowDebugLog("Trying to restore purchase...");
             var restoreMessage = "";
             if (success)
             {
@@ -80,7 +80,7 @@ namespace Samples.Purchasing.GooglePlay.RestoringTransactions
                 restoreMessage = "Restore Failed";
             }
 
-            Debug.Log(restoreMessage);
+            Logger.Instance.ShowDebugLog(restoreMessage);
             restoreStatusText.text = restoreMessage;
         }
 
@@ -93,10 +93,10 @@ namespace Samples.Purchasing.GooglePlay.RestoringTransactions
         {
             var product = args.purchasedProduct;
 
-            Debug.Log($"Processing Purchase: {product.definition.id}");
+            Logger.Instance.ShowDebugLog($"Processing Purchase: {product.definition.id}");
             if (args.purchasedProduct.hasReceipt)
             {
-                Debug.Log("Purchase product has receipt: " + args.purchasedProduct.receipt);
+                Logger.Instance.ShowDebugLog("Purchase product has receipt: " + args.purchasedProduct.receipt);
                 shopManager.PurchaseGameButton();
                 shopManager.gameObject.SetActive(false);
             }
@@ -120,12 +120,17 @@ namespace Samples.Purchasing.GooglePlay.RestoringTransactions
 
         public void OnInitializeFailed(InitializationFailureReason error)
         {
-            Debug.Log($"In-App Purchasing initialize failed: {error}");
+            Logger.Instance.ShowDebugLog($"In-App Purchasing initialize failed: {error}");
+        }
+
+        public void OnInitializeFailed(InitializationFailureReason error, string text)
+        {
+            Logger.Instance.ShowDebugLog($"In-App Purchasing initialize failed: {error}. Info: {text}");
         }
 
         public void OnPurchaseFailed(Product product, PurchaseFailureReason failureReason)
         {
-            Debug.Log($"Purchase failed - Product: '{product.definition.id}', PurchaseFailureReason: {failureReason}");
+            Logger.Instance.ShowDebugLog($"Purchase failed - Product: '{product.definition.id}', PurchaseFailureReason: {failureReason}");
         }
 
         void UpdateWarningMessage()

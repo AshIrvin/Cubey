@@ -82,7 +82,7 @@ public class GravityManager : MonoBehaviour
         {
             cubePivot = Instantiate(pivotObject, pos, Quaternion.identity);
             cubePivot.transform.Rotate(targetDirection.eulerAngles);
-            Debug.Log("cubePivot rotate: " + cubePivot.transform.eulerAngles);
+            Logger.Instance.ShowDebugLog("cubePivot rotate: " + cubePivot.transform.eulerAngles);
         }
         
         cubePivot.transform.SetParent(mapManager.LevelParent.transform);

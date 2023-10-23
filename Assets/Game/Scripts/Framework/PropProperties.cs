@@ -326,7 +326,7 @@ public class PropProperties
 	{
 		if (variant.variantType != variantType)
 		{
-			Debug.LogError("Expecting type " + variantType + " but found " + variant.variantType);
+			Logger.Instance.ShowDebugError("Expecting type " + variantType + " but found " + variant.variantType);
 			
 			return false;
 		}
@@ -338,13 +338,13 @@ public class PropProperties
 	{
 		if (property == null)
 		{
-			Debug.LogError("Property is null - has it been selected correctly from the editor?");
+			Logger.Instance.ShowDebugError("Property is null - has it been selected correctly from the editor?");
 			
 			return false;
 		}
 		else if (property.key == "")
 		{
-			Debug.LogError("Property key is empty.");
+			Logger.Instance.ShowDebugError("Property key is empty.");
 
 			return false;
 		}

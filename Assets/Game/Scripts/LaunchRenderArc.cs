@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using DG.Tweening;
 using UnityEngine;
 using Lean.Touch;
-using Mono.CompilerServices.SymbolWriter;
+//using Mono.CompilerServices.SymbolWriter;
 
 [RequireComponent(typeof(LineRenderer))]
 public class LaunchRenderArc : MonoBehaviour
@@ -30,9 +30,9 @@ public class LaunchRenderArc : MonoBehaviour
     [SerializeField] private int resolution = 13;
     [SerializeField] private Vector3 groundOffset;
     [SerializeField] private Vector3 mousePos;
-    [SerializeField] public Vector3 leanEndPos;
+    public Vector3 leanEndPos;
     [SerializeField] private Vector3 direction;
-    [SerializeField] private bool renderArcAllowed;
+    //[SerializeField] private bool renderArcAllowed;
     [SerializeField] private GameObject cubey;
 
     [Header("Sprites")]
@@ -127,7 +127,7 @@ public class LaunchRenderArc : MonoBehaviour
     {
         if (!gameObject.activeInHierarchy) return;
             
-        renderArcAllowed = on;
+        //renderArcAllowed = on;
         gameManager.LaunchArc = on;
         if (!on)
         {

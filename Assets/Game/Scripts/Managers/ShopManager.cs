@@ -1,17 +1,11 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using UnityEngine.Purchasing;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public class ShopManager : MonoBehaviour
 {
-    /// <summary>
-    /// A simple shop popup menu to allow the user to purchase the game
-    /// </summary>
-    
     [SerializeField] private MapManager mapManager;
     [SerializeField] private GameObject restoreButton;
     [SerializeField] private GameObject demoButton;
@@ -29,7 +23,6 @@ public class ShopManager : MonoBehaviour
     
     private void OnEnable()
     {
-        // check if game has been purchased and update shop buttons
         if (SaveLoadManager.GamePurchased)
         {
             GameIsPurchased();
@@ -59,19 +52,21 @@ public class ShopManager : MonoBehaviour
     public void PurchaseGameButton()
     {
         GamePurchased = true;
-        Debug.Log("Game Purchased: " + GamePurchased);
+        Logger.Instance.ShowDebugLog("Game Purchased: " + GamePurchased);
+        // TODO - Needs logic here to open chapter without restarting
+
     }
     
     public void DemoMode()
     {
         GamePurchased = false;
-        Debug.Log("Demo mode. Purchased: " + GamePurchased);
+        Logger.Instance.ShowDebugLog("Demo mode. Purchased: " + GamePurchased);
     }
 
     public static void RestoreTransaction()
     {
         GamePurchased = true;
-        Debug.Log("Game Purchase restored: " + GamePurchased);
+        Logger.Instance.ShowDebugLog("Game Purchase restored: " + GamePurchased);
         SceneManager.LoadScene("CubeyGame");
     }
     
@@ -79,7 +74,7 @@ public class ShopManager : MonoBehaviour
     {
         purchaseText.text = "Purchased";
         testPurchaseText.text = "Purchased";
-        purchaseText.transform.parent.GetComponent<Button>().interactable = false;
+        //purchaseText.transform.parent.GetComponent<IAPButton>().interactable = false;
         var tc = purchaseText.color;
         purchaseText.color = new Color(tc.r, tc.g, tc.b, 0.5f);   
             

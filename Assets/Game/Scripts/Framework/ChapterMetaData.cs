@@ -47,7 +47,7 @@ public class ChapterMetaData : ScriptableObject
     public void UnityEditorAssignData()
     {
 #if UNITY_EDITOR
-        Debug.Log("Assigning buttons from game to list");
+        Logger.Instance.ShowDebugLog("Assigning buttons from game to list");
         
         var buttonParent = chapterMap.transform.Find("Canvas_Map").Find("Map_buttons").gameObject;
         chapterMapButtonList.Clear();
@@ -84,19 +84,19 @@ public class ChapterMetaData : ScriptableObject
 
             if (sprite == null)
             {
-                Debug.LogError("can't find sprite");
+                Logger.Instance.ShowDebugError("can't find sprite");
                 return;
             }
             
             if (image == null)
             {
-                Debug.LogError("can't find image");
+                Logger.Instance.ShowDebugError("can't find image");
                 return;
             }
 
             image.sprite = sprite;
-            Debug.Log($"Assigning {sprite.name} sprite to {image.transform.parent.parent.name}. image.sprite null: {image.sprite}");
-            Debug.LogError("Assign in game instead. User mapmanager/line 114");
+            Logger.Instance.ShowDebugLog($"Assigning {sprite.name} sprite to {image.transform.parent.parent.name}. image.sprite null: {image.sprite}");
+            Logger.Instance.ShowDebugError("Assign in game instead. User mapmanager/line 114");
         }
 #endif
     }

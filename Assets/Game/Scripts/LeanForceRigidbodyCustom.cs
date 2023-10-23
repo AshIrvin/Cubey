@@ -115,33 +115,33 @@ namespace Lean.Touch
             
             if (collision.collider.CompareTag("Sticky"))
             {
-                // Debug.Log("Hit sticky object");
+                // Logger.Instance.ShowDebugLog("Hit sticky object");
                 // onGround?.Invoke(true);
             }
             else if (collision.collider.CompareTag("Platform") || collision.collider.CompareTag("MovingPlatform"))
             {
-                // Debug.Log("Hit a platform");
+                // Logger.Instance.ShowDebugLog("Hit a platform");
                 audioManager.PlayAudio(audioManager.cubeyLand);
                 VisualEffects.Instance.PlayEffect(VisualEffects.Instance.peLandingGrass, transform.position);
                 // onGround?.Invoke(true);
             }
             else if (collision.collider.CompareTag("GroundGrass"))
             {
-                // Debug.Log("Hit grass");
+                // Logger.Instance.ShowDebugLog("Hit grass");
                 audioManager.PlayAudio(audioManager.cubeyLand);
                 VisualEffects.Instance.PlayEffect(VisualEffects.Instance.peLandingGrass, transform.position);
                 // onGround?.Invoke(true);
             }
             else if (collision.collider.CompareTag("GroundNormal"))
             {
-                // Debug.Log("Hit normal ground");
+                // Logger.Instance.ShowDebugLog("Hit normal ground");
                 audioManager.PlayAudio(audioManager.cubeyLand);
                 VisualEffects.Instance.PlayEffect(VisualEffects.Instance.peLandingDust, transform.position);
                 // onGround?.Invoke(true);
             }
             else if (collision.collider.CompareTag("GroundSnow"))
             {
-                // Debug.Log("Hit snow");
+                // Logger.Instance.ShowDebugLog("Hit snow");
                 // audioManager.PlayAudio(audioManager.cubeyLand);
                 audioManager.PlayAudio(audioManager.cubeyLandingSnow);
                 // VisualEffects.Instance.PlayEffect(VisualEffects.Instance.pe, transform.position);
