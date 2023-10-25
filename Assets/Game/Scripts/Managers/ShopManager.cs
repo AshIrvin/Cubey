@@ -1,6 +1,5 @@
 using TMPro;
 using UnityEngine;
-using UnityEngine.Purchasing;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
@@ -36,7 +35,7 @@ public class ShopManager : MonoBehaviour
         {
             testPurchaseText.transform.parent.gameObject.SetActive(false);
             demoButton.SetActive(false);
-            mapManager.manyLevelsBeforeAds = 3;
+            //AdSettings.ManyLevelsBeforeAds = 3;
         }
     }
 

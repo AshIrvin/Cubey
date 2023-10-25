@@ -103,22 +103,21 @@ public class SaveLoadManager : MonoBehaviour
         await AuthenticationService.Instance.SignInAnonymouslyAsync();
     }
 
-    private void EnableCloudSaving(bool state)
+    public void EnableCloudSaving(bool state)
     {
-
+        // This should be a switch in the settings UI. On as default
     }
 
     private void SaveToCloud(string text, object save)
     {
         var data = new Dictionary<string, object> { { text, save } };
-        //await CloudSaveService.Instance.Data.ForceSaveAsync(data);
         
         Task task = CloudSaveService.Instance.Data.Player.SaveAsync(data);
     }
 
     private void LoadFromCloud()
     {
-
+        Task task = CloudSaveService.Instance.Data.Player.LoadAllAsync();
     }
 
     private void FirstTimeUse()

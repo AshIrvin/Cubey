@@ -1,17 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections;
-//using System.Diagnostics;
-//using Game.Scripts;
-//using IngameDebugConsole;
 using UnityEngine;
 using Lean.Touch;
-//using UnityEditor;
 using UnityEngine.SceneManagement;
-//using UnityEngine.Serialization;
 using UnityEngine.UI;
-//using Debug = UnityEngine.Debug;
-//using Random = System.Random;
 using System.Threading.Tasks;
 
 public class GameManager : MonoBehaviour
@@ -26,6 +19,8 @@ public class GameManager : MonoBehaviour
         Nearly,
         Completed
     }
+
+    #region Fields
 
     [Header("Metadata")]    
     [SerializeField] private SaveMetaData saveMetaData;
@@ -54,14 +49,13 @@ public class GameManager : MonoBehaviour
     [SerializeField] private AudioManager audioManager;
     [SerializeField] private AudioSource gameMusic;
 
+    #endregion Fields
+
     public static Transform gameFolder;
-    //private float timer;
-    //private string levelName;
 
     private int threeStars;
     private int twoStars;
     private int oneStar;
-
     private int levelNo;
     private int chapterNo;
 
@@ -96,9 +90,7 @@ public class GameManager : MonoBehaviour
     [SerializeField] private List<Image> pickupUiImages;
 
     private bool camMovement;
-    //private bool gameLevelEnabled;
     private float playerGooDrag = 40f;
-    //private ParticleSystem pe;
     private float cubeyJumpMagValue = 0.5f;
 
 
@@ -109,7 +101,6 @@ public class GameManager : MonoBehaviour
     {
         get
         {
-            //gameLevelEnabled = gameLevel.CurrentValue;
             return gameLevel.CurrentValue;
         }
         set => gameLevel.CurrentValue = value;
@@ -154,10 +145,10 @@ public class GameManager : MonoBehaviour
         set => cubeyPlayer = value;
     }
 
-    #endregion
-
     public LevelMetaData LevelMetaData => levelMetaData;
     public SaveMetaData SaveMetaData => saveMetaData;
+
+    #endregion
 
     public bool playSingleLevel = false;
 
@@ -166,7 +157,6 @@ public class GameManager : MonoBehaviour
     [SerializeField] private bool onBreakablePlatform;
     [SerializeField] private bool onMovingPlatform;
 
-    [Header("ints")]
     private int jumpLeft;
     private int jumpsToStartWith = 10;
     private int time;
@@ -179,7 +169,6 @@ public class GameManager : MonoBehaviour
     [SerializeField] private Animator starBronze_anim;
 
     [Header("Other")]
-    //private Vector3 cubeyPosition;
     public float cubeyMagnitude;
     private Vector3 flip;
     
@@ -191,11 +180,14 @@ public class GameManager : MonoBehaviour
     private float timeStarted;
     private float durationInLevel;
     private int delayFailedScreenInSeconds = 4;
+    private LevelManager levelManager;
 
     public float cubeyJumpHeight = 2.6f;
     public bool useTimer;
     public Rigidbody playerRb;
     public static Action LevelLoaded;
+
+
 
     private void Awake()
     {
@@ -205,9 +197,11 @@ public class GameManager : MonoBehaviour
         stickyObject.OnValueChanged += ToggleSticky;
         leanForceRb.onGround += PlayerAllowedJump;
         // FingerPos.allowedJump += PlayerAllowedJump;
-        
+
+        levelManager = LevelManager.Instance;
+
         if (leanForceRb == null)
-            leanForceRb = FindObjectOfType<LeanForceRigidbodyCustom>();
+            leanForceRb = FindFirstObjectByType<LeanForceRigidbodyCustom>();
 
         if (gameFolder == null)
             gameFolder = GameObject.Find("Game").transform;
@@ -267,6 +261,7 @@ public class GameManager : MonoBehaviour
     {
         if (cubeyPlayer != null)
             cubeyPlayer.SetActive(false);
+
         PlayerAllowedJump(false);
         SetGameCanvases(false);
     }
@@ -305,14 +300,16 @@ public class GameManager : MonoBehaviour
 
     private void DisableStartPosition()
     {
-        if (mapManager.LevelGameObject != null &&
-            mapManager.LevelGameObject.transform.GetChild(1).name.Contains("Start"))
+        var levelManager = LevelManager.Instance;
+
+        if (levelManager.LevelGameObject != null &&
+            levelManager.LevelGameObject.transform.GetChild(1).name.Contains("Start"))
         { 
-            mapManager.LevelGameObject.transform.GetChild(1)?.GetChild(1)?.gameObject.SetActive(false); 
+            levelManager.LevelGameObject.transform.GetChild(1)?.GetChild(1)?.gameObject.SetActive(false); 
         }
-        else if (mapManager.LevelGameObject.transform.GetChild(0).name.Contains("Start"))
+        else if (levelManager.LevelGameObject.transform.GetChild(0).name.Contains("Start"))
         {
-            mapManager.LevelGameObject.transform.GetChild(0)?.GetChild(1)?.gameObject.SetActive(false);
+            levelManager.LevelGameObject.transform.GetChild(0)?.GetChild(1)?.gameObject.SetActive(false);
         }
         else
         {
@@ -498,7 +495,7 @@ public class GameManager : MonoBehaviour
         HideScreens();
         enabled = false;
         // mapManager.enabled = true; // not needed
-        mapManager.RestartLevel();
+        LevelManager.Instance.RestartLevel();
         TimeTaken(true);
     }
 
@@ -508,12 +505,13 @@ public class GameManager : MonoBehaviour
     {
         //StartCoroutine(LoadingScene(true));
         LoadingScene(true);
+        //var levelManager = LevelManager.Instance;
 
-        var childCount = mapManager.LevelParent.transform.childCount;
+        var childCount = levelManager.LevelParent.transform.childCount;
 
         for (int i = 0; i < childCount; i++)
         {
-            Destroy(mapManager.LevelParent.transform.GetChild(i).gameObject);
+            Destroy(levelManager.LevelParent.transform.GetChild(i).gameObject);
         }
 
         HideScreens();
@@ -604,7 +602,7 @@ public class GameManager : MonoBehaviour
 
     private void CountSweetsForLevel()
     {
-        GameObject pickupGroup = mapManager.LevelGameObject.transform.Find("Pickups").gameObject;
+        GameObject pickupGroup = levelManager.LevelGameObject.transform.Find("Pickups").gameObject;
 
         if (pickupGroup == null)
         {
@@ -648,21 +646,23 @@ public class GameManager : MonoBehaviour
 
     private GameObject FindExit()
     {
-        if (mapManager.LevelGameObject.transform.GetChild(0).name.Contains("MovingExitPlatform"))
+        var levelManager = LevelManager.Instance;
+
+        if (levelManager.LevelGameObject.transform.GetChild(0).name.Contains("MovingExitPlatform"))
         {
-            return mapManager.LevelGameObject.transform.GetChild(0).transform.Find("Exit").gameObject;
+            return levelManager.LevelGameObject.transform.GetChild(0).transform.Find("Exit").gameObject;
         }
-        else if (mapManager.LevelGameObject.transform.GetChild(0).name.Contains("Exit")) // default position
+        else if (levelManager.LevelGameObject.transform.GetChild(0).name.Contains("Exit")) // default position
         {
-            return mapManager.LevelGameObject.transform.GetChild(0).gameObject;
+            return levelManager.LevelGameObject.transform.GetChild(0).gameObject;
         }
-        else if (mapManager.LevelGameObject.transform.Find("Exit")) 
+        else if (levelManager.LevelGameObject.transform.Find("Exit")) 
         {
-            return mapManager.LevelGameObject.transform.Find("Exit").gameObject;
+            return levelManager.LevelGameObject.transform.Find("Exit").gameObject;
         }
-        else if (mapManager.LevelGameObject.transform.Find("Spindle"))
+        else if (levelManager.LevelGameObject.transform.Find("Spindle"))
         {
-            return mapManager.LevelGameObject.transform.Find("Spindle").GetChild(0).gameObject;
+            return levelManager.LevelGameObject.transform.Find("Spindle").GetChild(0).gameObject;
         }
         else
         {

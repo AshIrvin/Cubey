@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class Logger : MonoBehaviour
@@ -11,7 +9,8 @@ public class Logger : MonoBehaviour
 
     private void Awake()
     {
-        Instance = this;
+        if (Instance == null)
+            Instance = this;
     }
 
     public void ShowDebugLog(object t, Object sender = null)

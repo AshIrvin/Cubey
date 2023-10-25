@@ -1,22 +1,19 @@
 using System;
 using System.Collections;
-using System.Collections.Generic;
 using GoogleMobileAds.Api;
 using GoogleMobileAds.Placement;
 using UnityEngine;
 
 public class InitialiseAds : MonoBehaviour
 {
-    /// <summary>
-    /// Half of this is Googles code, the other half is me trying to get it to work...
-    /// </summary>
-    
     public InterstitialAd interstitial;
+
     public static Action LoadLevel;
     public static Action LoadAd;
 
     private InterstitialAdGameObject fullscreenAd;
-    public BannerAdGameObject bannerAd;
+    private BannerAdGameObject bannerAd;
+
 
     private void Awake()
     {
@@ -28,7 +25,7 @@ public class InitialiseAds : MonoBehaviour
         }
 
         MobileAds.Initialize((initStatus) => {
-            Logger.Instance.ShowDebugLog("Initialized MobileAds");
+            //Logger.Instance.ShowDebugLog("Initialized MobileAds");
         });
     }
 
@@ -38,15 +35,16 @@ public class InitialiseAds : MonoBehaviour
         {
             // bannerAd.gameObject.SetActive(false);
             DestroyTopBannerAd();
+            Destroy(this);
             return;
         }
         
-        MapManager.LoadAd += ShowAd;
+        AdSettings.Instance.LoadAd += ShowAd;
         MapManager.MapOpened += GetAd;
         
         bannerAd.gameObject.SetActive(true);
         bannerAd.enabled = true;
-        bannerAd?.LoadAd();
+        bannerAd.LoadAd();
     }
 
     private void Start()
@@ -59,7 +57,7 @@ public class InitialiseAds : MonoBehaviour
         fullscreenAd = MobileAds.Instance.GetAd<InterstitialAdGameObject>("InterstitialAd");
         bannerAd = MobileAds.Instance.GetAd<BannerAdGameObject>("TopBannerAd");
         bannerAd.gameObject.SetActive(true);
-        bannerAd?.LoadAd();
+        bannerAd.LoadAd();
     }
 
     #region Manual Setup
@@ -99,7 +97,7 @@ public class InitialiseAds : MonoBehaviour
     // ******** Placement ads ********** //
     public void GetAd()
     {
-        fullscreenAd?.LoadAd();
+        fullscreenAd.LoadAd();
         
         StartCoroutine(WaitToGetAd());
     }
@@ -150,7 +148,7 @@ public class InitialiseAds : MonoBehaviour
 
     private void DestroyAd()
     {
-        fullscreenAd?.DestroyAd();
+        fullscreenAd.DestroyAd();
         
         Logger.Instance.ShowDebugLog("Destroying ad. fullscreenAd null? " + fullscreenAd);
     }
@@ -165,24 +163,24 @@ public class InitialiseAds : MonoBehaviour
     public void DestroyTopBannerAd()
     {
         bannerAd.gameObject.SetActive(false);
-        bannerAd?.DestroyAd();
+        bannerAd.DestroyAd();
         bannerAd.enabled = false;
     }
 
     public void LoadTopBannerAd()
     {
-        bannerAd?.LoadAd();
+        bannerAd.LoadAd();
     }
     
     private void OnDisable()
     {
-        MapManager.LoadAd -= ShowAd;
+        LoadAd -= ShowAd;
         MapManager.MapOpened -= GetAd;
     }
 
     private void OnDestroy()
     {
-        MapManager.LoadAd -= ShowAd;
+        LoadAd -= ShowAd;
         MapManager.MapOpened -= GetAd;
     }
 }

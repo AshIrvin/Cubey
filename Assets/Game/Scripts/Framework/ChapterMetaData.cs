@@ -1,4 +1,3 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
@@ -9,6 +8,8 @@ public class ChapterMetaData : ScriptableObject
 {
     [Tooltip("Prefab for menu screen")]
     [SerializeField] private GameObject menuEnvironment;
+    [SerializeField] private BoxCollider menuCollision;
+    [SerializeField] private BoxCollider mapCollision;
     [SerializeField] private int chapterNumber;
     [SerializeField] private string chapterName;
     [SerializeField] private GameObject pickupIcon;
@@ -20,7 +21,8 @@ public class ChapterMetaData : ScriptableObject
     [SerializeField] private List<GameObject> inGameMapButtonList;
     [SerializeField] private string fullPathName = "Assets/Src_Images/MainMenu/MapLevelImages/Chapter";
     
-    private readonly string levelButton = "Leveln_button";
+    #region Getters
+
     public GameObject MenuEnvironment => menuEnvironment;
     public int ChapterNumber => chapterNumber;
     public string ChapterName => chapterName;
@@ -28,6 +30,18 @@ public class ChapterMetaData : ScriptableObject
     public GameObject ChapterMap => chapterMap;
     public LevelList LevelList => levelList;
     public List<GameObject> ChapterMapButtonList => chapterMapButtonList;
+
+    public BoxCollider MenuCollision
+    {
+        get => menuCollision;
+        set => menuCollision = value;
+    }
+        
+    public BoxCollider MapCollision
+    {
+        get => mapCollision;
+        set => mapCollision = value;
+    }
 
     public List<GameObject> InGameMapButtonList
     {
@@ -40,7 +54,12 @@ public class ChapterMetaData : ScriptableObject
         get => menuZoomLevel;
         set => menuZoomLevel = value;
     }
-    
+
+    #endregion Getters
+
+    private readonly string levelButton = "Leveln_button";
+
+
     /// <summary>
     /// Takes the buttons from the prefab map and assigns them above
     /// </summary>

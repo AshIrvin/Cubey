@@ -2,8 +2,7 @@ using UnityEngine;
 
 public class AutoRotation : MonoBehaviour
 {
-    [SerializeField] 
-    private bool enableRotation;
+    [SerializeField] private bool enableRotation;
 
     private Rigidbody rigidBody;
 

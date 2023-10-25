@@ -11,6 +11,7 @@ public class GravityManager : MonoBehaviour
     [SerializeField] private GameObject pivotObject;
     [SerializeField] private Quaternion target;
     [SerializeField] private Transform targetDirection;
+    [SerializeField] private bool dontKill;
 
     private static readonly float _gravity = -9.81f;
     private bool allowLevelRotation = false;
@@ -18,8 +19,8 @@ public class GravityManager : MonoBehaviour
     private Rigidbody rb;
     private float defaultDrag = 0;
     private GameObject levelObject;
+    private LevelManager levelManager;
 
-    [SerializeField] private bool dontKill;
 
     public float turnDuration = 2f;
     public float gravityDrag = 40;
@@ -27,12 +28,17 @@ public class GravityManager : MonoBehaviour
     public float resetWait = 0.2f;
 
     [SerializeField] private int currentAngle;
-    
+
+    private void Start()
+    {
+        levelManager = LevelManager.Instance;
+    }
+
     private void OnEnable()
     {
         if (mapManager == null)
         {
-            mapManager = FindObjectOfType<MapManager>();
+            mapManager = FindFirstObjectByType<MapManager>();
         }
 
         targetDirection = transform.Find("GravityDirection").transform;
@@ -44,7 +50,7 @@ public class GravityManager : MonoBehaviour
     private IEnumerator WaitBeforeResetingParent()
     {
         yield return new WaitForSeconds(resetWait);
-        levelObject.transform.SetParent(mapManager.LevelParent.transform);
+        levelObject.transform.SetParent(levelManager.LevelParent.transform);
         Destroy(cubePivot);
         if (!dontKill)
         {
@@ -71,7 +77,7 @@ public class GravityManager : MonoBehaviour
         if (allowLevelRotation) return;
         
         allowLevelRotation = true; // should go through script once before not allowed
-        levelObject = mapManager.LevelGameObject;
+        levelObject = levelManager.LevelGameObject;
         target = Quaternion.Euler(targetDirection.eulerAngles);
 
         rb.drag = gravityDrag;
@@ -85,7 +91,7 @@ public class GravityManager : MonoBehaviour
             Logger.Instance.ShowDebugLog("cubePivot rotate: " + cubePivot.transform.eulerAngles);
         }
         
-        cubePivot.transform.SetParent(mapManager.LevelParent.transform);
+        cubePivot.transform.SetParent(levelManager.LevelParent.transform);
         levelObject.transform.SetParent(cubePivot.transform);
         
         StartCoroutine(Wait());
