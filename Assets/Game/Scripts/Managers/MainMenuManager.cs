@@ -211,7 +211,16 @@ public class MainMenuManager : MonoBehaviour
         for (int i = 0; i < chapterList.Count; i++)
         {
             var menu = Instantiate(chapterList[i].MenuEnvironment, menuEnvironmentParent.transform);
-            chapterList[i].MenuCollision = chapterList[i].MenuEnvironment.transform.Find("CollisionMenu").GetComponent<BoxCollider>();
+
+            if (chapterList[i].MenuCollision == null)
+                chapterList[i].MenuCollision = chapterList[i].MenuEnvironment.transform.Find("CollisionMenu").GetComponent<BoxCollider>();
+
+            if (chapterList[i].MapCollision == null)
+                chapterList[i].MapCollision = chapterList[i].ChapterMap.transform.Find("CollisionMap").GetComponent<BoxCollider>();
+
+            if (chapterList[i].MapCollision == null)
+                print("Can't find: " + chapterList[i].ChapterMap.name);
+
             menuEnvironments.Add(menu);
             menu.SetActive(false);
         }
