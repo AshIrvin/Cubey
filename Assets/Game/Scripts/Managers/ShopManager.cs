@@ -5,7 +5,6 @@ using UnityEngine.UI;
 
 public class ShopManager : MonoBehaviour
 {
-    [SerializeField] private MapManager mapManager;
     [SerializeField] private GameObject restoreButton;
     [SerializeField] private GameObject demoButton;
     [SerializeField] private Text purchaseText;
@@ -13,6 +12,8 @@ public class ShopManager : MonoBehaviour
     [SerializeField] private Text shopText;
     [SerializeField] private bool productionBuild;
     [SerializeField] private TextMeshProUGUI purchaseRestoredText;
+
+    private MapManager mapManager;
     
     public static bool GamePurchased
     {
@@ -22,6 +23,9 @@ public class ShopManager : MonoBehaviour
     
     private void OnEnable()
     {
+        if (mapManager == null)
+            mapManager = MapManager.Instance;
+
         if (SaveLoadManager.GamePurchased)
         {
             GameIsPurchased();

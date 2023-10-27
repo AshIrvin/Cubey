@@ -1,27 +1,18 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Diagnostics;
+﻿using System.Collections;
 using DG.Tweening;
-using Game.Scripts;
+using DG.Tweening.Core.Easing;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 using UnityEngine.UI;
-using Debug = UnityEngine.Debug;
-
 
 public class CameraManager : MonoBehaviour
 {
-    // [SerializeField] private MainMenuManager mainMenuManager;
-    [SerializeField] private MapManager mapManager;
-    [SerializeField] private GameManager gameManager;
     [SerializeField] private BoolGlobalVariable gameLevel;
-    [SerializeField] private ChapterList chapterList;
     [SerializeField] private SaveMetaData saveMetaData;
     
+    private ChapterList chapterList;
     
     // old
-    [SerializeField] private Camera cam;
+    //[SerializeField] private Camera cam;
     [SerializeField] private Vector3 exitPos;
     [SerializeField] private Vector3 endCamPos;
     [SerializeField] private GameObject cubeyOnMap;
@@ -34,7 +25,12 @@ public class CameraManager : MonoBehaviour
     // [SerializeField] private float camMapDragTime = 0.3f;
     [SerializeField] private Vector3 velocity = Vector3.zero;
     private bool panningFromExit;
-    
+
+    private GameManager gameManager;
+    private MapManager mapManager;
+    private GlobalMetaData globalMetaData;
+    //private Camera cam;
+
     private Vector3 dragOrigin; //Where are we moving?
     private Vector3 buttonToStartFrom;
     private Vector3 buttonToEndAt;
@@ -58,8 +54,7 @@ public class CameraManager : MonoBehaviour
     [SerializeField] private Toggle autoPanToCubeyButton;
     
     private Tween panToCubey;
-    
-    
+    private GameObject cubeyPlayer;
     
     public bool GameLevel
     {
@@ -69,7 +64,6 @@ public class CameraManager : MonoBehaviour
 
     public bool autoPanToCubey = true;
     
-    private GameObject CubeyPlayer => gameManager.CubeyPlayer;
 
 
     private void Awake()
@@ -77,12 +71,20 @@ public class CameraManager : MonoBehaviour
         GameManager.LevelLoaded += EnteringLevel;
         MainMenuManager.onStart += PlayStartCameraSweep;
         MapManager.MapOpened += PanToLevelButton;
-        // GameManager.LevelLoaded += PanToLevelCubey;
+
+        chapterList = GlobalMetaData.Instance.ChapterList;
+        gameManager = GameManager.Instance;
+        mapManager = MapManager.Instance;
+        globalMetaData = GlobalMetaData.Instance;
+
+        //cam = Camera.main;
     }
 
     private void Start()
     {
         LoadAutoPanMode();
+
+        GetCubeyPlayer();
     }
 
     private void OnDestroy()
@@ -90,7 +92,6 @@ public class CameraManager : MonoBehaviour
         GameManager.LevelLoaded -= EnteringLevel;
         MainMenuManager.onStart -= PlayStartCameraSweep;
         MapManager.MapOpened -= PanToLevelButton;
-        // GameManager.LevelLoaded -= PanToLevelCubey;
     }
 
     private void OnDisable()
@@ -108,11 +109,44 @@ public class CameraManager : MonoBehaviour
                 KillSequence();
             }
         }
-        
-        if (autoPanToCubey && !mapManager.enabled && gameManager.GameLevel && !panningFromExit && !FingerPos.abovePlayer && !FingerPos.belowPlayer) 
+
+        SmoothMoveCamToCubey();
+    }
+
+    private void SmoothMoveCamToCubey()
+    {
+        if (gameManager == null || cubeyPlayer == null)
         {
-            transform.position = Vector3.SmoothDamp(transform.position, CubeyPlayer.transform.position, ref velocity, defaultGameCamTime);
+            Logger.Instance.ShowDebugError("Missing GameManager or Cubey!");
         }
+
+        if (!autoPanToCubey || mapManager.isActiveAndEnabled) return;
+
+        // TODO - this needs redone - could probably be an action subbed to level loading
+
+        if (autoPanToCubey && !mapManager.enabled && gameManager.GameLevel && !panningFromExit && !FingerPos.abovePlayer && !FingerPos.belowPlayer)
+        {
+            transform.position = Vector3.SmoothDamp(transform.position, cubeyPlayer.transform.position, ref velocity, defaultGameCamTime);
+        }
+
+        // Set what the camera does here, depending on game state
+        switch (GameManager.Instance.GetGameState())
+        {
+            case GameManager.GameState.Menu:
+                break;
+            case GameManager.GameState.Map:
+                break;
+            case GameManager.GameState.Level:
+                break;
+        }
+    }
+
+    private void GetCubeyPlayer()
+    {
+        if (gameManager == null)
+            gameManager = GameManager.Instance;
+
+        cubeyPlayer = gameManager.CubeyPlayer;
     }
 
     public void KillSequence()
@@ -139,8 +173,9 @@ public class CameraManager : MonoBehaviour
     private void PanToLevelCubey()
     {
         KillSequence();
-        var cubeyPos = CubeyPlayer.transform.position;
+        var cubeyPos = cubeyPlayer.transform.position;
         panToCubey = DOTween.Sequence().Append(transform.DOMove(cubeyPos, panToCubeyTime).SetEase(Ease.InOutQuad));
+
         panToCubey.onComplete = () =>
         {
             panningFromExit = false;
@@ -156,8 +191,8 @@ public class CameraManager : MonoBehaviour
     {
         panningFromExit = true;
         panToCubeyTime = gameCamTime2;
-        yield return new WaitWhile(() => gameManager.LevelMetaData == null);
-        exitPos = gameManager.LevelMetaData.ExitPosition.transform.position;
+        yield return new WaitWhile(() => globalMetaData.LevelMetaData == null);
+        exitPos = globalMetaData.LevelMetaData.ExitPosition.transform.position;
         transform.position = exitPos;
         yield return new WaitForSeconds(delayCameraOnExitStart);
 

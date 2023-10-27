@@ -7,6 +7,7 @@ using UnityEngine.EventSystems;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
+[DefaultExecutionOrder(100)]
 public class MainMenuManager : MonoBehaviour
 {
     public static MainMenuManager Instance;
@@ -21,10 +22,9 @@ public class MainMenuManager : MonoBehaviour
     #region Fields
 
     [Header("Scripts")]
-    [SerializeField] private MapManager mapManager;
+    
     [SerializeField] private CameraManager cameraManager;
-    [SerializeField] private SaveMetaData saveMetaData;
-    [SerializeField] private ChapterList chapterList;
+    
     [SerializeField] private VisualEffects visualEffects;
     [SerializeField] private AudioManager audioManager;
 
@@ -34,15 +34,10 @@ public class MainMenuManager : MonoBehaviour
     [SerializeField] private GameObject mapsParent;
     [SerializeField] private List<GameObject> chapterMaps;
     
-    public LeanConstrainToBox leanConstrainToBox;
-    public GameObject mainMenu;
-    
     [Header("Extra screens")]
     [SerializeField] private GameObject chapterFinishScreen;
     [SerializeField] private bool deleteLastChapterFinishScreenData;
     [SerializeField] private GameObject loadingScreen;
-    
-    // do these need refactored?
     
     [Header("GameObjects")]
     [SerializeField] private GameObject chapterScreen;
@@ -71,6 +66,8 @@ public class MainMenuManager : MonoBehaviour
     private Vector3 pos2 = new Vector3(1f, 1f, 1f);
     private Vector3 scale1 = new Vector3(0.95f, 0.95f, 0.95f);
     private Vector3 scale2 = new Vector3(0.95f, 0.95f, 0.95f);
+    private ChapterList chapterList;
+    private MapManager mapManager;
 
     #endregion Private variables
 
@@ -93,6 +90,8 @@ public class MainMenuManager : MonoBehaviour
     public static Action onStart;
 
     public int chapterUnlockedTo;
+    public LeanConstrainToBox leanConstrainToBox;
+    public GameObject mainMenu;
 
     private void Awake()
     {
@@ -104,17 +103,13 @@ public class MainMenuManager : MonoBehaviour
 
         CheckForNulls();
 
+        mapManager = MapManager.Instance;
         mapManager.enabled = false;
 
         if (chapterButtons.Count == 0)
-        {
             Logger.Instance.ShowDebugError("Assign chapter buttons to list!");
-        }
 
-        if (deleteLastChapterFinishScreenData)
-        {
-            PlayerPrefs.DeleteKey("chapterFinishScreenGold" + SaveLoadManager.LastChapterPlayed);
-        }
+        DeleteFinishScreenData();
 
         SetRefreshRate(PlayerPrefs.GetInt("RefreshRate"));
     }
@@ -122,6 +117,7 @@ public class MainMenuManager : MonoBehaviour
     private void Start()
     {
         versionNo.text = "v: " + Application.version;
+        chapterList = GlobalMetaData.Instance.ChapterList;
 
         AddMenuEnvironments();
         SetColours();
@@ -137,6 +133,14 @@ public class MainMenuManager : MonoBehaviour
     {
         InitialiseAds.LoadLevel -= LevelManager.Instance.LoadLevel;
         backButton.gameObject.SetActive(true);
+    }
+
+    private void DeleteFinishScreenData()
+    {
+        if (deleteLastChapterFinishScreenData)
+        {
+            PlayerPrefs.DeleteKey("chapterFinishScreenGold" + SaveLoadManager.LastChapterPlayed);
+        }
     }
 
     public void SetNavButtons(bool state)

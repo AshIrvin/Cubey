@@ -2,27 +2,42 @@ using UnityEngine;
 
 public class AwardManager : MonoBehaviour
 {
-    public static AwardManager instance;
+    public static AwardManager Instance;
+
+    private LevelMetaData levelMetaData;
+    private int threeStars;
+    private int twoStars;
+    private int oneStar;
+
+    public int ThreeStars => threeStars;
+    public int TwoStars => twoStars;
+    public int OneStar => oneStar;
 
     private void Awake()
     {
-        if (instance == null)
-            instance = this;
+        if (Instance == null)
+            Instance = this;
+
+        //levelMetaData = GlobalMetaData.Instance.LevelMetaData;
+    }
+
+    public void GetLevelAwards()
+    {
+        levelMetaData = GlobalMetaData.Instance.LevelMetaData;
+
+        oneStar = levelMetaData.JumpsForBronze;
+        twoStars = levelMetaData.JumpsForSilver;
+        threeStars = levelMetaData.JumpsForGold;
     }
 
     public void SetAwardForLevel(SaveLoadManager.Awards award)
     {
-        //int chapter = SaveLoadManager.LastChapterPlayed;
-        int level = SaveLoadManager.LastLevelPlayed;
-
-        SetStarAward(level, award);
+        SetStarAward(SaveLoadManager.LastLevelPlayed, award);
     }
 
     private void SetStarAward(int level, SaveLoadManager.Awards award)
     {
-        var levelAward = SaveLoadManager.GetLevelAward(level);
-
-        if (levelAward < (int)award)
+        if (SaveLoadManager.GetLevelAward(level) < (int)award)
             SaveLoadManager.SetAward(level, award);
     }
 }

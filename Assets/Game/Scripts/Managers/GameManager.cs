@@ -12,21 +12,29 @@ public class GameManager : MonoBehaviour
     // TODO - class is too big. Needs split up. Game levels, UI, player?
     // Messy - once split up, order the properties, variables etc
     // Remove as many serialisedFields as possible
-    // 
+    // This class shouldn't be disabled
 
-    private enum FinishedInfo
+    public static GameManager Instance;
+
+    public enum FinishedInfo
     {
         Failed,
         Nearly,
         Completed
     }
 
+    public enum GameState
+    {
+        Menu,
+        Map,
+        Level
+    }
+
     #region Fields
 
     [Header("Metadata")]    
-    [SerializeField] private SaveMetaData saveMetaData;
-    [SerializeField] private LevelMetaData levelMetaData;
-    [SerializeField] private ChapterList chapterList;
+    //[SerializeField] private SaveMetaData saveMetaData;
+    
     
     [Header("Scriptable Objects")]
     [SerializeField] private BoolGlobalVariable gameLevel;
@@ -36,10 +44,10 @@ public class GameManager : MonoBehaviour
     [SerializeField] private BoolGlobalVariable stickyObject;
     
     [Header("Scripts")]
-    [SerializeField] private MapManager mapManager;
+    //[SerializeField] private MapManager mapManager;
     [SerializeField] private MainMenuManager mainMenuManager;
     [SerializeField] private VisualEffects visualEffects;
-    [SerializeField] private AwardManager awardManager;
+    //[SerializeField] private AwardManager awardManager;
 
     [Header("Player")]
     [SerializeField] private GameObject cubeyPlayer;
@@ -53,12 +61,6 @@ public class GameManager : MonoBehaviour
     #endregion Fields
 
     public static Transform gameFolder;
-
-    private int threeStars;
-    private int twoStars;
-    private int oneStar;
-    private int levelNo;
-    private int chapterNo;
 
     [Header("Game Screens")]
     [SerializeField] private GameObject pauseMenu;
@@ -90,11 +92,17 @@ public class GameManager : MonoBehaviour
     [Header("UI Pickups")]
     [SerializeField] private List<Image> pickupUiImages;
 
+    private ChapterList chapterList;
+    private LevelMetaData levelMetaData;
+    private MapManager mapManager;
+    private UiManager uiManager;
+    private GameState gameState;
+
     private bool camMovement;
     private float playerGooDrag = 40f;
     private float cubeyJumpMagValue = 0.5f;
-
-
+    private int levelNo;
+    private int chapterNo;
 
     #region Getters,Setters
 
@@ -146,9 +154,6 @@ public class GameManager : MonoBehaviour
         set => cubeyPlayer = value;
     }
 
-    public LevelMetaData LevelMetaData => levelMetaData;
-    public SaveMetaData SaveMetaData => saveMetaData;
-
     #endregion
 
     public bool playSingleLevel = false;
@@ -173,9 +178,6 @@ public class GameManager : MonoBehaviour
     private Vector3 flip;
     
     [SerializeField] private List<Image> starImages;
-    [SerializeField] private List<string> finishedInfoText;
-    [SerializeField] private List<string> nearlyFinishedInfoText;
-    [SerializeField] private List<string> failedFinishedInfoText;
 
     private float timeStarted;
     private float durationInLevel;
@@ -190,6 +192,16 @@ public class GameManager : MonoBehaviour
 
     private void Awake()
     {
+        if (Instance == null)
+        {
+            Instance = this;
+            enabled = false;
+        }
+
+        chapterList = GlobalMetaData.Instance.ChapterList;
+        mapManager = MapManager.Instance;
+        uiManager = UiManager.Instance;
+
         gameLevel.OnValueChanged += LoadGameLevel;
         pickupCountProperty.OnValueChanged += CheckPickupCount;
         exitProperty.OnValueChanged += LoadEndScreen;
@@ -229,10 +241,20 @@ public class GameManager : MonoBehaviour
         leanForceRb.onGround -= PlayerAllowedJump;
     }
 
+    public GameState GetGameState()
+    {
+        return gameState;
+    }
+
+    public void SetGameState(GameState state)
+    {
+        gameState = state;
+    }
+
     private void CheckScripts()
     {
-        if (awardManager == null || visualEffects == null)
-            Logger.Instance.ShowDebugError("Missing script");
+        if (visualEffects == null)
+            Logger.Instance.ShowDebugError("Missing visual effects script");
     }
 
     private void GetLevelInfo()
@@ -242,9 +264,6 @@ public class GameManager : MonoBehaviour
         levelMetaData = chapterList[SaveLoadManager.LastChapterPlayed].LevelList[SaveLoadManager.LastLevelPlayed];
         
         //timer = levelMetaData.Timer;
-        oneStar = levelMetaData.JumpsForBronze;
-        twoStars = levelMetaData.JumpsForSilver;
-        threeStars = levelMetaData.JumpsForGold;
         //levelName = levelMetaData.LevelName;
     }
 
@@ -253,6 +272,7 @@ public class GameManager : MonoBehaviour
         CamMovement = true;
         exitProperty.CurrentValue = false;
         GetLevelInfo();
+        AwardManager.Instance.GetLevelAwards();
         StartLevel();
     }
 
@@ -279,6 +299,8 @@ public class GameManager : MonoBehaviour
 
         SetGameCanvases(state);
         visualEffects.ParticleEffectsGo.SetActive(state);
+
+        Logger.Instance.ShowDebugLog($"GameManager - loaded game level");
     }
 
     private void SetGameCanvases(bool state)
@@ -318,6 +340,11 @@ public class GameManager : MonoBehaviour
 
     private void StartLevel()
     {
+        if (cubeyPlayer == null)
+            Logger.Instance.ShowDebugError("Can't find Cubey!");
+        else
+            flip = cubeyPlayer.transform.localScale;
+
         if (deathWalls != null)
             deathWalls.SetActive(false);
         
@@ -326,8 +353,6 @@ public class GameManager : MonoBehaviour
         if (pauseMenu != null)
             pauseMenu.SetActive(false);
 
-        if (cubeyPlayer != null)
-            flip = cubeyPlayer.transform.localScale;
         
         DisableStartPosition();
         UpdateLevelText(levelNo);
@@ -526,12 +551,12 @@ public class GameManager : MonoBehaviour
 
     private void ResetCubeyPlayer(bool state)
     {
-        if (state)
-        {
-            playerRb.useGravity = false;
-            cubeyPlayer.SetActive(false);
-            return;
-        }
+        //if (state)
+        //{
+        //    playerRb.useGravity = false;
+        //    cubeyPlayer.SetActive(false);
+        //    return;
+        //}
         
         cubeyPlayer.SetActive(true);
         cubeyPlayer.transform.SetParent(gameFolder, true);
@@ -741,11 +766,11 @@ public class GameManager : MonoBehaviour
     {
         var jumps = jumpsToStartWith - jumpLeft;
 
-        if (jumps <= threeStars)
+        if (jumps <= AwardManager.Instance.ThreeStars)
             return SaveLoadManager.Awards.ThreeStars;
-        else if (jumps <= twoStars)
+        else if (jumps <= AwardManager.Instance.TwoStars)
             return SaveLoadManager.Awards.TwoStars;
-        else if (jumps <= oneStar)
+        else if (jumps <= AwardManager.Instance.OneStar)
             return SaveLoadManager.Awards.OneStar;
 
         return SaveLoadManager.Awards.NoAward;
@@ -773,7 +798,7 @@ public class GameManager : MonoBehaviour
         // TODO - Remove finds. Add to load or scriptable object
         endScreen.transform.Find("Buttons/Continue_button").gameObject.SetActive(award > 0);
 
-        AwardManager.instance.SetAwardForLevel(award);
+        AwardManager.Instance.SetAwardForLevel(award);
 
         if (award > 0)
         {
@@ -803,7 +828,7 @@ public class GameManager : MonoBehaviour
         switch (award)
         {
             case SaveLoadManager.Awards.NoAward:
-                UpdateEndScreenInfoText(FinishedInfo.Failed);
+                uiManager.UpdateEndScreenInfoText(FinishedInfo.Failed);
                 break;
             case SaveLoadManager.Awards.OneStar:
                 // Logger.Instance.ShowDebugLog("Running bronze stars");
@@ -820,7 +845,7 @@ public class GameManager : MonoBehaviour
                 starGold_anim.Play("StarGold", 0, 1);
                 starGold_anim.speed = 0;
 
-                UpdateEndScreenInfoText(FinishedInfo.Nearly);
+                uiManager.UpdateEndScreenInfoText(FinishedInfo.Nearly);
                 break;
             case SaveLoadManager.Awards.TwoStars:
                 // Logger.Instance.ShowDebugLog("Running silver stars");
@@ -838,7 +863,7 @@ public class GameManager : MonoBehaviour
                 starGold_anim.Play("StarGold", 0, 1);
                 starGold_anim.speed = 1;
 
-                UpdateEndScreenInfoText(FinishedInfo.Nearly);
+                uiManager.UpdateEndScreenInfoText(FinishedInfo.Nearly);
                 break;
             case SaveLoadManager.Awards.ThreeStars:
                 // Logger.Instance.ShowDebugLog("Running gold stars");
@@ -855,26 +880,12 @@ public class GameManager : MonoBehaviour
                 starGold_anim.Play("StarGold", 0, 0); // 0.4
                 starGold_anim.speed = 1;
 
-                UpdateEndScreenInfoText(FinishedInfo.Completed);
+                uiManager.UpdateEndScreenInfoText(FinishedInfo.Completed);
                 break;
         }
     }
 
-    private void UpdateEndScreenInfoText(FinishedInfo info)
-    {
-        switch (info)
-        {
-            case FinishedInfo.Failed:
-                endScreenInfo.text = failedFinishedInfoText[UnityEngine.Random.Range(0, failedFinishedInfoText.Count)];
-                break;
-            case FinishedInfo.Nearly:
-                endScreenInfo.text = nearlyFinishedInfoText[UnityEngine.Random.Range(0, nearlyFinishedInfoText.Count)];
-                break;
-            case FinishedInfo.Completed:
-                endScreenInfo.text = finishedInfoText[UnityEngine.Random.Range(0, finishedInfoText.Count)];
-                break;
-        }
-    }
+
 
     // TODO - is a loading image still needed?
     public async void LoadingScene(bool on)

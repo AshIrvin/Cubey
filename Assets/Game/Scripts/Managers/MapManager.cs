@@ -1,20 +1,20 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
+[DefaultExecutionOrder(100)]
 public class MapManager : MonoBehaviour
 {
     // TODO - the class is for managing maps only
     // Everything else belongs in another class
 
+    public static MapManager Instance;
+
     #region Fields
 
     [Header("Scripts")]
-    [SerializeField] private SaveMetaData saveMetaData;
-    [SerializeField] private MainMenuManager mainMenuManager;
-    //[SerializeField] private InitialiseAds initialiseAds;
+    
     
     [Header("GameObjects")]
     [SerializeField] private GameObject mapsParent; 
@@ -29,6 +29,7 @@ public class MapManager : MonoBehaviour
 
     #region Privates
 
+    private MainMenuManager mainMenuManager;
     private List<GameObject> levelButtons;    
     private Vector3 lerpPos1 = new Vector3(0.9f, 0.9f, 0.9f);
     private Vector3 lerpPos2 = new Vector3(1f, 1f, 1f);
@@ -46,18 +47,28 @@ public class MapManager : MonoBehaviour
 
     private void Awake()
     {
-        chapterList = LevelManager.Instance.ChapterList;
+        if (Instance == null)
+            Instance = this;
+
+        chapterList = GlobalMetaData.Instance.ChapterList;
+        mainMenuManager = MainMenuManager.Instance;
 
         AddChapterMaps();
 
         AdSettings.Instance.EnableAdBackgroundBlocker(false);
         shopButton.SetActive(true);
+        print("MapManager awake ran");
     }
 
     private void OnEnable()
     {
-        
-        LevelManager.Instance.levelToLoad = 0;
+        LevelManager.Instance.SetLevelToLoad(0);
+        GameManager.Instance.SetGameState(GameManager.GameState.Map);
+
+        if (mainMenuManager == null)
+        {
+            mainMenuManager = MainMenuManager.Instance;
+        }
 
         EnableMap(SaveLoadManager.LastChapterPlayed);
         
@@ -79,7 +90,9 @@ public class MapManager : MonoBehaviour
 
     private void SetCubeyMapPosition(bool state)
     {
-        if (cubeyOnMap != null)
+        if (cubeyOnMap == null)
+            Logger.Instance.ShowDebugError("Can't find Cubey for the map!");
+        else
             cubeyOnMap.SetActive(!state);
         
         var chapter = chapterList[SaveLoadManager.LastChapterPlayed];
@@ -104,19 +117,24 @@ public class MapManager : MonoBehaviour
             chapterMaps.Add(map);
 
             // TODO - Get rid of find objects. Once instantiation is removed, this should be fixed
-            var mapButtons = map.transform.Find("Canvas_Map").Find("Map_buttons").gameObject;
+            AssignMapButtons(map, i);
 
-            for (int j = 0; j < mapButtons.transform.childCount; j++)
-            {
-                if (mapButtons.transform.GetChild(j).name.Contains("Leveln"))
-                {
-                    GameObject levelButton = mapButtons.transform.GetChild(j).gameObject;
-                    chapterList[i].InGameMapButtonList.Add(levelButton);
-                    levelButton.GetComponent<Button>().onClick.AddListener(LevelManager.Instance.GetLevelNoToLoad);
-                }
-            }
-            
             map.SetActive(false);
+        }
+    }
+
+    private void AssignMapButtons(GameObject map, int i)
+    {
+        var mapButtons = map.transform.Find("Canvas_Map").Find("Map_buttons").gameObject;
+
+        for (int j = 0; j < mapButtons.transform.childCount; j++)
+        {
+            if (mapButtons.transform.GetChild(j).name.Contains("Leveln"))
+            {
+                GameObject levelButton = mapButtons.transform.GetChild(j).gameObject;
+                chapterList[i].InGameMapButtonList.Add(levelButton);
+                levelButton.GetComponent<Button>().onClick.AddListener(LevelManager.Instance.GetLevelNoToLoad);
+            }
         }
     }
 

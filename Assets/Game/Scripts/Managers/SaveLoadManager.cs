@@ -21,12 +21,12 @@ public class SaveLoadManager : MonoBehaviour
     
     public List<ChapterLevelData> showSaveData = new (6);
     public static List<ChapterLevelData> SaveStaticList;
-    
-    //private static int lastChapterLevelPlayed;
-    //private static int lastLevelUnlocked;
+
+    [SerializeField] private SaveMetaData saveMetaData;
+
     private static int lastChapterPlayed;
     private static int chapterLevelSaved;
-    //private static int awardsReceived;
+
     private int xmasStartMonth = 10;
     private int xmasEndMonth = 1;
     private bool useCloudSaves = false;
@@ -41,6 +41,7 @@ public class SaveLoadManager : MonoBehaviour
 
     [SerializeField] private bool viewSavesInInspector;
 
+    #region Getters
 
     public static int LastLevelPlayed
     {
@@ -69,6 +70,8 @@ public class SaveLoadManager : MonoBehaviour
         get => chapterLevelSaved;
         set => chapterLevelSaved = value;
     }
+
+    #endregion Getters
 
     private void Awake()
     {
@@ -115,6 +118,7 @@ public class SaveLoadManager : MonoBehaviour
         Task task = CloudSaveService.Instance.Data.Player.SaveAsync(data);
     }
 
+    // TODO - Finish implementing cloud save/load
     private void LoadFromCloud()
     {
         Task task = CloudSaveService.Instance.Data.Player.LoadAllAsync();

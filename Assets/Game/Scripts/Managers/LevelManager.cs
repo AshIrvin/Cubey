@@ -9,20 +9,16 @@ public class LevelManager : MonoBehaviour
     [SerializeField] private BoolGlobalVariable gameLevel;
     [SerializeField] private GameObject levelParent;
     [SerializeField] private GameObject levelGameObject;
-    [SerializeField] private ChapterList allChapters;
     [SerializeField] private InitialiseAds initialiseAds;
-
-    private BoxCollider levelCollision;
+    [SerializeField] private bool deleteLevelsPlayed;
 
     public int levelsPlayed;
     public int maxDemoLevel = 10;
-    public int levelToLoad;
-    public bool deleteLevelsPlayed;
 
+    private BoxCollider levelCollision;
+    private int levelToLoad;
 
     #region Getters
-
-    public ChapterList ChapterList => allChapters;
 
     public bool GameLevel
     {
@@ -59,6 +55,11 @@ public class LevelManager : MonoBehaviour
     private void Start()
     {
         CheckForLevelsPlayed();
+    }
+
+    public void SetLevelToLoad(int levelNo)
+    {
+        levelToLoad = levelNo;
     }
 
     private void CheckForLevelsPlayed()
@@ -157,7 +158,7 @@ public class LevelManager : MonoBehaviour
         }
 
         // TODO - change from instantiation to enabling/disabling
-        LevelGameObject = Instantiate(allChapters[SaveLoadManager.LastChapterPlayed].LevelList[SaveLoadManager.LastLevelPlayed].LevelPrefab, LevelParent.transform);
+        LevelGameObject = Instantiate(GlobalMetaData.Instance.ChapterList[SaveLoadManager.LastChapterPlayed].LevelList[SaveLoadManager.LastLevelPlayed].LevelPrefab, LevelParent.transform);
         levelGameObject.SetActive(true);
         GameLevel = true;
         enabled = false;
@@ -189,10 +190,13 @@ public class LevelManager : MonoBehaviour
             SaveLoadManager.LastLevelPlayed = levelNumber;
         }
 
+        GlobalMetaData.Instance.AssignLevelMetaData();
+
+        // TODO - Remove the Finds - add to chapter scriptable object
         if (LevelGameObject == null)
         {
             // TODO - change from instantiation to enabling/disabling
-            LevelGameObject = Instantiate(allChapters[SaveLoadManager.LastChapterPlayed].LevelList[SaveLoadManager.LastLevelPlayed].LevelPrefab, LevelParent.transform);
+            LevelGameObject = Instantiate(GlobalMetaData.Instance.ChapterList[SaveLoadManager.LastChapterPlayed].LevelList[SaveLoadManager.LastLevelPlayed].LevelPrefab, LevelParent.transform);
             levelCollision = levelGameObject.transform.Find("Environment").Find("LevelCollision").GetComponent<BoxCollider>();
         }
 
@@ -201,8 +205,11 @@ public class LevelManager : MonoBehaviour
         initialiseAds.DestroyTopBannerAd();
 
         GameLevel = true;
+        Logger.Instance.ShowDebugLog($"Game level {levelNumber++} loaded");
+
         enabled = false;
         MainMenuManager.Instance.SetCollisionBox(MainMenuManager.CollisionBox.Level, levelCollision);
+        GameManager.Instance.SetGameState(GameManager.GameState.Level);
     }
 
     public void DestroyLevels()
