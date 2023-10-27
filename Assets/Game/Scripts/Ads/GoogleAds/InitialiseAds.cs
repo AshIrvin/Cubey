@@ -29,11 +29,23 @@ public class InitialiseAds : MonoBehaviour
         });
     }
 
+    private void Start()
+    {
+        if (SaveLoadManager.GamePurchased)
+        {
+            return;
+        }
+        
+        fullscreenAd = MobileAds.Instance.GetAd<InterstitialAdGameObject>("InterstitialAd");
+        bannerAd = MobileAds.Instance.GetAd<BannerAdGameObject>("TopBannerAd");
+        bannerAd.gameObject.SetActive(true);
+        bannerAd.LoadAd();
+    }
+
     private void OnEnable()
     {
         if (SaveLoadManager.GamePurchased)
         {
-            // bannerAd.gameObject.SetActive(false);
             DestroyTopBannerAd();
             Destroy(this);
             return;
@@ -47,18 +59,6 @@ public class InitialiseAds : MonoBehaviour
         bannerAd.LoadAd();
     }
 
-    private void Start()
-    {
-        if (SaveLoadManager.GamePurchased)
-        {
-            return;
-        }
-        
-        fullscreenAd = MobileAds.Instance.GetAd<InterstitialAdGameObject>("InterstitialAd");
-        bannerAd = MobileAds.Instance.GetAd<BannerAdGameObject>("TopBannerAd");
-        bannerAd.gameObject.SetActive(true);
-        bannerAd.LoadAd();
-    }
 
     #region Manual Setup
 
@@ -82,7 +82,7 @@ public class InitialiseAds : MonoBehaviour
     public void HandleOnAdClosed(object sender, EventArgs args)
     {
         MonoBehaviour.print("HandleAdClosed event received");
-        fullscreenAd?.DestroyAd();
+        fullscreenAd.DestroyAd();
         LoadLevel?.Invoke();
     }
 
@@ -162,6 +162,9 @@ public class InitialiseAds : MonoBehaviour
 
     public void DestroyTopBannerAd()
     {
+        if (bannerAd == null)
+            Logger.Instance.ShowDebugLog("Can't find bannerAd");
+
         bannerAd.gameObject.SetActive(false);
         bannerAd.DestroyAd();
         bannerAd.enabled = false;
