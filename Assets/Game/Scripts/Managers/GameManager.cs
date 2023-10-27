@@ -12,6 +12,7 @@ public class GameManager : MonoBehaviour
     // TODO - class is too big. Needs split up. Game levels, UI, player?
     // Messy - once split up, order the properties, variables etc
     // Remove as many serialisedFields as possible
+    // 
 
     private enum FinishedInfo
     {
@@ -157,11 +158,10 @@ public class GameManager : MonoBehaviour
     [SerializeField] private bool onBreakablePlatform;
     [SerializeField] private bool onMovingPlatform;
 
-    private int jumpLeft;
-    private int jumpsToStartWith = 10;
-    private int time;
-    private int countdown = 60;
+    private readonly int jumpsToStartWith = 10;
+    private readonly int countdown = 60;
     private SaveLoadManager.Awards award;
+    private int jumpLeft;
 
     [Header("Animation")]
     [SerializeField] private Animator starGold_anim;
@@ -186,7 +186,6 @@ public class GameManager : MonoBehaviour
     public bool useTimer;
     public Rigidbody playerRb;
     public static Action LevelLoaded;
-
 
 
     private void Awake()
@@ -349,9 +348,7 @@ public class GameManager : MonoBehaviour
     }
 
     // Todo - can this be an action? 
-
     // needs fixed - can jump at top of jump
-
     public void Update()
     {
         // SetPlayerJump();
@@ -449,22 +446,17 @@ public class GameManager : MonoBehaviour
 
     private void CheckJumpCount() 
     {
-        if (jumpCounting && jumpLeft == 0 && /*leanForceRb.canJump &&*/ !onBreakablePlatform && !IsJumpOverMagnitude())
+        if (!jumpCounting && jumpLeft > 0) return;
+
+        if (!onBreakablePlatform && !IsJumpOverMagnitude())
         {
             FailedScreen(true);
         }
-        else if (jumpCounting && jumpLeft == 0 && /*leanForceRb.canJump &&*/ onBreakablePlatform)
+        else if (onBreakablePlatform)
         {
-            //StartCoroutine(DelayFailedScreen());
             DelayAsyncFailedScreen();
         }
     }
-
-/*    private IEnumerator DelayFailedScreen()
-    {
-        yield return new WaitForSeconds(4);
-        FailedScreen(true);
-    }*/
 
     private async void DelayAsyncFailedScreen()
     {
@@ -472,11 +464,10 @@ public class GameManager : MonoBehaviour
         FailedScreen(true);
     }
 
-
     // TODO - what's this for? Special level?
     private void RestartTimer()
     {
-        time = countdown;
+        //time = countdown;
     }
 
     private void HideScreens()
@@ -493,24 +484,21 @@ public class GameManager : MonoBehaviour
         stickyObject.CurrentValue = false;
         playerRb.isKinematic = false;
         HideScreens();
-        enabled = false;
-        // mapManager.enabled = true; // not needed
+        enabled = false;        
         LevelManager.Instance.RestartLevel();
         TimeTaken(true);
     }
 
     // Used as failed screen button
-
     public void LoadMainMenu()
     {
-        //StartCoroutine(LoadingScene(true));
         LoadingScene(true);
-        //var levelManager = LevelManager.Instance;
 
         var childCount = levelManager.LevelParent.transform.childCount;
 
         for (int i = 0; i < childCount; i++)
         {
+            // TODO - this can be removed once all levels are instantiated on load
             Destroy(levelManager.LevelParent.transform.GetChild(i).gameObject);
         }
 
@@ -523,7 +511,6 @@ public class GameManager : MonoBehaviour
     {
         if (!won)
         {
-            // Time hits 0 - did not finish. Time??
             FailedScreen(true);
             return;
         }
@@ -610,12 +597,10 @@ public class GameManager : MonoBehaviour
             return;
         }
 
-        // PickupCountProperty = 0;
         var pickupCount = 0;
         for (int i = 0; i < pickupGroup.transform.childCount; i++)
         {
             pickupCount += 1;
-            // PickupCountProperty++;
         }
 
         PickupCountProperty = pickupCount;
@@ -644,6 +629,7 @@ public class GameManager : MonoBehaviour
         exitObject.transform.GetChild(0).gameObject.SetActive(true);
     }
 
+    // TODO - remove all finds. Assign on load or in scriptable object
     private GameObject FindExit()
     {
         var levelManager = LevelManager.Instance;
@@ -770,7 +756,7 @@ public class GameManager : MonoBehaviour
         if (starImages != null) 
             return;
 
-        // TODO - Change this
+        // TODO - Remove finds. Add to load or scriptable object
         var sGrp = endScreen.transform.Find("StarsGrp");
 
         for (int i = 0; i < 3; i++)
@@ -783,11 +769,10 @@ public class GameManager : MonoBehaviour
     private void ShowStarsAchieved()
     {
         award = StarsGiven();
-        
-        // TODO - Change this
+
+        // TODO - Remove finds. Add to load or scriptable object
         endScreen.transform.Find("Buttons/Continue_button").gameObject.SetActive(award > 0);
 
-        //SetAwardForLevel(award);
         AwardManager.instance.SetAwardForLevel(award);
 
         if (award > 0)
@@ -891,12 +876,12 @@ public class GameManager : MonoBehaviour
         }
     }
 
+    // TODO - is a loading image still needed?
     public async void LoadingScene(bool on)
     {
         if (loadingScreen == null) return;
 
         loadingScreen.SetActive(on);
-        //yield return new WaitForSeconds(0.2f);
         await Task.Delay(200);
         loadingScreen.SetActive(false);
     }
@@ -992,17 +977,5 @@ public class GameManager : MonoBehaviour
         flip.z = 1;
 
         playerRb.gameObject.transform.localScale = flip;
-    }
-
-    // TODO - no longer needed?
-/*    public void HideGameObject(GameObject go)
-    {
-        StartCoroutine(HideObject(go));
-    }*/
-
-    private IEnumerator HideObject(GameObject go)
-    {
-        yield return new WaitForSeconds(3);
-    }
-    
+    }    
 }
