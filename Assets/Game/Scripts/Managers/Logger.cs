@@ -4,8 +4,8 @@ public class Logger : MonoBehaviour
 {
     public static Logger Instance;
 
-    public bool EnableLogs = false;
-    public bool EnableErrorLogs = false;
+    public bool EnableLogs = true;
+    public bool EnableErrorLogs = true;
 
     private void Awake()
     {
@@ -13,17 +13,25 @@ public class Logger : MonoBehaviour
             Instance = this;
     }
 
-    public void ShowDebugLog(object t, Object sender = null)
+    private void Start()
+    {
+#if !UNITY_EDITOR
+        EnableLogs = false;
+        EnableErrorLogs = false;
+#endif
+    }
+
+    public void ShowDebugLog(object text, Object sender = null)
     {
         if (!EnableLogs) return;
 
-        Debug.Log(t, sender);
+        Debug.Log(text, sender);
     }
 
-    public void ShowDebugError(object t, Object sender = null)
+    public void ShowDebugError(object text, Object sender = null)
     {
         if (!EnableErrorLogs) return;
 
-        Debug.LogError(t, sender);
+        Debug.LogError($"<color:red>{text}", sender);
     }
 }
