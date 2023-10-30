@@ -6,7 +6,7 @@ public class LevelManager : MonoBehaviour
 {
     public static LevelManager Instance { get; set; }
 
-    [SerializeField] private BoolGlobalVariable gameLevel;
+    //[SerializeField] private BoolGlobalVariable gameLevel;
     [SerializeField] private GameObject levelParent;
     [SerializeField] private GameObject levelGameObject;
     [SerializeField] private InitialiseAds initialiseAds;
@@ -20,10 +20,10 @@ public class LevelManager : MonoBehaviour
 
     #region Getters
 
-    public bool GameLevel
-    {
-        set => gameLevel.CurrentValue = value;
-    }
+    //public bool GameLevel
+    //{
+    //    set => gameLevel.CurrentValue = value;
+    //}
 
     public GameObject LevelGameObject
     {
@@ -94,7 +94,6 @@ public class LevelManager : MonoBehaviour
     {
         if (SaveLoadManager.GamePurchased)
         {
-
             LoadLevelNumber(n);
             return;
         }
@@ -146,7 +145,7 @@ public class LevelManager : MonoBehaviour
     {
         Logger.Instance.ShowDebugLog("Restarting Level");
 
-        GameLevel = false;
+        GlobalMetaData.Instance.HasGameLevelLoaded(false);
         Destroy(levelGameObject);
 
         if (LevelParent.transform.childCount > 0)
@@ -160,7 +159,7 @@ public class LevelManager : MonoBehaviour
         // TODO - change from instantiation to enabling/disabling
         LevelGameObject = Instantiate(GlobalMetaData.Instance.ChapterList[SaveLoadManager.LastChapterPlayed].LevelList[SaveLoadManager.LastLevelPlayed].LevelPrefab, LevelParent.transform);
         levelGameObject.SetActive(true);
-        GameLevel = true;
+        GlobalMetaData.Instance.HasGameLevelLoaded(true);
         enabled = false;
     }
 
@@ -204,7 +203,7 @@ public class LevelManager : MonoBehaviour
         AdSettings.Instance.EnableAdBackgroundBlocker(false);
         initialiseAds.DestroyTopBannerAd();
 
-        GameLevel = true;
+        GlobalMetaData.Instance.HasGameLevelLoaded(true);
         Logger.Instance.ShowDebugLog($"Game level {levelNumber++} loaded");
 
         enabled = false;

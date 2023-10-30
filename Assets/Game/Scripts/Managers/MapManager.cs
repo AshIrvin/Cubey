@@ -13,36 +13,31 @@ public class MapManager : MonoBehaviour
 
     #region Fields
 
-    [Header("Scripts")]
-    
-    
     [Header("GameObjects")]
     [SerializeField] private GameObject mapsParent; 
     [SerializeField] private GameObject cubeyOnMap;
-    
     [SerializeField] private GameObject shopButton;
     [SerializeField] private List<GameObject> chapterMaps;
     [SerializeField] private GameObject tutoralCompleteGo;
+    [SerializeField] private GameObject shopMenu;
 
     #endregion Fields
-    [SerializeField] private GameObject shopMenu;
 
     #region Privates
 
     private MainMenuManager mainMenuManager;
+    private AdSettings adSettings;
     private List<GameObject> levelButtons;    
     private Vector3 lerpPos1 = new Vector3(0.9f, 0.9f, 0.9f);
     private Vector3 lerpPos2 = new Vector3(1f, 1f, 1f);
     private ChapterList chapterList;
+    private List<SpriteRenderer> starImages = new(3);
 
     #endregion Privates
 
     public bool mapActive;
-
     public static Action MapOpened;
-
     public GameObject CubeyOnMap => cubeyOnMap;
-
 
 
     private void Awake()
@@ -52,12 +47,12 @@ public class MapManager : MonoBehaviour
 
         chapterList = GlobalMetaData.Instance.ChapterList;
         mainMenuManager = MainMenuManager.Instance;
+        adSettings = AdSettings.Instance;
 
         AddChapterMaps();
 
-        AdSettings.Instance.EnableAdBackgroundBlocker(false);
+        adSettings.EnableAdBackgroundBlocker(false);
         shopButton.SetActive(true);
-        print("MapManager awake ran");
     }
 
     private void OnEnable()
@@ -81,7 +76,7 @@ public class MapManager : MonoBehaviour
 
     private void OnDisable()
     {
-        AdSettings.Instance.EnableAdBackgroundBlocker(false);
+        adSettings.EnableAdBackgroundBlocker(false);
         DisableMaps();
         mapActive = false;
         SetCubeyMapPosition(true);
@@ -125,7 +120,7 @@ public class MapManager : MonoBehaviour
 
     private void AssignMapButtons(GameObject map, int i)
     {
-        var mapButtons = map.transform.Find("Canvas_Map").Find("Map_buttons").gameObject;
+        var mapButtons = map.transform.Find("Canvas_Map/Map_buttons").gameObject;
 
         for (int j = 0; j < mapButtons.transform.childCount; j++)
         {
@@ -154,6 +149,8 @@ public class MapManager : MonoBehaviour
             // initialiseAds.enabled = true;
             // PrepareAd?.Invoke();
         }
+
+        GameManager.Instance.SetGameState(GameManager.GameState.Map);
     }
 
     public void DisableMaps()
@@ -183,7 +180,7 @@ public class MapManager : MonoBehaviour
         //    initialiseAds.LoadTopBannerAd();
         //}
         
-        LevelManager.Instance.GameLevel = false;
+        GlobalMetaData.Instance.HasGameLevelLoaded(false);
         Time.timeScale = 1;
         enabled = true;
         LevelManager.Instance.DestroyLevels();
@@ -283,7 +280,7 @@ public class MapManager : MonoBehaviour
         mainMenuManager.BackButton = false;
     }
     
-    List<SpriteRenderer> starImages = new (3);
+    
     
     // Set stars for each level button
     private void SetStarsForEachLevel()

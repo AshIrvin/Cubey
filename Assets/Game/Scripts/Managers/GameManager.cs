@@ -31,27 +31,21 @@ public class GameManager : MonoBehaviour
     }
 
     #region Fields
-
-    [Header("Metadata")]    
-    //[SerializeField] private SaveMetaData saveMetaData;
     
     
     [Header("Scriptable Objects")]
-    [SerializeField] private BoolGlobalVariable gameLevel;
+    //[SerializeField] private BoolGlobalVariable gameLevel;
     [SerializeField] private IntGlobalVariable pickupCountProperty;
     [SerializeField] private BoolGlobalVariable exitProperty;
     [SerializeField] private BoolGlobalVariable launchArc;
     [SerializeField] private BoolGlobalVariable stickyObject;
     
     [Header("Scripts")]
-    //[SerializeField] private MapManager mapManager;
     [SerializeField] private MainMenuManager mainMenuManager;
     [SerializeField] private VisualEffects visualEffects;
-    //[SerializeField] private AwardManager awardManager;
 
     [Header("Player")]
     [SerializeField] private GameObject cubeyPlayer;
-    // [SerializeField] private GameObject cubeyPlayerPrefab;
     [SerializeField] private LeanForceRigidbodyCustom leanForceRb;
     
     [Header("Audio")]
@@ -63,28 +57,9 @@ public class GameManager : MonoBehaviour
     public static Transform gameFolder;
 
     [Header("Game Screens")]
-    [SerializeField] private GameObject pauseMenu;
-    [SerializeField] private GameObject endScreen;
-    [SerializeField] private GameObject failedScreen;
-    [SerializeField] private GameObject helpScreen;
-    [SerializeField] private GameObject topUi;
-    [SerializeField] private GameObject loadingScreen;
+
     [SerializeField] private GameObject deathWalls;
 
-    [Header("UI Text")]
-    [SerializeField] private Text levelText;
-    [SerializeField] private Text itemText;
-    [SerializeField] private Text jumpAmountText;
-    [SerializeField] private Text jumpText;
-    [SerializeField] private Text awardToGet;
-    [SerializeField] private Text bronzePodium;
-    [SerializeField] private Text silverPodium;
-    [SerializeField] private Text goldPodium;
-    [SerializeField] private Text oneStarTutorialText;
-    [SerializeField] private Text twoStarTutorialText;
-    [SerializeField] private Text threeStarTutorialText;
-    [SerializeField] private Text endScreenInfo;
-    
     [Header("Level Exit")]
     private GameObject exitPrezzie;
     [SerializeField] private GameObject exitObject;
@@ -96,6 +71,8 @@ public class GameManager : MonoBehaviour
     private LevelMetaData levelMetaData;
     private MapManager mapManager;
     private UiManager uiManager;
+    private LevelManager levelManager;
+    private AwardManager awardManager;
     private GameState gameState;
 
     private bool camMovement;
@@ -106,14 +83,14 @@ public class GameManager : MonoBehaviour
 
     #region Getters,Setters
 
-    public bool GameLevel
-    {
-        get
-        {
-            return gameLevel.CurrentValue;
-        }
-        set => gameLevel.CurrentValue = value;
-    }
+    //public bool GameLevel
+    //{
+    //    get
+    //    {
+    //        return gameLevel.CurrentValue;
+    //    }
+    //    set => gameLevel.CurrentValue = value;
+    //}
 
     public bool CamMovement
     {
@@ -133,7 +110,7 @@ public class GameManager : MonoBehaviour
         set
         {
             jumpLeft = value;
-            jumpAmountText.text = jumpLeft.ToString();
+            uiManager.JumpAmountText.text = jumpLeft.ToString();
         }
     }
 
@@ -182,11 +159,13 @@ public class GameManager : MonoBehaviour
     private float timeStarted;
     private float durationInLevel;
     private int delayFailedScreenInSeconds = 4;
-    private LevelManager levelManager;
+
+
 
     public float cubeyJumpHeight = 2.6f;
     public bool useTimer;
     public Rigidbody playerRb;
+
     public static Action LevelLoaded;
 
 
@@ -195,14 +174,13 @@ public class GameManager : MonoBehaviour
         if (Instance == null)
         {
             Instance = this;
-            enabled = false;
         }
 
         chapterList = GlobalMetaData.Instance.ChapterList;
         mapManager = MapManager.Instance;
         uiManager = UiManager.Instance;
 
-        gameLevel.OnValueChanged += LoadGameLevel;
+        GlobalMetaData.Instance.GameLevel.OnValueChanged += LoadGameLevel;
         pickupCountProperty.OnValueChanged += CheckPickupCount;
         exitProperty.OnValueChanged += LoadEndScreen;
         stickyObject.OnValueChanged += ToggleSticky;
@@ -210,6 +188,7 @@ public class GameManager : MonoBehaviour
         // FingerPos.allowedJump += PlayerAllowedJump;
 
         levelManager = LevelManager.Instance;
+        awardManager = AwardManager.Instance;
 
         if (leanForceRb == null)
             leanForceRb = FindFirstObjectByType<LeanForceRigidbodyCustom>();
@@ -222,11 +201,11 @@ public class GameManager : MonoBehaviour
 
     private void Start()
     {
-        GameLevel = false;
+        GlobalMetaData.Instance.HasGameLevelLoaded(false);
         visualEffects.peExitSwirl.SetActive(false);
 
         jumpLeft = jumpsToStartWith;
-        jumpAmountText.text = jumpLeft.ToString();
+        uiManager.JumpAmountText.text = jumpLeft.ToString();
 
         SetGameCanvases(false);
         SetupStarFinishImages();
@@ -234,7 +213,7 @@ public class GameManager : MonoBehaviour
 
     private void OnDestroy()
     {
-        gameLevel.OnValueChanged -= LoadGameLevel;
+        GlobalMetaData.Instance.GameLevel.OnValueChanged -= LoadGameLevel;
         pickupCountProperty.OnValueChanged -= CheckPickupCount;
         exitProperty.OnValueChanged -= LoadEndScreen;
         stickyObject.OnValueChanged -= ToggleSticky;
@@ -267,27 +246,67 @@ public class GameManager : MonoBehaviour
         //levelName = levelMetaData.LevelName;
     }
 
-    private void OnEnable()
+    //private void OnDisable()
+    //{
+    //    if (cubeyPlayer != null)
+    //        cubeyPlayer.SetActive(false);
+
+    //    PlayerAllowedJump(false);
+    //    SetGameCanvases(false);
+    //}
+
+    private void SetGameCanvases(bool state)
+    {
+        TopUi(state);
+        PauseMenu(false);
+        EndScreen(false);
+        FailedScreen(false);
+    }
+
+    private void TopUi(bool state)
+    {
+        if (uiManager.TopUi == null)
+        {
+            Logger.Instance.ShowDebugError("Missing UiManager!");
+            return;
+        }
+
+        uiManager.TopUi.SetActive(state);
+        PickupGraphic(SaveLoadManager.LastChapterPlayed);
+    }
+
+    private void DisableStartPosition()
+    {
+        if (levelManager.LevelGameObject != null &&
+            levelManager.LevelGameObject.transform.GetChild(1).name.Contains("Start"))
+        { 
+            levelManager.LevelGameObject.transform.GetChild(1).GetChild(1).gameObject.SetActive(false); 
+        }
+        else if (levelManager.LevelGameObject.transform.GetChild(0).name.Contains("Start"))
+        {
+            levelManager.LevelGameObject.transform.GetChild(0).GetChild(1).gameObject.SetActive(false);
+        }
+        else
+        {
+            Logger.Instance.ShowDebugError("Can't find Start position");
+        }
+    }
+
+    // this was OnEnable
+    private void SubscribeToThisOnLevelLoad()
     {
         CamMovement = true;
         exitProperty.CurrentValue = false;
         GetLevelInfo();
-        AwardManager.Instance.GetLevelAwards();
+        awardManager.GetLevelAwards();
         StartLevel();
     }
 
-    private void OnDisable()
-    {
-        if (cubeyPlayer != null)
-            cubeyPlayer.SetActive(false);
-
-        PlayerAllowedJump(false);
-        SetGameCanvases(false);
-    }
-
+    // this comes from levelManager
     private void LoadGameLevel(bool state)
     {
-        enabled = state;
+        SubscribeToThisOnLevelLoad();
+        //enabled = state;
         ResetCubeyPlayer(!state);
         LaunchArc = state;
 
@@ -303,41 +322,6 @@ public class GameManager : MonoBehaviour
         Logger.Instance.ShowDebugLog($"GameManager - loaded game level");
     }
 
-    private void SetGameCanvases(bool state)
-    {
-        TopUi(state);
-        PauseMenu(false);
-        EndScreen(false);
-        FailedScreen(false);
-    }
-
-    private void TopUi(bool state)
-    {
-        if (topUi == null) return;
-        
-        topUi.SetActive(state);
-        PickupGraphic(SaveLoadManager.LastChapterPlayed);
-    }
-
-    private void DisableStartPosition()
-    {
-        var levelManager = LevelManager.Instance;
-
-        if (levelManager.LevelGameObject != null &&
-            levelManager.LevelGameObject.transform.GetChild(1).name.Contains("Start"))
-        { 
-            levelManager.LevelGameObject.transform.GetChild(1)?.GetChild(1)?.gameObject.SetActive(false); 
-        }
-        else if (levelManager.LevelGameObject.transform.GetChild(0).name.Contains("Start"))
-        {
-            levelManager.LevelGameObject.transform.GetChild(0)?.GetChild(1)?.gameObject.SetActive(false);
-        }
-        else
-        {
-            Logger.Instance.ShowDebugError("Can't find Start position");
-        }
-    }
-
     private void StartLevel()
     {
         if (cubeyPlayer == null)
@@ -350,8 +334,8 @@ public class GameManager : MonoBehaviour
         
         RestartTimer();
 
-        if (pauseMenu != null)
-            pauseMenu.SetActive(false);
+        if (uiManager.PauseMenu != null)
+            uiManager.PauseMenu.SetActive(false);
 
         
         DisableStartPosition();
@@ -370,6 +354,8 @@ public class GameManager : MonoBehaviour
         PlayerFaceDirection(exitObject.transform.position.x < 0);
         
         LevelLoaded?.Invoke();
+
+        SetGameState(GameState.Level);
     }
 
     // Todo - can this be an action? 
@@ -408,29 +394,29 @@ public class GameManager : MonoBehaviour
 
         if (jumpsToStartWith - jumpLeft <= levelMetaData.JumpsForGold) // 10 - 8 < 3
         {
-            ChangeTextColour(jumpAmountText, ColourManager.starGold);
+            ChangeTextColour(uiManager.JumpAmountText, ColourManager.starGold);
         }
         else if (jumpsToStartWith - jumpLeft <= levelMetaData.JumpsForSilver)
         {
-            ChangeTextColour(jumpAmountText, ColourManager.starSilver);
+            ChangeTextColour(uiManager.JumpAmountText, ColourManager.starSilver);
         }
         else if (jumpsToStartWith - jumpLeft <= levelMetaData.JumpsForBronze) // 9 - 9 <= 9
         {
-            ChangeTextColour(jumpAmountText, ColourManager.starBronze);
+            ChangeTextColour(uiManager.JumpAmountText, ColourManager.starBronze);
         }
         else
         {
-            awardToGet.text = "Need bronze for next level";
-            ChangeTextColour(jumpAmountText, ColourManager.starDefault);
+            uiManager.AwardToGet.text = "Need bronze for next level";
+            ChangeTextColour(uiManager.JumpAmountText, ColourManager.starDefault);
         }
 
-        oneStarTutorialText.text = levelMetaData.JumpsForBronze.ToString();
-        twoStarTutorialText.text = levelMetaData.JumpsForSilver.ToString();
-        threeStarTutorialText.text = levelMetaData.JumpsForGold.ToString();
+        uiManager.OneStarTutorialText.text = levelMetaData.JumpsForBronze.ToString();
+        uiManager.TwoStarTutorialText.text = levelMetaData.JumpsForSilver.ToString();
+        uiManager.ThreeStarTutorialText.text = levelMetaData.JumpsForGold.ToString();
 
-        bronzePodium.text = levelMetaData.JumpsForBronze.ToString();
-        silverPodium.text = levelMetaData.JumpsForSilver.ToString();
-        goldPodium.text = levelMetaData.JumpsForGold.ToString();
+        uiManager.BronzePodium.text = levelMetaData.JumpsForBronze.ToString();
+        uiManager.SilverPodium.text = levelMetaData.JumpsForSilver.ToString();
+        uiManager.GoldPodium.text = levelMetaData.JumpsForGold.ToString();
     }
 
     public void ToggleSticky(bool state)
@@ -453,7 +439,7 @@ public class GameManager : MonoBehaviour
 
     public void LoadHelpScreen(bool on)
     {
-        helpScreen.SetActive(on);
+        uiManager.HelpScreen.SetActive(on);
     }
 
     public void ToggleScreen(GameObject screen)
@@ -509,8 +495,8 @@ public class GameManager : MonoBehaviour
         stickyObject.CurrentValue = false;
         playerRb.isKinematic = false;
         HideScreens();
-        enabled = false;        
-        LevelManager.Instance.RestartLevel();
+        //enabled = false;        
+        levelManager.RestartLevel();
         TimeTaken(true);
     }
 
@@ -577,7 +563,7 @@ public class GameManager : MonoBehaviour
 
     private void UpdateLevelText(int n)
     {
-        levelText.text = "Level " + (n+1);
+        uiManager.LevelText.text = "Level " + (n+1);
     }
 
     private void CheckPickupCount(int count)
@@ -588,7 +574,7 @@ public class GameManager : MonoBehaviour
 
         DisablePickupGraphics();
         OpenExit();
-        itemText.text = "Go to Exit";
+        uiManager.ItemText.text = "Go to Exit";
     }
 
     private void DisablePickupGraphics()
@@ -608,8 +594,8 @@ public class GameManager : MonoBehaviour
 
     private void PickupText()
     {
-        if (itemText != null)
-            itemText.text = PickupCountProperty + " X";
+        if (uiManager.ItemText != null)
+            uiManager.ItemText.text = PickupCountProperty + " X";
     }
 
     private void CountSweetsForLevel()
@@ -647,8 +633,8 @@ public class GameManager : MonoBehaviour
         if (exitObject == null)
             exitObject = FindExit();
             
-        VisualEffects.Instance.PlayEffect(VisualEffects.Instance.peExitExplosion, exitObject.transform.position);
-        VisualEffects.Instance.peExitSwirl.SetActive(false);
+        visualEffects.PlayEffect(visualEffects.peExitExplosion, exitObject.transform.position);
+        visualEffects.peExitSwirl.SetActive(false);
 
         exitObject.SetActive(true);
         exitObject.transform.GetChild(0).gameObject.SetActive(true);
@@ -657,8 +643,6 @@ public class GameManager : MonoBehaviour
     // TODO - remove all finds. Assign on load or in scriptable object
     private GameObject FindExit()
     {
-        var levelManager = LevelManager.Instance;
-
         if (levelManager.LevelGameObject.transform.GetChild(0).name.Contains("MovingExitPlatform"))
         {
             return levelManager.LevelGameObject.transform.GetChild(0).transform.Find("Exit").gameObject;
@@ -782,7 +766,7 @@ public class GameManager : MonoBehaviour
             return;
 
         // TODO - Remove finds. Add to load or scriptable object
-        var sGrp = endScreen.transform.Find("StarsGrp");
+        var sGrp = uiManager.EndScreen.transform.Find("StarsGrp");
 
         for (int i = 0; i < 3; i++)
         {
@@ -796,7 +780,7 @@ public class GameManager : MonoBehaviour
         award = StarsGiven();
 
         // TODO - Remove finds. Add to load or scriptable object
-        endScreen.transform.Find("Buttons/Continue_button").gameObject.SetActive(award > 0);
+        uiManager.EndScreen.transform.Find("Buttons/Continue_button").gameObject.SetActive(award > 0);
 
         AwardManager.Instance.SetAwardForLevel(award);
 
@@ -828,7 +812,7 @@ public class GameManager : MonoBehaviour
         switch (award)
         {
             case SaveLoadManager.Awards.NoAward:
-                uiManager.UpdateEndScreenInfoText(FinishedInfo.Failed);
+                uiManager.ModifyEndScreenInfoText(FinishedInfo.Failed);
                 break;
             case SaveLoadManager.Awards.OneStar:
                 // Logger.Instance.ShowDebugLog("Running bronze stars");
@@ -845,7 +829,7 @@ public class GameManager : MonoBehaviour
                 starGold_anim.Play("StarGold", 0, 1);
                 starGold_anim.speed = 0;
 
-                uiManager.UpdateEndScreenInfoText(FinishedInfo.Nearly);
+                uiManager.ModifyEndScreenInfoText(FinishedInfo.Nearly);
                 break;
             case SaveLoadManager.Awards.TwoStars:
                 // Logger.Instance.ShowDebugLog("Running silver stars");
@@ -863,7 +847,7 @@ public class GameManager : MonoBehaviour
                 starGold_anim.Play("StarGold", 0, 1);
                 starGold_anim.speed = 1;
 
-                uiManager.UpdateEndScreenInfoText(FinishedInfo.Nearly);
+                uiManager.ModifyEndScreenInfoText(FinishedInfo.Nearly);
                 break;
             case SaveLoadManager.Awards.ThreeStars:
                 // Logger.Instance.ShowDebugLog("Running gold stars");
@@ -880,7 +864,7 @@ public class GameManager : MonoBehaviour
                 starGold_anim.Play("StarGold", 0, 0); // 0.4
                 starGold_anim.speed = 1;
 
-                uiManager.UpdateEndScreenInfoText(FinishedInfo.Completed);
+                uiManager.ModifyEndScreenInfoText(FinishedInfo.Completed);
                 break;
         }
     }
@@ -890,11 +874,11 @@ public class GameManager : MonoBehaviour
     // TODO - is a loading image still needed?
     public async void LoadingScene(bool on)
     {
-        if (loadingScreen == null) return;
+        if (uiManager.LoadingScreen == null) return;
 
-        loadingScreen.SetActive(on);
+        uiManager.LoadingScreen.SetActive(on);
         await Task.Delay(200);
-        loadingScreen.SetActive(false);
+        uiManager.LoadingScreen.SetActive(false);
     }
 
     private void OnApplicationFocus(bool hasFocus)
@@ -909,9 +893,9 @@ public class GameManager : MonoBehaviour
     {
         LaunchArc = !state;
         
-        if (pauseMenu != null)
+        if (uiManager.PauseMenu != null)
         {
-            pauseMenu.SetActive(state);
+            uiManager.PauseMenu.SetActive(state);
         }
         
         Time.timeScale = state ? 0f : 1f;
@@ -937,20 +921,20 @@ public class GameManager : MonoBehaviour
 
     private void EndScreen(bool state)
     {
-        if (endScreen == null)
+        if (uiManager.EndScreen == null)
             Logger.Instance.ShowDebugError("Missing EndScreen object on GameManager script");
-        
-        endScreen.SetActive(state);
+
+        uiManager.EndScreen.SetActive(state);
 
         Time.timeScale = state ? 0.1f : 1f;
     }
 
     public void FailedScreen(bool on)
     {
-        if (failedScreen == null)
+        if (uiManager.FailedScreen == null)
             Logger.Instance.ShowDebugError("Missing failedScreen object on GameManager script");
 
-        failedScreen.SetActive(on);
+        uiManager.FailedScreen.SetActive(on);
 
         Time.timeScale = on ? 0f : 1f;
     }

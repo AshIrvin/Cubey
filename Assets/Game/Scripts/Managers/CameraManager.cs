@@ -6,13 +6,12 @@ using UnityEngine.UI;
 
 public class CameraManager : MonoBehaviour
 {
-    [SerializeField] private BoolGlobalVariable gameLevel;
-    [SerializeField] private SaveMetaData saveMetaData;
+    //[SerializeField] private BoolGlobalVariable gameLevel;
+    //[SerializeField] private SaveMetaData saveMetaData;
     
     private ChapterList chapterList;
-    
+
     // old
-    //[SerializeField] private Camera cam;
     [SerializeField] private Vector3 exitPos;
     [SerializeField] private Vector3 endCamPos;
     [SerializeField] private GameObject cubeyOnMap;
@@ -56,11 +55,11 @@ public class CameraManager : MonoBehaviour
     private Tween panToCubey;
     private GameObject cubeyPlayer;
     
-    public bool GameLevel
-    {
-        get => gameLevel.CurrentValue;
-        set => gameLevel.CurrentValue = value;
-    }
+    //public bool GameLevel
+    //{
+    //    get => gameLevel.CurrentValue;
+    //    set => gameLevel.CurrentValue = value;
+    //}
 
     public bool autoPanToCubey = true;
     
@@ -120,23 +119,26 @@ public class CameraManager : MonoBehaviour
             Logger.Instance.ShowDebugError("Missing GameManager or Cubey!");
         }
 
-        if (!autoPanToCubey || mapManager.isActiveAndEnabled) return;
+        //if (!autoPanToCubey || mapManager.isActiveAndEnabled) return;
 
         // TODO - this needs redone - could probably be an action subbed to level loading
 
-        if (autoPanToCubey && !mapManager.enabled && gameManager.GameLevel && !panningFromExit && !FingerPos.abovePlayer && !FingerPos.belowPlayer)
-        {
-            transform.position = Vector3.SmoothDamp(transform.position, cubeyPlayer.transform.position, ref velocity, defaultGameCamTime);
-        }
+        //if (autoPanToCubey && !mapManager.enabled && GlobalMetaData.Instance.GameLevel && !panningFromExit && !FingerPos.abovePlayer && !FingerPos.belowPlayer)
+        //{
+        //    transform.position = Vector3.SmoothDamp(transform.position, cubeyPlayer.transform.position, ref velocity, defaultGameCamTime);
+        //}
 
         // Set what the camera does here, depending on game state
         switch (GameManager.Instance.GetGameState())
         {
             case GameManager.GameState.Menu:
+                transform.position = Vector3.SmoothDamp(transform.position, cubeyOnMap.transform.position, ref velocity, defaultGameCamTime);
                 break;
             case GameManager.GameState.Map:
+                transform.position = Vector3.SmoothDamp(transform.position, cubeyOnMap.transform.position, ref velocity, defaultGameCamTime);
                 break;
             case GameManager.GameState.Level:
+                transform.position = Vector3.SmoothDamp(transform.position, cubeyPlayer.transform.position, ref velocity, defaultGameCamTime);
                 break;
         }
     }

@@ -240,6 +240,8 @@ public class MainMenuManager : MonoBehaviour
         
         // set purchased sign
         menuEnvironments[n].transform.Find("ThankYou").gameObject.SetActive(SaveLoadManager.GamePurchased);
+
+        GameManager.Instance.SetGameState(GameManager.GameState.Menu);
     }
 
     private void DisableMenuEnv()

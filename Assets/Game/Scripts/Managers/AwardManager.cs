@@ -17,8 +17,6 @@ public class AwardManager : MonoBehaviour
     {
         if (Instance == null)
             Instance = this;
-
-        //levelMetaData = GlobalMetaData.Instance.LevelMetaData;
     }
 
     public void GetLevelAwards()
