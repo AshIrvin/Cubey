@@ -1,6 +1,5 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
-using TMPro;
 using System.Collections.Generic;
 
 public class UiManager : MonoBehaviour
@@ -36,6 +35,9 @@ public class UiManager : MonoBehaviour
     [SerializeField] private Text threeStarTutorialText;
     [SerializeField] private Text endScreenInfo;
 
+    [Header("UI Pickups")]
+    [SerializeField] private List<Image> pickupUiImages;
+
     #endregion Fields
 
     #region Public Getters
@@ -60,10 +62,17 @@ public class UiManager : MonoBehaviour
 
     #endregion Public Getters
 
+    private AudioManager audioManager;
+
     private void Awake()
     {
         if (Instance == null)
             Instance = this;
+    }
+
+    private void Start()
+    {
+        audioManager = AudioManager.Instance;
     }
 
     public void ModifyEndScreenInfoText(GameManager.FinishedInfo info)
@@ -80,5 +89,97 @@ public class UiManager : MonoBehaviour
                 endScreenInfo.text = finishedInfoText[UnityEngine.Random.Range(0, finishedInfoText.Count)];
                 break;
         }
+    }
+
+    public void SetGameCanvases(bool state)
+    {
+        SetTopUi(state);
+        SetPauseMenu(false);
+        SetEndScreen(false);
+        SetFailedScreen(false);
+    }
+
+    public void SetTopUi(bool state)
+    {
+        if (TopUi == null)
+        {
+            Logger.Instance.ShowDebugError("Missing TopUi in UiManager!");
+            return;
+        }
+
+        TopUi.SetActive(state);
+        PickupGraphic(SaveLoadManager.LastChapterPlayed);
+    }
+
+    public void SetPauseMenu(bool state)
+    {
+        GameManager.Instance.LaunchArc = !state;
+
+        if (PauseMenu != null)
+        {
+            PauseMenu.SetActive(state);
+        }
+
+        Time.timeScale = state ? 0f : 1f;
+
+        if (audioManager.allowMusic)
+        {
+            audioManager.MuteAudio(audioManager.gameMusic, state);
+        }
+    }
+
+    public void SetEndScreen(bool state)
+    {
+        if (EndScreen == null)
+        {
+            Logger.Instance.ShowDebugError("Missing EndScreen object on UiManager script");
+            return;
+        }
+
+        EndScreen.SetActive(state);
+
+        Time.timeScale = state ? 0.1f : 1f;
+    }
+
+    public void HideScreens()
+    {
+        SetPauseMenu(false);
+        SetFailedScreen(false);
+        SetEndScreen(false);
+    }
+
+    public void SetFailedScreen(bool on)
+    {
+        if (FailedScreen == null)
+        {
+            Logger.Instance.ShowDebugError("Missing failedScreen object on UiManager script");
+            return;
+        }
+
+        FailedScreen.SetActive(on);
+
+        Time.timeScale = on ? 0f : 1f;
+    }
+
+    public void PickupText()
+    {
+        if (ItemText == null) return;
+
+        ItemText.text = GameManager.Instance.PickupCountProperty + " X";
+    }
+
+    public void DisablePickupGraphics()
+    {
+        foreach (var image in pickupUiImages)
+        {
+            image.gameObject.SetActive(false);
+        }
+    }
+
+    public void PickupGraphic(int n)
+    {
+        DisablePickupGraphics();
+
+        pickupUiImages[n].gameObject.SetActive(true);
     }
 }
