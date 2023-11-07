@@ -1,52 +1,35 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-using UnityEngine.SceneManagement;
-
+﻿using UnityEngine;
 
 namespace Game.Scripts
 {
     public class DeathVolume : MonoBehaviour
     {
-        private GameManager gameManager;
         [SerializeField] private bool autoRestart;
-
-        private void Awake()
-        {
-            gameManager = FindObjectOfType<GameManager>();
-        }
 
         private void OnCollisionEnter(Collision collision)
         {
-            if (collision.collider.CompareTag("Player"))
+            if (!collision.collider.CompareTag("Player")) return;
+            
+            if (autoRestart)
             {
-                if (autoRestart)
-                {
-                    gameManager.RestartLevel();
-                }
-                else
-                {
-                    gameManager.FailedScreen(true);
-                }
+                LevelManager.Instance.RestartLevel();
+                return;
             }
+
+            UiManager.Instance.SetFailedScreen(true);
         }
 
         private void OnTriggerEnter(Collider other)
         {
-            if (other.gameObject.CompareTag("Player"))
+            if (!other.gameObject.CompareTag("Player")) return;
+            
+            if (autoRestart)
             {
-                if (autoRestart)
-                {
-                    gameManager.RestartLevel();
-                }
-                else
-                {
-                    gameManager.FailedScreen(true);
-                }
+                LevelManager.Instance.RestartLevel();
+                return;
             }
+
+            UiManager.Instance.SetFailedScreen(true);    
         }
-
-
     }
 }
