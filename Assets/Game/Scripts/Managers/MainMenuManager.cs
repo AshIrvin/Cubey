@@ -48,6 +48,7 @@ public class MainMenuManager : MonoBehaviour
     [Header("Buttons")]
     [SerializeField] private Button backButton;
     [SerializeField] private Animator menuButtonAnim;
+    [SerializeField] private GameObject shopButton;
 
     [SerializeField] private Text startText;
     [SerializeField] private Text versionNo;
@@ -88,6 +89,7 @@ public class MainMenuManager : MonoBehaviour
     #endregion Getters
 
     public static Action onStart;
+    public static Action onMapLoad;
 
     public int chapterUnlockedTo;
     public LeanConstrainToBox leanConstrainToBox;
@@ -103,9 +105,6 @@ public class MainMenuManager : MonoBehaviour
 
         CheckForNulls();
 
-        mapManager = MapManager.Instance;
-        mapManager.enabled = false;
-
         if (chapterButtons.Count == 0)
             Logger.Instance.ShowDebugError("Assign chapter buttons to list!");
 
@@ -114,8 +113,15 @@ public class MainMenuManager : MonoBehaviour
         SetRefreshRate(PlayerPrefs.GetInt("RefreshRate"));
     }
 
+    private void OnEnable()
+    {
+        backButton.gameObject.SetActive(true);
+    }
+
     private void Start()
     {
+        mapManager = MapManager.Instance;
+
         versionNo.text = "v: " + Application.version;
         chapterList = GlobalMetaData.Instance.ChapterList;
 
@@ -127,12 +133,7 @@ public class MainMenuManager : MonoBehaviour
         
         onStart.Invoke();
         LoadingScene(false);
-    }
-
-    private void OnEnable()
-    {
-        InitialiseAds.LoadLevel -= LevelManager.Instance.LoadLevel;
-        backButton.gameObject.SetActive(true);
+        shopButton.SetActive(true);
     }
 
     private void DeleteFinishScreenData()
@@ -238,7 +239,6 @@ public class MainMenuManager : MonoBehaviour
 
         leanZoom.Zoom = chapterList[n].MenuZoomLevel;
         
-        // set purchased sign
         menuEnvironments[n].transform.Find("ThankYou").gameObject.SetActive(SaveLoadManager.GamePurchased);
 
         GameManager.Instance.SetGameState(GameManager.GameState.Menu);
@@ -305,7 +305,8 @@ public class MainMenuManager : MonoBehaviour
         SetNavButtons(true);
         DisableMenuEnv();
 
-        mapManager.enabled = true;
+        //mapManager.enabled = true;
+        onMapLoad?.Invoke();
         
         backButton.gameObject.SetActive(true);
         backButton.onClick.AddListener(() => LoadChapterScreen(true));
@@ -320,7 +321,7 @@ public class MainMenuManager : MonoBehaviour
         SetNavButtons(enable);
         mainMenuUi.SetActive(!enable);
         menuEnvironmentParent.SetActive(true);
-        mapManager.enabled = false;
+        //mapManager.enabled = false;
         audioManager.AudioButtons.SetActive(enable);
         
         leanZoom.enabled = false;
