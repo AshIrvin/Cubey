@@ -23,72 +23,85 @@ public class MapManager : MonoBehaviour
 
     #endregion Fields
 
-    #region Privates
+    #region Private
 
     private MainMenuManager mainMenuManager;
     private AdSettings adSettings;
+    private ChapterList chapterList;
+    private VisualEffects visualEffects;
+    private GameManager gameManager;
+
     private List<GameObject> levelButtons;    
     private Vector3 lerpPos1 = new Vector3(0.9f, 0.9f, 0.9f);
     private Vector3 lerpPos2 = new Vector3(1f, 1f, 1f);
-    private ChapterList chapterList;
     private List<SpriteRenderer> starImages = new(3);
 
-    #endregion Privates
+    #endregion Private
+
+    #region Public
 
     public bool mapActive;
     public static Action MapOpened;
     public GameObject CubeyOnMap => cubeyOnMap;
 
+    #endregion Public
 
     private void Awake()
     {
         if (Instance == null)
             Instance = this;
 
+        MainMenuManager.onMapLoad += LoadMapScreen;
+        LevelManager.OnLevelLoad += OnLevelLoad;
+    }
+
+    private void Start()
+    {
+        gameManager = GameManager.Instance;
+        visualEffects = VisualEffects.Instance;
+        mainMenuManager = MainMenuManager.Instance;
         chapterList = GlobalMetaData.Instance.ChapterList;
         mainMenuManager = MainMenuManager.Instance;
         adSettings = AdSettings.Instance;
 
-        AddChapterMaps();
-
         adSettings.EnableAdBackgroundBlocker(false);
         shopButton.SetActive(true);
+
+        AddChapterMaps();
     }
 
-    private void OnEnable()
+    private void LoadMapScreen()
     {
-        LevelManager.Instance.SetLevelToLoad(0);
-        GameManager.Instance.SetGameState(GameManager.GameState.Map);
-
-        if (mainMenuManager == null)
-        {
-            mainMenuManager = MainMenuManager.Instance;
-        }
+        //LevelManager.Instance.SetLevelToLoad(0);
+        gameManager.SetGameState(GameManager.GameState.Map);
 
         EnableMap(SaveLoadManager.LastChapterPlayed);
         
         mapActive = true;
         SetCubeyMapPosition(false);
-        VisualEffects.Instance.PlayEffect(VisualEffects.Instance.peNewLevel);
+        //visualEffects.PlayEffect(VisualEffects.Instance.peNewLevel);
 
         MapOpened?.Invoke();
     }
 
-    private void OnDisable()
+    private void OnLevelLoad()
     {
         adSettings.EnableAdBackgroundBlocker(false);
         DisableMaps();
         mapActive = false;
         SetCubeyMapPosition(true);
-        VisualEffects.Instance.StopEffect(VisualEffects.Instance.peNewLevel);
+        //visualEffects.StopEffect(VisualEffects.Instance.peNewLevel);
     }
 
     private void SetCubeyMapPosition(bool state)
     {
         if (cubeyOnMap == null)
+        {
             Logger.Instance.ShowDebugError("Can't find Cubey for the map!");
-        else
-            cubeyOnMap.SetActive(!state);
+            return;
+        }
+
+        cubeyOnMap.SetActive(!state);
         
         var chapter = chapterList[SaveLoadManager.LastChapterPlayed];
         var currentLevelNo = SaveLoadManager.LastLevelPlayed;
@@ -107,11 +120,10 @@ public class MapManager : MonoBehaviour
         {
             chapterList[i].InGameMapButtonList.Clear();
 
-            // TODO - change from instantiation to enabling/disabling
+            // This is only done on start
             var map = Instantiate(chapterList[i].ChapterMap, mapsParent.transform);
             chapterMaps.Add(map);
 
-            // TODO - Get rid of find objects. Once instantiation is removed, this should be fixed
             AssignMapButtons(map, i);
 
             map.SetActive(false);
@@ -143,14 +155,15 @@ public class MapManager : MonoBehaviour
         mainMenuManager.EnableGoldAwardsButton(true);
         mainMenuManager.TryChapterFinishScreen();
         
-        if(!SaveLoadManager.GamePurchased && LevelManager.Instance.levelsPlayed >= AdSettings.Instance.LevelsBeforeAd)
+        if(!SaveLoadManager.GamePurchased && LevelManager.Instance.LevelsPlayed >= AdSettings.Instance.LevelsBeforeAd)
         {
             // TODO - enable ads. Shouldn't it already be enabled?
             // initialiseAds.enabled = true;
             // PrepareAd?.Invoke();
         }
 
-        GameManager.Instance.SetGameState(GameManager.GameState.Map);
+        gameManager.SetGameState(GameManager.GameState.Map);
+        gameManager.QuitingLevel();
     }
 
     public void DisableMaps()
@@ -164,26 +177,24 @@ public class MapManager : MonoBehaviour
         mainMenuManager.EnableGoldAwardsButton(false);
     }
 
-    #region Used in UI buttons
-
-    // Attached to End Screen continue button
     public void QuitToMap()
     {
-        InitialiseAds.LoadLevel -= LevelManager.Instance.LoadLevel;
+        //InitialiseAds.LoadLevel -= LevelManager.Instance.PrepareToLoadLevel;
+        GameManager.Instance.SetGameState(GameManager.GameState.Map);
 
-        GameObject cubey = GameObject.FindWithTag("Player").transform.gameObject;
-        cubey.transform.SetParent(null, true);
-        VisualEffects.Instance.peExitSwirl.transform.SetParent(VisualEffects.Instance.ParticleEffectsGo.transform, true);
+        //GameObject cubey = GameObject.FindWithTag("Player").transform.gameObject;
+        //cubey.transform.SetParent(null, true);
+        visualEffects.peExitSwirl.transform.SetParent(VisualEffects.Instance.ParticleEffectsGroup.transform, true);
 
         //if (!SaveLoadManager.GamePurchased)
         //{
-        //    initialiseAds.LoadTopBannerAd();
+        //    InitialiseAds.LoadTopBannerAd();
         //}
-        
+
         GlobalMetaData.Instance.HasGameLevelLoaded(false);
         Time.timeScale = 1;
         enabled = true;
-        LevelManager.Instance.DestroyLevels();
+        
         mainMenuManager.NavButtons = true;
         mainMenuManager.SetCollisionBox(MainMenuManager.CollisionBox.Map);
         
@@ -198,8 +209,6 @@ public class MapManager : MonoBehaviour
             tutoralCompleteGo.SetActive(true);
         }
     }
-
-    #endregion
 
     #region Button Level Locking
 
@@ -243,7 +252,7 @@ public class MapManager : MonoBehaviour
 
     private void CheckGamePurchased(Button button, int i)
     {
-        int maxLevels = SaveLoadManager.GamePurchased ? 30 : LevelManager.Instance.maxDemoLevel;
+        int maxLevels = SaveLoadManager.GamePurchased ? 30 : LevelManager.Instance.MaxDemoLevel;
 
         if (i > 0 && i < maxLevels)
         {
@@ -279,8 +288,6 @@ public class MapManager : MonoBehaviour
         mainMenuManager.ToggleGameObject(shopMenu);
         mainMenuManager.BackButton = false;
     }
-    
-    
     
     // Set stars for each level button
     private void SetStarsForEachLevel()
@@ -331,6 +338,6 @@ public class MapManager : MonoBehaviour
 
     private void OnDestroy()
     {
-        InitialiseAds.LoadLevel -= LevelManager.Instance.LoadLevel;
+        //InitialiseAds.LoadLevel -= LevelManager.Instance.PrepareToLoadLevel;
     }
 }
