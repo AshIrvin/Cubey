@@ -1,15 +1,9 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using UnityEngine;
 
 [System.Serializable]
 public class ChapterLevelData
-{
-    /// <summary>
-    /// Object for creating chapters and the levels assigned to them
-    /// </summary>
-    
+{   
     public bool chapterUnlocked;
     public int lastLevelPlayed;
     public int lastLevelUnlocked;
