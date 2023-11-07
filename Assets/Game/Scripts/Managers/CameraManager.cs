@@ -1,14 +1,10 @@
 ﻿using System.Collections;
 using DG.Tweening;
-using DG.Tweening.Core.Easing;
 using UnityEngine;
 using UnityEngine.UI;
 
 public class CameraManager : MonoBehaviour
 {
-    //[SerializeField] private BoolGlobalVariable gameLevel;
-    //[SerializeField] private SaveMetaData saveMetaData;
-    
     private ChapterList chapterList;
 
     // old
@@ -21,7 +17,6 @@ public class CameraManager : MonoBehaviour
     [SerializeField] private float camTime = 1f;
     [SerializeField] private float camToLevelButtonTime = 2.5f; // old 1.4
     [SerializeField] private float panToCubeyTime = 1f;//0.3f;
-    // [SerializeField] private float camMapDragTime = 0.3f;
     [SerializeField] private Vector3 velocity = Vector3.zero;
     private bool panningFromExit;
 
@@ -38,10 +33,6 @@ public class CameraManager : MonoBehaviour
     private float distanceFromEndButton;
     private bool playedIntroOnce;
     private bool reachedStartButton;
-    // private bool reachedEndButton;
-
-    // public bool panToLevel;
-    // public bool disableAutoPanMapCam;
 
     [SerializeField] private float delayCameraOnExitStart = 1f;
     private float gameCamTime2 = 2;
@@ -54,20 +45,12 @@ public class CameraManager : MonoBehaviour
     
     private Tween panToCubey;
     private GameObject cubeyPlayer;
-    
-    //public bool GameLevel
-    //{
-    //    get => gameLevel.CurrentValue;
-    //    set => gameLevel.CurrentValue = value;
-    //}
 
     public bool autoPanToCubey = true;
     
-
-
     private void Awake()
     {
-        GameManager.LevelLoaded += EnteringLevel;
+        LevelManager.OnLevelLoad += EnteringLevel;
         MainMenuManager.onStart += PlayStartCameraSweep;
         MapManager.MapOpened += PanToLevelButton;
 
@@ -86,16 +69,9 @@ public class CameraManager : MonoBehaviour
         GetCubeyPlayer();
     }
 
-    private void OnDestroy()
-    {
-        GameManager.LevelLoaded -= EnteringLevel;
-        MainMenuManager.onStart -= PlayStartCameraSweep;
-        MapManager.MapOpened -= PanToLevelButton;
-    }
-
     private void OnDisable()
     {
-        // VisualEffects.Instance.PlayEffect(VisualEffects.Instance.peNewLevel, nextOpenLevel);
+        //VisualEffects.Instance.PlayEffect(VisualEffects.Instance.peNewLevel, nextOpenLevel);
         nextOpenLevel = chapterList[SaveLoadManager.LastChapterPlayed].ChapterMapButtonList[SaveLoadManager.LastLevelUnlocked].transform.position;
     }
 
@@ -119,14 +95,7 @@ public class CameraManager : MonoBehaviour
             Logger.Instance.ShowDebugError("Missing GameManager or Cubey!");
         }
 
-        //if (!autoPanToCubey || mapManager.isActiveAndEnabled) return;
-
-        // TODO - this needs redone - could probably be an action subbed to level loading
-
         //if (autoPanToCubey && !mapManager.enabled && GlobalMetaData.Instance.GameLevel && !panningFromExit && !FingerPos.abovePlayer && !FingerPos.belowPlayer)
-        //{
-        //    transform.position = Vector3.SmoothDamp(transform.position, cubeyPlayer.transform.position, ref velocity, defaultGameCamTime);
-        //}
 
         // Set what the camera does here, depending on game state
         switch (GameManager.Instance.GetGameState())
@@ -135,10 +104,11 @@ public class CameraManager : MonoBehaviour
                 transform.position = Vector3.SmoothDamp(transform.position, cubeyOnMap.transform.position, ref velocity, defaultGameCamTime);
                 break;
             case GameManager.GameState.Map:
-                transform.position = Vector3.SmoothDamp(transform.position, cubeyOnMap.transform.position, ref velocity, defaultGameCamTime);
+                //transform.position = Vector3.SmoothDamp(transform.position, cubeyOnMap.transform.position, ref velocity, defaultGameCamTime);
+                //PanToLevelButton();
                 break;
             case GameManager.GameState.Level:
-                transform.position = Vector3.SmoothDamp(transform.position, cubeyPlayer.transform.position, ref velocity, defaultGameCamTime);
+                //transform.position = Vector3.SmoothDamp(transform.position, cubeyPlayer.transform.position, ref velocity, defaultGameCamTime);
                 break;
         }
     }
