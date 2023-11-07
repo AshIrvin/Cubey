@@ -1,8 +1,4 @@
-﻿using System;
-using UnityEditor.Rendering;
-using UnityEngine;
-using UnityEngine.UI;
-using UnityEngine.SceneManagement;
+﻿using UnityEngine;
 
 public class VisualEffects : MonoBehaviour
 {
@@ -11,7 +7,7 @@ public class VisualEffects : MonoBehaviour
     [Header("Scripts")]
     [SerializeField] private AudioManager audioManager;
     [SerializeField] private GameManager gameManager;
-    [SerializeField] private GameObject particleEffectsGo;
+    [SerializeField] private GameObject particleEffectsGroup;
 
     [Header("Particle Effects")] // keep as public
     public ParticleSystem pePowerJump;
@@ -44,13 +40,6 @@ public class VisualEffects : MonoBehaviour
     [Header("Exit object")]
     public GameObject peExitSwirl;
 
-    [Header("Floats")]
-    // [SerializeField] private float spawnPeBlastDist = 1;
-    // [SerializeField] private float timer = 2;
-    // [SerializeField] private float peSpeed = 1.8f;
-    // [SerializeField] private float angle = 0;
-    // [SerializeField] private float powerLength = 7;
-
     [Header("Bools")]
     public bool enableSizeIncrease;
     public bool enableColour;
@@ -58,15 +47,16 @@ public class VisualEffects : MonoBehaviour
     public float powerDustOffset = 0.1f;
     public float powerDustDistanceOffset = 2f;
 
-    public GameObject ParticleEffectsGo
+    public GameObject ParticleEffectsGroup
     {
-        get => particleEffectsGo;
-        set => particleEffectsGo.SetActive(value);
+        get => particleEffectsGroup;
+        set => particleEffectsGroup.SetActive(value);
     }
 
     private void Awake()
     {
-        Instance = this;
+        if (Instance == null)
+            Instance = this;
 
         FingerPos.belowCubey += PowerDustEffect;
         // FingerPos.aboveCubey += StopDustEffect;
