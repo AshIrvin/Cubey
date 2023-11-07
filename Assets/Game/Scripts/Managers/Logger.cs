@@ -32,6 +32,6 @@ public class Logger : MonoBehaviour
     {
         if (!EnableErrorLogs) return;
 
-        Debug.LogError($"<color:red>{text}", sender);
+        Debug.LogError($"<color=red>{text}</color>", sender);
     }
 }
