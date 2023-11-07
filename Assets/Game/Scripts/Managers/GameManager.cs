@@ -9,11 +9,6 @@ using System.Threading.Tasks;
 
 public class GameManager : MonoBehaviour
 {
-    // TODO - class is too big. Needs split up. Game levels, UI, player?
-    // Messy - once split up, order the properties, variables etc
-    // Remove as many serialisedFields as possible
-    // This class shouldn't be disabled
-
     public static GameManager Instance;
 
     public enum FinishedInfo
@@ -31,7 +26,6 @@ public class GameManager : MonoBehaviour
     }
 
     #region Fields
-    
     
     [Header("Scriptable Objects")]
     //[SerializeField] private BoolGlobalVariable gameLevel;
@@ -56,17 +50,12 @@ public class GameManager : MonoBehaviour
 
     public static Transform gameFolder;
 
-    [Header("Game Screens")]
-
     [SerializeField] private GameObject deathWalls;
 
     [Header("Level Exit")]
-    private GameObject exitPrezzie;
     [SerializeField] private GameObject exitObject;
-    
-    [Header("UI Pickups")]
-    [SerializeField] private List<Image> pickupUiImages;
 
+    private GameObject exitPrezzie;
     private ChapterList chapterList;
     private LevelMetaData levelMetaData;
     private MapManager mapManager;
@@ -82,15 +71,6 @@ public class GameManager : MonoBehaviour
     private int chapterNo;
 
     #region Getters,Setters
-
-    //public bool GameLevel
-    //{
-    //    get
-    //    {
-    //        return gameLevel.CurrentValue;
-    //    }
-    //    set => gameLevel.CurrentValue = value;
-    //}
 
     public bool CamMovement
     {
@@ -160,13 +140,9 @@ public class GameManager : MonoBehaviour
     private float durationInLevel;
     private int delayFailedScreenInSeconds = 4;
 
-
-
     public float cubeyJumpHeight = 2.6f;
     public bool useTimer;
     public Rigidbody playerRb;
-
-    public static Action LevelLoaded;
 
 
     private void Awake()
@@ -180,12 +156,13 @@ public class GameManager : MonoBehaviour
         mapManager = MapManager.Instance;
         uiManager = UiManager.Instance;
 
-        GlobalMetaData.Instance.GameLevel.OnValueChanged += LoadGameLevel;
+        //GlobalMetaData.Instance.GameLevel.OnValueChanged += LoadGameLevel;
         pickupCountProperty.OnValueChanged += CheckPickupCount;
         exitProperty.OnValueChanged += LoadEndScreen;
         stickyObject.OnValueChanged += ToggleSticky;
         leanForceRb.onGround += PlayerAllowedJump;
         // FingerPos.allowedJump += PlayerAllowedJump;
+        LevelManager.OnLevelLoad += OnLevelLoad;
 
         levelManager = LevelManager.Instance;
         awardManager = AwardManager.Instance;
@@ -207,18 +184,18 @@ public class GameManager : MonoBehaviour
         jumpLeft = jumpsToStartWith;
         uiManager.JumpAmountText.text = jumpLeft.ToString();
 
-        SetGameCanvases(false);
+        uiManager.SetGameCanvases(false);
         SetupStarFinishImages();
     }
 
-    private void OnDestroy()
-    {
-        GlobalMetaData.Instance.GameLevel.OnValueChanged -= LoadGameLevel;
-        pickupCountProperty.OnValueChanged -= CheckPickupCount;
-        exitProperty.OnValueChanged -= LoadEndScreen;
-        stickyObject.OnValueChanged -= ToggleSticky;
-        leanForceRb.onGround -= PlayerAllowedJump;
-    }
+    //private void OnDestroy()
+    //{
+    //    GlobalMetaData.Instance.GameLevel.OnValueChanged -= SetManagers;
+    //    pickupCountProperty.OnValueChanged -= CheckPickupCount;
+    //    exitProperty.OnValueChanged -= LoadEndScreen;
+    //    stickyObject.OnValueChanged -= ToggleSticky;
+    //    leanForceRb.onGround -= PlayerAllowedJump;
+    //}
 
     public GameState GetGameState()
     {
@@ -246,33 +223,13 @@ public class GameManager : MonoBehaviour
         //levelName = levelMetaData.LevelName;
     }
 
-    //private void OnDisable()
-    //{
-    //    if (cubeyPlayer != null)
-    //        cubeyPlayer.SetActive(false);
-
-    //    PlayerAllowedJump(false);
-    //    SetGameCanvases(false);
-    //}
-
-    private void SetGameCanvases(bool state)
+    public void QuitingLevel()
     {
-        TopUi(state);
-        PauseMenu(false);
-        EndScreen(false);
-        FailedScreen(false);
-    }
+        if (cubeyPlayer != null)
+            cubeyPlayer.SetActive(false);
 
-    private void TopUi(bool state)
-    {
-        if (uiManager.TopUi == null)
-        {
-            Logger.Instance.ShowDebugError("Missing UiManager!");
-            return;
-        }
-
-        uiManager.TopUi.SetActive(state);
-        PickupGraphic(SaveLoadManager.LastChapterPlayed);
+        PlayerAllowedJump(false);
+        uiManager.SetGameCanvases(false);
     }
 
     private void DisableStartPosition()
@@ -292,22 +249,16 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    // this was OnEnable
-    private void SubscribeToThisOnLevelLoad()
+    private void OnLevelLoad()
     {
-        CamMovement = true;
-        exitProperty.CurrentValue = false;
+        SetObjectStates(true);
         GetLevelInfo();
         awardManager.GetLevelAwards();
         StartLevel();
     }
 
-    // this comes from levelManager
-    private void LoadGameLevel(bool state)
+    private void SetObjectStates(bool state)
     {
-        SubscribeToThisOnLevelLoad();
-        //enabled = state;
-        ResetCubeyPlayer(!state);
         LaunchArc = state;
 
         mainMenuManager.mainMenu.SetActive(!state);
@@ -316,28 +267,30 @@ public class GameManager : MonoBehaviour
         if (exitObject != null)
             exitObject.SetActive(!state);
 
-        SetGameCanvases(state);
-        visualEffects.ParticleEffectsGo.SetActive(state);
-
-        Logger.Instance.ShowDebugLog($"GameManager - loaded game level");
+        uiManager.SetGameCanvases(state);
+        visualEffects.ParticleEffectsGroup.SetActive(state);
+        CamMovement = state;
+        exitProperty.CurrentValue = !state;
     }
 
     private void StartLevel()
     {
         if (cubeyPlayer == null)
+        {
             Logger.Instance.ShowDebugError("Can't find Cubey!");
-        else
-            flip = cubeyPlayer.transform.localScale;
+            return;
+        }
+        
+        flip = cubeyPlayer.transform.localScale;
 
         if (deathWalls != null)
             deathWalls.SetActive(false);
         
         RestartTimer();
 
-        if (uiManager.PauseMenu != null)
-            uiManager.PauseMenu.SetActive(false);
+        uiManager.SetPauseMenu(false);
 
-        
+        EnableCubeyLevelObject(true);
         DisableStartPosition();
         UpdateLevelText(levelNo);
 
@@ -347,18 +300,16 @@ public class GameManager : MonoBehaviour
         SetupExit();
         StartCoroutine(UpdateAwardsNeeded());
 
-        PickupText();
+        uiManager.PickupText();
         mapManager.enabled = false;
         TimeTaken(true);
 
         PlayerFaceDirection(exitObject.transform.position.x < 0);
         
-        LevelLoaded?.Invoke();
-
         SetGameState(GameState.Level);
     }
 
-    // Todo - can this be an action? 
+    // Todo - can player jumping be an action? 
     // needs fixed - can jump at top of jump
     public void Update()
     {
@@ -461,7 +412,7 @@ public class GameManager : MonoBehaviour
 
         if (!onBreakablePlatform && !IsJumpOverMagnitude())
         {
-            FailedScreen(true);
+            uiManager.SetFailedScreen(true);
         }
         else if (onBreakablePlatform)
         {
@@ -472,7 +423,7 @@ public class GameManager : MonoBehaviour
     private async void DelayAsyncFailedScreen()
     {
         await Task.Delay(delayFailedScreenInSeconds * 1000);
-        FailedScreen(true);
+        uiManager.SetFailedScreen(true);
     }
 
     // TODO - what's this for? Special level?
@@ -481,22 +432,13 @@ public class GameManager : MonoBehaviour
         //time = countdown;
     }
 
-    private void HideScreens()
-    {
-        PauseMenu(false);
-        FailedScreen(false);
-        EndScreen(false);
-    }
-
-    public void RestartLevel()
+    public void ResetCubey()
     {
         playerRb.drag = 0;
         playerRb.angularDrag = 0;
         stickyObject.CurrentValue = false;
         playerRb.isKinematic = false;
-        HideScreens();
-        //enabled = false;        
-        levelManager.RestartLevel();
+        uiManager.HideScreens();
         TimeTaken(true);
     }
 
@@ -513,37 +455,36 @@ public class GameManager : MonoBehaviour
             Destroy(levelManager.LevelParent.transform.GetChild(i).gameObject);
         }
 
-        HideScreens();
+        uiManager.HideScreens();
         SceneManager.LoadScene("CubeyGame");
     }
 
-    // loads from exiting or timer ending
     private void LoadEndScreen(bool won)
     {
         if (!won)
         {
-            FailedScreen(true);
+            uiManager.SetFailedScreen(true);
             return;
         }
 
         TimeTaken(false);
         audioManager.PlayAudio(audioManager.cubeyCelebration);
         ReParentExitSwirl(false);
-        EndScreen(true);
+        uiManager.SetEndScreen(true);
             
         ShowStarsAchieved();
         SaveLoadManager.SaveGameInfo();
     }
 
-    private void ResetCubeyPlayer(bool state)
+    public void EnableCubeyLevelObject(bool state)
     {
-        //if (state)
-        //{
-        //    playerRb.useGravity = false;
-        //    cubeyPlayer.SetActive(false);
-        //    return;
-        //}
-        
+        if (!state)
+        {
+            playerRb.useGravity = false;
+            cubeyPlayer.SetActive(false);
+            return;
+        }
+
         cubeyPlayer.SetActive(true);
         cubeyPlayer.transform.SetParent(gameFolder, true);
         SetPlayerParentAndPos();
@@ -568,34 +509,13 @@ public class GameManager : MonoBehaviour
 
     private void CheckPickupCount(int count)
     {
-        PickupText();
+        uiManager.PickupText();
 
         if (PickupCountProperty > 0) return;
 
-        DisablePickupGraphics();
+        uiManager.DisablePickupGraphics();
         OpenExit();
         uiManager.ItemText.text = "Go to Exit";
-    }
-
-    private void DisablePickupGraphics()
-    {
-        foreach (var image in pickupUiImages)
-        {
-            image.gameObject.SetActive(false);
-        }
-    }
-
-    private void PickupGraphic(int n)
-    {
-        DisablePickupGraphics();
-        
-        pickupUiImages[n].gameObject.SetActive(true);
-    }
-
-    private void PickupText()
-    {
-        if (uiManager.ItemText != null)
-            uiManager.ItemText.text = PickupCountProperty + " X";
     }
 
     private void CountSweetsForLevel()
@@ -616,7 +536,7 @@ public class GameManager : MonoBehaviour
 
         PickupCountProperty = pickupCount;
 
-        PickupText();
+        uiManager.PickupText();
     }
 
     private void OpenExit()
@@ -681,17 +601,17 @@ public class GameManager : MonoBehaviour
         exitObject.SetActive(false);
     }
 
-    private void ReParentExitSwirl(bool move)
+    private void ReParentExitSwirl(bool state)
     {
-        if (move)
+        if (state)
         {
             visualEffects.peExitSwirl.transform.SetParent(exitObject.transform.parent);
             visualEffects.peExitSwirl.GetComponent<Animator>().enabled = true;
+            return;
         }
-        else
-        {
-            visualEffects.peExitSwirl.transform.SetParent(visualEffects.ParticleEffectsGo.transform);
-        }
+
+        visualEffects.peExitSwirl.transform.SetParent(visualEffects.ParticleEffectsGroup.transform);
+        
     }
 
     private void SetupExitXmas(bool closed, bool open)
@@ -720,22 +640,6 @@ public class GameManager : MonoBehaviour
         LaunchArc = state;
         leanForceRb.canJump = state;
     }
-
-/*    IEnumerator DelayBeforeJump(bool state)
-    {
-        if(state)
-        {
-            yield return new WaitForSeconds(0.3f);
-        }
-        allowPlayerMovement = state;
-        LaunchArc = state;
-        leanForceRb.canJump = state;
-    }*/
-
-/*    public void PlayerVelocity(float n)
-    {
-        leanForceRb.velocityMultiplier = n;
-    }*/
 
     private void SetPlayerParentAndPos()
     {
@@ -869,8 +773,6 @@ public class GameManager : MonoBehaviour
         }
     }
 
-
-
     // TODO - is a loading image still needed?
     public async void LoadingScene(bool on)
     {
@@ -883,27 +785,14 @@ public class GameManager : MonoBehaviour
 
     private void OnApplicationFocus(bool hasFocus)
     {
-        if (!hasFocus && enabled)
+        if (!hasFocus && gameState == GameState.Level)
         {
-            PauseMenu(true);
+            print($"OnApplicationFocus. gameState: {gameState}");
+            uiManager.SetPauseMenu(true);
+            return;
         }
-    }
 
-    public void PauseMenu(bool state)
-    {
-        LaunchArc = !state;
-        
-        if (uiManager.PauseMenu != null)
-        {
-            uiManager.PauseMenu.SetActive(state);
-        }
-        
-        Time.timeScale = state ? 0f : 1f;
-        
-        if (audioManager.allowMusic)
-        {
-            audioManager.MuteAudio(audioManager.gameMusic, state);
-        }
+        // TODO - create pause image with no buttons
     }
 
     private void TimeTaken(bool state)
@@ -917,26 +806,6 @@ public class GameManager : MonoBehaviour
         float duration = Mathf.Abs(timeStarted - Time.time);
         durationInLevel = Mathf.Round(duration * 100) /100;
         SaveLoadManager.LevelTimeTaken(chapterNo, levelNo, durationInLevel);
-    }
-
-    private void EndScreen(bool state)
-    {
-        if (uiManager.EndScreen == null)
-            Logger.Instance.ShowDebugError("Missing EndScreen object on GameManager script");
-
-        uiManager.EndScreen.SetActive(state);
-
-        Time.timeScale = state ? 0.1f : 1f;
-    }
-
-    public void FailedScreen(bool on)
-    {
-        if (uiManager.FailedScreen == null)
-            Logger.Instance.ShowDebugError("Missing failedScreen object on GameManager script");
-
-        uiManager.FailedScreen.SetActive(on);
-
-        Time.timeScale = on ? 0f : 1f;
     }
 
     public void PlayerJumped()
