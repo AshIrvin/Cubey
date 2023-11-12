@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Collections;
 using UnityEngine;
 using Lean.Touch;
-using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using System.Threading.Tasks;
 
@@ -28,15 +27,13 @@ public class GameManager : MonoBehaviour
     #region Fields
     
     [Header("Scriptable Objects")]
-    //[SerializeField] private BoolGlobalVariable gameLevel;
     [SerializeField] private IntGlobalVariable pickupCountProperty;
-    [SerializeField] private BoolGlobalVariable exitProperty;
     [SerializeField] private BoolGlobalVariable launchArc;
     [SerializeField] private BoolGlobalVariable stickyObject;
     
     [Header("Scripts")]
     [SerializeField] private MainMenuManager mainMenuManager;
-    [SerializeField] private VisualEffects visualEffects;
+    private VisualEffects visualEffects;
 
     [Header("Player")]
     [SerializeField] private GameObject cubeyPlayer;
@@ -58,7 +55,7 @@ public class GameManager : MonoBehaviour
     private GameObject exitPrezzie;
     private ChapterList chapterList;
     private LevelMetaData levelMetaData;
-    private MapManager mapManager;
+    //private MapManager mapManager;
     private UiManager uiManager;
     private LevelManager levelManager;
     private AwardManager awardManager;
@@ -111,6 +108,8 @@ public class GameManager : MonoBehaviour
         set => cubeyPlayer = value;
     }
 
+    public GameState GameStateType => gameState;
+
     #endregion
 
     public bool playSingleLevel = false;
@@ -153,12 +152,10 @@ public class GameManager : MonoBehaviour
         }
 
         chapterList = GlobalMetaData.Instance.ChapterList;
-        mapManager = MapManager.Instance;
+        visualEffects = VisualEffects.Instance;
         uiManager = UiManager.Instance;
 
-        //GlobalMetaData.Instance.GameLevel.OnValueChanged += LoadGameLevel;
         pickupCountProperty.OnValueChanged += CheckPickupCount;
-        exitProperty.OnValueChanged += LoadEndScreen;
         stickyObject.OnValueChanged += ToggleSticky;
         leanForceRb.onGround += PlayerAllowedJump;
         // FingerPos.allowedJump += PlayerAllowedJump;
@@ -172,46 +169,26 @@ public class GameManager : MonoBehaviour
 
         if (gameFolder == null)
             gameFolder = GameObject.Find("Game").transform;
-
-        CheckScripts();
     }
 
     private void Start()
     {
-        GlobalMetaData.Instance.HasGameLevelLoaded(false);
         visualEffects.peExitSwirl.SetActive(false);
 
         jumpLeft = jumpsToStartWith;
         uiManager.JumpAmountText.text = jumpLeft.ToString();
 
-        uiManager.SetGameCanvases(false);
+        uiManager.SetGameLevelCanvases(false);
         SetupStarFinishImages();
     }
 
     //private void OnDestroy()
     //{
-    //    GlobalMetaData.Instance.GameLevel.OnValueChanged -= SetManagers;
     //    pickupCountProperty.OnValueChanged -= CheckPickupCount;
     //    exitProperty.OnValueChanged -= LoadEndScreen;
     //    stickyObject.OnValueChanged -= ToggleSticky;
     //    leanForceRb.onGround -= PlayerAllowedJump;
     //}
-
-    public GameState GetGameState()
-    {
-        return gameState;
-    }
-
-    public void SetGameState(GameState state)
-    {
-        gameState = state;
-    }
-
-    private void CheckScripts()
-    {
-        if (visualEffects == null)
-            Logger.Instance.ShowDebugError("Missing visual effects script");
-    }
 
     private void GetLevelInfo()
     {
@@ -229,7 +206,7 @@ public class GameManager : MonoBehaviour
             cubeyPlayer.SetActive(false);
 
         PlayerAllowedJump(false);
-        uiManager.SetGameCanvases(false);
+        uiManager.SetGameLevelCanvases(false);
     }
 
     private void DisableStartPosition()
@@ -251,26 +228,30 @@ public class GameManager : MonoBehaviour
 
     private void OnLevelLoad()
     {
-        SetObjectStates(true);
+        SetObjectStates();
         GetLevelInfo();
         awardManager.GetLevelAwards();
         StartLevel();
     }
 
-    private void SetObjectStates(bool state)
+    public void SetGameState(GameState state)
     {
-        LaunchArc = state;
+        gameState = state;
+    }
 
-        mainMenuManager.mainMenu.SetActive(!state);
-        mainMenuManager.enabled = !state;
+    private void SetObjectStates()
+    {
+        LaunchArc = true;
+
+        mainMenuManager.mainMenu.SetActive(false);
 
         if (exitObject != null)
-            exitObject.SetActive(!state);
+            exitObject.SetActive(false);
 
-        uiManager.SetGameCanvases(state);
-        visualEffects.ParticleEffectsGroup.SetActive(state);
-        CamMovement = state;
-        exitProperty.CurrentValue = !state;
+        uiManager.SetGameLevelCanvases(true);
+        visualEffects.ParticleEffectsGroup.SetActive(true);
+        CamMovement = true;
+        //exitProperty.CurrentValue = false;
     }
 
     private void StartLevel()
@@ -301,19 +282,12 @@ public class GameManager : MonoBehaviour
         StartCoroutine(UpdateAwardsNeeded());
 
         uiManager.PickupText();
-        mapManager.enabled = false;
+        
         TimeTaken(true);
 
         PlayerFaceDirection(exitObject.transform.position.x < 0);
-        
-        SetGameState(GameState.Level);
-    }
 
-    // Todo - can player jumping be an action? 
-    // needs fixed - can jump at top of jump
-    public void Update()
-    {
-        // SetPlayerJump();
+        SetGameState(GameState.Level);
     }
 
 /*    private void SetPlayerJump()
@@ -438,28 +412,11 @@ public class GameManager : MonoBehaviour
         playerRb.angularDrag = 0;
         stickyObject.CurrentValue = false;
         playerRb.isKinematic = false;
-        uiManager.HideScreens();
         TimeTaken(true);
     }
 
-    // Used as failed screen button
-    public void LoadMainMenu()
-    {
-        LoadingScene(true);
-
-        var childCount = levelManager.LevelParent.transform.childCount;
-
-        for (int i = 0; i < childCount; i++)
-        {
-            // TODO - this can be removed once all levels are instantiated on load
-            Destroy(levelManager.LevelParent.transform.GetChild(i).gameObject);
-        }
-
-        uiManager.HideScreens();
-        SceneManager.LoadScene("CubeyGame");
-    }
-
-    private void LoadEndScreen(bool won)
+    // TODO - move this to UiManager
+    public void LoadEndScreen(bool won)
     {
         if (!won)
         {
