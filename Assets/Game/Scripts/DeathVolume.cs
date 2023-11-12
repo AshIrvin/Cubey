@@ -12,7 +12,7 @@ namespace Game.Scripts
             
             if (autoRestart)
             {
-                LevelManager.Instance.RestartLevel();
+                UiManager.Instance.RestartLevel();
                 return;
             }
 
@@ -25,7 +25,7 @@ namespace Game.Scripts
             
             if (autoRestart)
             {
-                LevelManager.Instance.RestartLevel();
+                UiManager.Instance.RestartLevel();
                 return;
             }
 
