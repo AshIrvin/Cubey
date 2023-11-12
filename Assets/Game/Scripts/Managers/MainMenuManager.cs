@@ -23,10 +23,9 @@ public class MainMenuManager : MonoBehaviour
 
     [Header("Scripts")]
     
-    [SerializeField] private CameraManager cameraManager;
-    
-    [SerializeField] private VisualEffects visualEffects;
-    [SerializeField] private AudioManager audioManager;
+    private CameraManager cameraManager;
+    private GameManager gameManager;
+    private AudioManager audioManager;
 
     [Header("Maps/Menu")]
     [SerializeField] private GameObject menuEnvironmentParent;
@@ -88,8 +87,7 @@ public class MainMenuManager : MonoBehaviour
 
     #endregion Getters
 
-    public static Action onStart;
-    public static Action onMapLoad;
+    public static Action OnMainMenuLoad;
 
     public int chapterUnlockedTo;
     public LeanConstrainToBox leanConstrainToBox;
@@ -101,12 +99,7 @@ public class MainMenuManager : MonoBehaviour
             Instance = this;
 
         SetNavButtons(false);
-        LoadingScene(true);
-
-        CheckForNulls();
-
-        if (chapterButtons.Count == 0)
-            Logger.Instance.ShowDebugError("Assign chapter buttons to list!");
+        //LoadingScene(true);
 
         DeleteFinishScreenData();
 
@@ -121,19 +114,36 @@ public class MainMenuManager : MonoBehaviour
     private void Start()
     {
         mapManager = MapManager.Instance;
+        gameManager = GameManager.Instance;
+        cameraManager = CameraManager.Instance;
+        audioManager = AudioManager.Instance;
+
+        CheckForErrors();
 
         versionNo.text = "v: " + Application.version;
         chapterList = GlobalMetaData.Instance.ChapterList;
 
         AddMenuEnvironments();
         SetColours();
+        LoadMainMenu();
+    }
+
+    public void LoadMainMenu()
+    {
+        mainMenu.SetActive(true);
+        menuEnvironmentParent.SetActive(true);
+        mainMenuUi.SetActive(true);
+        BackButton = false;
+
         ButtonSizePong();
-        SetMenuEnvironment(SaveLoadManager.LastChapterPlayed);
+        ChangeMenuEnvironment(SaveLoadManager.LastChapterPlayed);
         chapterFinishScreen.SetActive(false);
+
+        OnMainMenuLoad?.Invoke();
         
-        onStart.Invoke();
-        LoadingScene(false);
         shopButton.SetActive(true);
+        
+        gameManager.SetGameState(GameManager.GameState.Menu);
     }
 
     private void DeleteFinishScreenData()
@@ -157,11 +167,11 @@ public class MainMenuManager : MonoBehaviour
         }
     }
 
-    private void CheckForNulls()
+    private void CheckForErrors()
     {
-        if (visualEffects == null) visualEffects = GetComponent<VisualEffects>();
-        if (audioManager == null) audioManager = GetComponent<AudioManager>();
-        if (mapManager == null) mapManager = GetComponent<MapManager>();
+        if (chapterButtons.Count == 0)
+            Logger.Instance.ShowDebugError("Assign chapter buttons to list!");
+
         if (leanConstrainToBox == null) leanConstrainToBox = cameraManager.gameObject.GetComponent<LeanConstrainToBox>();
         if (chapterFinishScreen == null) chapterFinishScreen = GameObject.Find("ChapterFinishScreen");
     }
@@ -203,14 +213,6 @@ public class MainMenuManager : MonoBehaviour
         c3 = new Color(1, 1, 1, 1); // white
     }
 
-    private void UpdateMenuEnvironments()
-    {
-        for (int i = 0; i < chapterList.Count; i++)
-        {
-            menuEnvironmentParent = Instantiate(chapterList[SaveLoadManager.LastChapterPlayed].MenuEnvironment);
-        }
-    }
-
     private void AddMenuEnvironments()
     {
         for (int i = 0; i < chapterList.Count; i++)
@@ -231,7 +233,7 @@ public class MainMenuManager : MonoBehaviour
         }
     }
 
-    private void SetMenuEnvironment(int n)
+    private void ChangeMenuEnvironment(int n)
     {
         DisableMenuEnv();
         
@@ -240,8 +242,6 @@ public class MainMenuManager : MonoBehaviour
         leanZoom.Zoom = chapterList[n].MenuZoomLevel;
         
         menuEnvironments[n].transform.Find("ThankYou").gameObject.SetActive(SaveLoadManager.GamePurchased);
-
-        GameManager.Instance.SetGameState(GameManager.GameState.Menu);
     }
 
     private void DisableMenuEnv()
@@ -250,11 +250,6 @@ public class MainMenuManager : MonoBehaviour
         {
             menuEnvironments[i].SetActive(false);
         }
-    }
-
-    private void OnDestroy()
-    {
-        Destroy(menuEnvironmentParent);
     }
 
     public void ButtonClose(GameObject go)
@@ -293,11 +288,10 @@ public class MainMenuManager : MonoBehaviour
     // Used in chapter menu buttons
     public void ShowMap(int n)
     {
-        int chapter = -1;
-
+        int chapter;
         chapter = SaveLoadManager.LastChapterPlayed = n;
         
-        SetMenuEnvironment(chapter);
+        ChangeMenuEnvironment(chapter);
         DisableMenuScreens();
         SetCollisionBox(CollisionBox.Map);
         audioManager.AudioButtons.SetActive(false);
@@ -305,15 +299,15 @@ public class MainMenuManager : MonoBehaviour
         SetNavButtons(true);
         DisableMenuEnv();
 
-        //mapManager.enabled = true;
-        onMapLoad?.Invoke();
-        
-        backButton.gameObject.SetActive(true);
+        MapManager.Instance.LoadMapScreen();
+
+        // TODO - fix this backbutton code
+        BackButton = true;
         backButton.onClick.AddListener(() => LoadChapterScreen(true));
     }
 
     // for going back to chapter screen using back button on map and Start ui button
-    public void LoadChapterScreen(bool enable)
+    private void LoadChapterScreen(bool enable)
     {
         CycleThroughUnlockedChapters();
         
@@ -321,13 +315,13 @@ public class MainMenuManager : MonoBehaviour
         SetNavButtons(enable);
         mainMenuUi.SetActive(!enable);
         menuEnvironmentParent.SetActive(true);
-        //mapManager.enabled = false;
         audioManager.AudioButtons.SetActive(enable);
         
         leanZoom.enabled = false;
+        BackButton = true;
         backButton.onClick.AddListener(MainMenuScreen);
     }
-
+    
     #endregion Used for UI Buttons
 
     // disable chapters that aren't unlocked?
@@ -365,7 +359,7 @@ public class MainMenuManager : MonoBehaviour
     private void MainMenuScreen()
     {
         mapManager.DisableMaps();
-        SetMenuEnvironment(SaveLoadManager.LastChapterPlayed);
+        ChangeMenuEnvironment(SaveLoadManager.LastChapterPlayed);
         SetCollisionBox(CollisionBox.Menu);
         chapterFinishScreen.SetActive(false);
         chapterScreen.SetActive(false);
