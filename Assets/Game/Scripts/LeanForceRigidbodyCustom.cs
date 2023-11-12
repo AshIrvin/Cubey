@@ -4,43 +4,40 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 
-
-// Purchased Unity Asset and tweaked
+// Purchased Unity Asset and modified
 namespace Lean.Touch
 {
     [RequireComponent(typeof(Rigidbody))]
 	public class LeanForceRigidbodyCustom : MonoBehaviour
 	{
         [SerializeField] private Camera Camera;
-        [SerializeField] private GameManager gameManager;
-        [SerializeField] private AudioManager audioManager;
         [SerializeField] private LaunchRenderArc launchRenderArc;
         [SerializeField] private BoolGlobalVariable stickyObject;
-        
         [SerializeField] private bool useMass;
         [SerializeField] private bool rotateToVelocity;
-
-        public float playerMagnitude;
-
         [SerializeField] private Vector3 direction;
         [SerializeField] private Vector3 directionNormalised;
 
-        public float velocityMultiplier = -1;
+        private GameManager gameManager;
+        private AudioManager audioManager;
         private Rigidbody cachedBody;
         private float angle;
+
+        public float velocityMultiplier = -1;
+        public float playerMagnitude;
         public bool canJump;
         public bool moveScreen;
+        public Action<bool> onGround;
         
         public float Angle => angle;
 
-        public Action<bool> onGround;
         
         protected virtual void OnEnable()
         {
             cachedBody = GetComponent<Rigidbody>();
-            if (gameManager == null) gameManager = FindObjectOfType<GameManager>();
-            if (audioManager == null) audioManager = FindObjectOfType<AudioManager>();
-            if (launchRenderArc == null) launchRenderArc = FindObjectOfType<LaunchRenderArc>();
+            gameManager = GameManager.Instance;
+            audioManager = AudioManager.Instance;
+            if (launchRenderArc == null) launchRenderArc = FindFirstObjectByType<LaunchRenderArc>();
         }
 
         // comes from leanFingerLine in game
@@ -112,40 +109,34 @@ namespace Lean.Touch
             {
                 CheckGroundBeforeJump();
             }
-            
-            if (collision.collider.CompareTag("Sticky"))
+
+            CheckGround(collision);
+        }
+
+        private void CheckGround(Collision collision)
+        {
+            switch (collision.collider.name)
             {
-                // Logger.Instance.ShowDebugLog("Hit sticky object");
-                // onGround?.Invoke(true);
-            }
-            else if (collision.collider.CompareTag("Platform") || collision.collider.CompareTag("MovingPlatform"))
-            {
-                // Logger.Instance.ShowDebugLog("Hit a platform");
-                audioManager.PlayAudio(audioManager.cubeyLand);
-                VisualEffects.Instance.PlayEffect(VisualEffects.Instance.peLandingGrass, transform.position);
-                // onGround?.Invoke(true);
-            }
-            else if (collision.collider.CompareTag("GroundGrass"))
-            {
-                // Logger.Instance.ShowDebugLog("Hit grass");
-                audioManager.PlayAudio(audioManager.cubeyLand);
-                VisualEffects.Instance.PlayEffect(VisualEffects.Instance.peLandingGrass, transform.position);
-                // onGround?.Invoke(true);
-            }
-            else if (collision.collider.CompareTag("GroundNormal"))
-            {
-                // Logger.Instance.ShowDebugLog("Hit normal ground");
-                audioManager.PlayAudio(audioManager.cubeyLand);
-                VisualEffects.Instance.PlayEffect(VisualEffects.Instance.peLandingDust, transform.position);
-                // onGround?.Invoke(true);
-            }
-            else if (collision.collider.CompareTag("GroundSnow"))
-            {
-                // Logger.Instance.ShowDebugLog("Hit snow");
-                // audioManager.PlayAudio(audioManager.cubeyLand);
-                audioManager.PlayAudio(audioManager.cubeyLandingSnow);
-                // VisualEffects.Instance.PlayEffect(VisualEffects.Instance.pe, transform.position);
-                // onGround?.Invoke(true);
+                case "Sticky":
+                    break;
+                case "Platform":
+                case "MovingPlatform":
+                    audioManager.PlayAudio(audioManager.cubeyLand);
+                    VisualEffects.Instance.PlayEffect(VisualEffects.Instance.peLandingGrass, transform.position);
+                    break;
+                case "GroundGrass":
+                    audioManager.PlayAudio(audioManager.cubeyLand);
+                    VisualEffects.Instance.PlayEffect(VisualEffects.Instance.peLandingGrass, transform.position);
+                    break;
+                case "GroundNormal":
+                    audioManager.PlayAudio(audioManager.cubeyLand);
+                    VisualEffects.Instance.PlayEffect(VisualEffects.Instance.peLandingDust, transform.position);
+                    break;
+                case "GroundSnow":
+                    // audioManager.PlayAudio(audioManager.cubeyLand);
+                    audioManager.PlayAudio(audioManager.cubeyLandingSnow);
+                    // VisualEffects.Instance.PlayEffect(VisualEffects.Instance.pe, transform.position);
+                    break;
             }
         }
 
@@ -161,15 +152,11 @@ namespace Lean.Touch
             if (canJump) return;
             
             RaycastHit hit;
-            bool hitGround = false;
+
             if (Physics.Raycast(transform.position, Vector3.down, out hit, 1.2f))
             {
                 Debug.DrawRay(transform.position, Vector3.down * hit.distance, Color.blue);
-                hitGround = true;
-            }
-            
-            if (hitGround)
-            {
+
                 onGround?.Invoke(true);
                 canJump = true;
             }
