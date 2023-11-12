@@ -1,9 +1,6 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using Lean.Touch;
 using UnityEngine;
-using UnityEngine.Events;
 
 public class FingerPos : MonoBehaviour
 {
@@ -11,13 +8,13 @@ public class FingerPos : MonoBehaviour
     
     private static Vector3 fingerPosition;
     private static Vector3 playerPosition;
+    private float fingerOffset = 1.2f;
+    private LeanFingerLine leanFingerLine;
+
     public static Vector3 FingerPosition => fingerPosition;
     public static Vector3 FingerPlayerDirection => fingerPosition - playerPosition;
     public static bool belowPlayer;
     public static bool abovePlayer;
-    private float fingerOffset = 1.2f;
-    
-    private LeanFingerLine leanFingerLine;
 
     public Vector3 GetPlayerPosition => transform.position;
 
@@ -28,7 +25,7 @@ public class FingerPos : MonoBehaviour
     private void Awake()
     {
         if (leanFingerLine == null)
-            leanFingerLine = FindObjectOfType<LeanFingerLine>();
+            leanFingerLine = FindFirstObjectByType<LeanFingerLine>();
 
         leanForceRigidbodyCustom = GetComponent<LeanForceRigidbodyCustom>();
     }
