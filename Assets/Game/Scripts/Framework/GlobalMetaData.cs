@@ -5,14 +5,11 @@ public class GlobalMetaData : MonoBehaviour
 {
     public static GlobalMetaData Instance;
 
-    [SerializeField] private BoolGlobalVariable gameLevel;
     private LevelMetaData levelMetaData;
 
     public ChapterList ChapterList;
-
     public LevelMetaData LevelMetaData => levelMetaData;
-    public BoolGlobalVariable GameLevel => gameLevel;
-    
+
 
     private void Awake()
     {
@@ -23,10 +20,5 @@ public class GlobalMetaData : MonoBehaviour
     public void AssignLevelMetaData()
     {
         levelMetaData = ChapterList[SaveLoadManager.LastChapterPlayed].LevelList[SaveLoadManager.LastLevelPlayed];
-    }
-
-    public void HasGameLevelLoaded(bool state)
-    {
-        gameLevel.CurrentValue = state;
     }
 }
