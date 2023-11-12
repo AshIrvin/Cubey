@@ -40,10 +40,10 @@ public class MapManager : MonoBehaviour
 
     #region Public
 
-    public bool mapActive;
-    public static Action MapOpened;
+    //public bool mapActive;
+    public static Action OnMapLoad;
     public GameObject CubeyOnMap => cubeyOnMap;
-
+    
     #endregion Public
 
     private void Awake()
@@ -51,7 +51,6 @@ public class MapManager : MonoBehaviour
         if (Instance == null)
             Instance = this;
 
-        MainMenuManager.onMapLoad += LoadMapScreen;
         LevelManager.OnLevelLoad += OnLevelLoad;
     }
 
@@ -70,27 +69,22 @@ public class MapManager : MonoBehaviour
         AddChapterMaps();
     }
 
-    private void LoadMapScreen()
+    public void LoadMapScreen()
     {
-        //LevelManager.Instance.SetLevelToLoad(0);
         gameManager.SetGameState(GameManager.GameState.Map);
 
         EnableMap(SaveLoadManager.LastChapterPlayed);
         
-        mapActive = true;
         SetCubeyMapPosition(false);
-        //visualEffects.PlayEffect(VisualEffects.Instance.peNewLevel);
 
-        MapOpened?.Invoke();
+        OnMapLoad?.Invoke();
     }
 
     private void OnLevelLoad()
     {
         adSettings.EnableAdBackgroundBlocker(false);
         DisableMaps();
-        mapActive = false;
         SetCubeyMapPosition(true);
-        //visualEffects.StopEffect(VisualEffects.Instance.peNewLevel);
     }
 
     private void SetCubeyMapPosition(bool state)
@@ -179,25 +173,29 @@ public class MapManager : MonoBehaviour
 
     public void QuitToMap()
     {
-        //InitialiseAds.LoadLevel -= LevelManager.Instance.PrepareToLoadLevel;
-        GameManager.Instance.SetGameState(GameManager.GameState.Map);
+        mainMenuManager.mainMenu.SetActive(true);
+        
+        gameManager.SetGameState(GameManager.GameState.Map);
 
-        //GameObject cubey = GameObject.FindWithTag("Player").transform.gameObject;
-        //cubey.transform.SetParent(null, true);
         visualEffects.peExitSwirl.transform.SetParent(VisualEffects.Instance.ParticleEffectsGroup.transform, true);
+        visualEffects.peExitSwirl.SetActive(false);
 
         //if (!SaveLoadManager.GamePurchased)
         //{
         //    InitialiseAds.LoadTopBannerAd();
         //}
 
-        GlobalMetaData.Instance.HasGameLevelLoaded(false);
         Time.timeScale = 1;
-        enabled = true;
-        
+
+        LoadMapScreen();
         mainMenuManager.NavButtons = true;
         mainMenuManager.SetCollisionBox(MainMenuManager.CollisionBox.Map);
-        
+
+        IsTutorialComplete();
+    }
+
+    private void IsTutorialComplete()
+    {
         // TODO: check if the last level was chapter 1, level 5 that completes the tutorial
         if (SaveLoadManager.LastChapterPlayed == 1 && SaveLoadManager.GetLevelAward(4) > 1
                                                    && PlayerPrefs.GetInt("tutorialFinished", 0) == 0)
