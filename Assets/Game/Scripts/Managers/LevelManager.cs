@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using DG.Tweening.Core.Easing;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -78,27 +79,17 @@ public class LevelManager : MonoBehaviour
         }
     }
 
-    // Attached to End Screen continue button
-    public void QuitLevel()
-    {
-        GameManager.Instance.EnableCubeyLevelObject(false);
-        levelGameObject.SetActive(false);
-        MapManager.Instance.QuitToMap();
-    }
-
     private void GetDemoLevelWithAds(int n)
     {
         if (PlayerPrefs.HasKey("levelsPlayed"))
         {
             levelsPlayed = PlayerPrefs.GetInt("levelsPlayed");
-            //levelsPlayed = played;
             levelsPlayed += 1;
             PlayerPrefs.SetInt("levelsPlayed", levelsPlayed);
 
             if (levelsPlayed >= AdSettings.Instance.LevelsBeforeAd)
             {
                 SetAmountLevelsPlayed(0);
-                //AdSettings.Instance.LoadAd.Invoke();
                 InitialiseAds.LoadAd?.Invoke();
                 Logger.Instance.ShowDebugLog("Ad 1. Invoking ad...");
             }
@@ -139,15 +130,6 @@ public class LevelManager : MonoBehaviour
         GetDemoLevelWithAds(n);
     }
 
-    public void RestartLevel()
-    {
-        Logger.Instance.ShowDebugLog("Restarting Level");
-
-        OnLevelLoad?.Invoke();
-
-        GameManager.Instance.ResetCubey();
-    }
-
     public void PrepareToLoadLevelFromAd()
     {
         MainMenuManager.Instance.SetNavButtons(false);
@@ -161,11 +143,11 @@ public class LevelManager : MonoBehaviour
 
     public void LoadLevelNumber(int levelNumber)
     {
-        var l = levelNumber.ToString();
+        var levelNo = levelNumber.ToString();
 
-        if (l.Length > 2)
+        if (levelNo.Length > 2)
         {
-            var levelString = l[1].ToString() + l[2].ToString();
+            var levelString = levelNo[1].ToString() + levelNo[2].ToString();
             SaveLoadManager.LastLevelPlayed = int.Parse(levelString);
         }
         else
@@ -175,21 +157,18 @@ public class LevelManager : MonoBehaviour
 
         GlobalMetaData.Instance.AssignLevelMetaData();
 
-        if (LevelGameObject == null)
-        {
-            levelGameObject = GetLevel();
-            // TODO - remove this find
-            levelCollision = levelGameObject.transform.Find("Environment").Find("LevelCollision").GetComponent<BoxCollider>();
-        }
+        levelGameObject = GetLevel(levelNumber);
+        // TODO - remove this find
+        levelCollision = levelGameObject.transform.Find("Environment").Find("LevelCollision").GetComponent<BoxCollider>();
 
         levelGameObject.SetActive(true);
         AdSettings.Instance.EnableAdBackgroundBlocker(false);
         initialiseAds.DestroyTopBannerAd();
 
-        GlobalMetaData.Instance.HasGameLevelLoaded(true);
         Logger.Instance.ShowDebugLog($"Game level {levelNumber++} loaded");
 
         MainMenuManager.Instance.SetCollisionBox(MainMenuManager.CollisionBox.Level, levelCollision);
+        
         GameManager.Instance.SetGameState(GameManager.GameState.Level);
 
         OnLevelLoad?.Invoke();
@@ -227,10 +206,10 @@ public class LevelManager : MonoBehaviour
         }
     }
 
-    private GameObject GetLevel()
+    private GameObject GetLevel(int levelNo)
     {
         var chapter = GlobalMetaData.Instance.ChapterList[SaveLoadManager.LastChapterPlayed];
-        var prefabLevel = chapter.LevelList[SaveLoadManager.LastLevelPlayed].LevelPrefab;
+        var prefabLevel = chapter.LevelList[levelNo].LevelPrefab;
 
         foreach (var Chapters in chapterLevelsList)
         {
