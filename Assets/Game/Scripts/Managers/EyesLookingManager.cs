@@ -27,7 +27,7 @@ public class EyesLookingManager : MonoBehaviour
     [SerializeField] private GameObject pupilCenterTarget;
     [SerializeField] private List<Vector3> pointsOfInterestList;
     [SerializeField] private float dist;
-    [SerializeField] private bool cubey;
+    [SerializeField] private bool isCubey;
 
     private Vector3 _target;
     private Vector2 currentTarget;
@@ -90,21 +90,27 @@ public class EyesLookingManager : MonoBehaviour
         
         if (target != null)
             EyesMovement(target);
-        
+
         // showPupilMovement = false;
+
+        if (playerTarget == null)
+        {
+            Logger.Instance.ShowDebugError("Missing Cubey gameobject");
+            return;
+        }
     }
 
     private void Update()
     {
-        if (!gameObject.activeInHierarchy)
+        if (!gameObject.activeInHierarchy || playerTarget == null)
             return;
         
-        if (cubey && randomEyeMovement < 0)
+        if (isCubey && randomEyeMovement < 0)
         {
             EyesMovement(RandomlyChoosePoint());
         }
         
-        if (playerTarget != null && !cubey && randomEyeMovement < 0)
+        if (!isCubey && randomEyeMovement < 0)
         {
             EyesMovement(playerTarget.transform.position);
             SetEyeDelay();
@@ -152,7 +158,7 @@ public class EyesLookingManager : MonoBehaviour
 
     private void SubEyesMovement()
     {
-        if (cubey && gameObject.activeInHierarchy)
+        if (isCubey && gameObject.activeInHierarchy)
         {
             EyesMovement(GetPositionFromAngle());
         }
