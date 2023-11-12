@@ -63,7 +63,7 @@ public class LaunchRenderArc : MonoBehaviour
     {
         launchArc.OnValueChanged += EnableLaunchArc;
         FingerPos.belowCubey += DelayBeforeRenderArc;
-        MapManager.MapOpened += SubDisableArc;
+        MapManager.OnMapLoad += SubDisableArc;
     }
 
     private void Start()
@@ -102,7 +102,7 @@ public class LaunchRenderArc : MonoBehaviour
     {
         launchArc.OnValueChanged -= EnableLaunchArc;
         FingerPos.belowCubey -= DelayBeforeRenderArc;
-        MapManager.MapOpened -= SubDisableArc;
+        MapManager.OnMapLoad -= SubDisableArc;
     }
 
     private void OnDisable()
