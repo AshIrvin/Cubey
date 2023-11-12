@@ -3,6 +3,7 @@ using System.Collections;
 using GoogleMobileAds.Api;
 using GoogleMobileAds.Placement;
 using UnityEngine;
+using System.Threading.Tasks;
 
 public class InitialiseAds : MonoBehaviour
 {
@@ -23,10 +24,6 @@ public class InitialiseAds : MonoBehaviour
         {
             bannerAd = transform.GetComponentInChildren<BannerAdGameObject>();
         }
-
-        MobileAds.Initialize((initStatus) => {
-            //Logger.Instance.ShowDebugLog("Initialized MobileAds");
-        });
     }
 
     private void Start()
@@ -35,11 +32,20 @@ public class InitialiseAds : MonoBehaviour
         {
             return;
         }
-        
+
+        LoadAd += ShowAd;
+        LoadLevel += LevelManager.Instance.PrepareToLoadLevelFromAd;
+
+        MobileAds.Initialize((initStatus) => {
+            Logger.Instance.ShowDebugLog("Initialized MobileAds");
+        });
+
         fullscreenAd = MobileAds.Instance.GetAd<InterstitialAdGameObject>("InterstitialAd");
         bannerAd = MobileAds.Instance.GetAd<BannerAdGameObject>("TopBannerAd");
         bannerAd.gameObject.SetActive(true);
         bannerAd.LoadAd();
+
+        print("Initialise Ads Start");
     }
 
     private void OnEnable()
@@ -51,14 +57,17 @@ public class InitialiseAds : MonoBehaviour
             return;
         }
         
-        AdSettings.Instance.LoadAd += ShowAd;
-        MapManager.MapOpened += GetAd;
-        
+        //AdSettings.Instance.LoadAd += ShowAd;
+
+        MapManager.OnMapLoad += GetAd;
+        LoadAd += ShowAd;
+
         bannerAd.gameObject.SetActive(true);
         bannerAd.enabled = true;
         bannerAd.LoadAd();
-    }
 
+        print("Initialise Ads Enable");
+    }
 
     #region Manual Setup
 
@@ -71,7 +80,7 @@ public class InitialiseAds : MonoBehaviour
     {
         MonoBehaviour.print("HandleFailedToReceiveAd event received with message: "
                             + args.Message);
-        LoadLevel?.Invoke();
+        ContinueToLevel();
     }
 
     public void HandleOnAdOpened(object sender, EventArgs args)
@@ -83,7 +92,7 @@ public class InitialiseAds : MonoBehaviour
     {
         MonoBehaviour.print("HandleAdClosed event received");
         fullscreenAd.DestroyAd();
-        LoadLevel?.Invoke();
+        ContinueToLevel();
     }
 
     public void HandleOnAdLeavingApplication(object sender, EventArgs args)
@@ -121,18 +130,20 @@ public class InitialiseAds : MonoBehaviour
     
     public void ShowAd()
     {
+        print("Show ad if not null");
         if (fullscreenAd != null && fullscreenAd.InterstitialAd != null && fullscreenAd.InterstitialAd.IsLoaded())
         {
             fullscreenAd.ShowIfLoaded(); // crashed here
             Logger.Instance.ShowDebugLog("Ad 2 - show if loaded: " + fullscreenAd.name);
         }
         
-        StartCoroutine(DelayToCheckAd());
+        DelayToCheckAd();
     }
 
-    IEnumerator DelayToCheckAd()
+    private async void DelayToCheckAd()
     {
-        yield return new WaitForSeconds(0.5f);
+        await Task.Delay(500);
+
         if (fullscreenAd == null || fullscreenAd.InterstitialAd == null)
         {
             Logger.Instance.ShowDebugLog("Ad 3 - failed! Continuing to level");
@@ -177,13 +188,13 @@ public class InitialiseAds : MonoBehaviour
     
     private void OnDisable()
     {
-        LoadAd -= ShowAd;
-        MapManager.MapOpened -= GetAd;
+        //LoadAd -= ShowAd;
+        MapManager.OnMapLoad -= GetAd;
     }
 
     private void OnDestroy()
     {
-        LoadAd -= ShowAd;
-        MapManager.MapOpened -= GetAd;
+        //LoadAd -= ShowAd;
+        MapManager.OnMapLoad -= GetAd;
     }
 }

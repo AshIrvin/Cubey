@@ -5,9 +5,9 @@ public class VisualEffects : MonoBehaviour
     public static VisualEffects Instance { get; private set; }
 
     [Header("Scripts")]
-    [SerializeField] private AudioManager audioManager;
-    [SerializeField] private GameManager gameManager;
     [SerializeField] private GameObject particleEffectsGroup;
+
+    private GameManager gameManager;
 
     [Header("Particle Effects")] // keep as public
     public ParticleSystem pePowerJump;
@@ -23,7 +23,7 @@ public class VisualEffects : MonoBehaviour
     public ParticleSystem peLandingDust;
     public ParticleSystem peLandingGrass;
     public ParticleSystem peLeaves;
-    public ParticleSystem peNewLevel;
+    public ParticleSystem peMapLevelStars;
     public ParticleSystem pePlayerTrail;
     public ParticleSystem pePlatformIceDust;
     public ParticleSystem pePlatformRockDust;
@@ -37,7 +37,7 @@ public class VisualEffects : MonoBehaviour
     public ParticleSystem peSweetPickup;
     public ParticleSystem peWaterSplash;
 
-    [Header("Exit object")]
+    [Header("Exit PE object")]
     public GameObject peExitSwirl;
 
     [Header("Bools")]
@@ -59,7 +59,15 @@ public class VisualEffects : MonoBehaviour
             Instance = this;
 
         FingerPos.belowCubey += PowerDustEffect;
+        LevelManager.OnLevelLoad += OnLevelLoad;
+        MapManager.OnMapLoad += OnMapLoad;
+        MainMenuManager.OnMainMenuLoad += OnMapLoad;
         // FingerPos.aboveCubey += StopDustEffect;
+    }
+
+    private void Start()
+    {
+        gameManager = GameManager.Instance;
     }
 
     private void OnDestroy()
@@ -75,7 +83,18 @@ public class VisualEffects : MonoBehaviour
             StopEffect(pePowerDust);
         }
     }
-    
+
+    private void OnLevelLoad()
+    {
+        StopEffect(peMapLevelStars);
+    }
+
+    private void OnMapLoad()
+    {
+        StopEffect(peMapLevelStars);
+        StopEffect(peExitExplosion);
+    }
+
     private void PowerDustEffect()
     {
         if (!gameManager.enabled || Time.timeScale < 0.5f || !gameManager.allowPlayerMovement)

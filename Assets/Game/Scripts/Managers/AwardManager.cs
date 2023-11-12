@@ -5,6 +5,7 @@ public class AwardManager : MonoBehaviour
     public static AwardManager Instance;
 
     private LevelMetaData levelMetaData;
+
     private int threeStars;
     private int twoStars;
     private int oneStar;

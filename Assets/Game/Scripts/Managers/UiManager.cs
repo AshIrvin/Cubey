@@ -91,7 +91,7 @@ public class UiManager : MonoBehaviour
         }
     }
 
-    public void SetGameCanvases(bool state)
+    public void SetGameLevelCanvases(bool state)
     {
         SetTopUi(state);
         SetPauseMenu(false);
@@ -146,6 +146,7 @@ public class UiManager : MonoBehaviour
         SetPauseMenu(false);
         SetFailedScreen(false);
         SetEndScreen(false);
+        SetTopUi(false);
     }
 
     public void SetFailedScreen(bool on)
@@ -176,10 +177,37 @@ public class UiManager : MonoBehaviour
         }
     }
 
-    public void PickupGraphic(int n)
+    private void PickupGraphic(int n)
     {
         DisablePickupGraphics();
 
         pickupUiImages[n].gameObject.SetActive(true);
+    }
+    
+    public void RestartLevel()
+    {
+        Logger.Instance.ShowDebugLog("Restarting Level");
+
+        LevelManager.OnLevelLoad?.Invoke();
+
+        SetTopUi(false);
+        SetTopUi(true);
+
+        GameManager.Instance.ResetCubey();
+    }
+
+    public void QuitToMap()
+    {
+        GameManager.Instance.EnableCubeyLevelObject(false);
+        LevelManager.Instance.LevelGameObject.SetActive(false);
+        MapManager.Instance.QuitToMap();
+    }
+
+    public void QuitToMainMenu()
+    {
+        GameManager.Instance.EnableCubeyLevelObject(false);
+        LevelManager.Instance.LevelGameObject.SetActive(false);
+        HideScreens();
+        MainMenuManager.Instance.LoadMainMenu();
     }
 }
