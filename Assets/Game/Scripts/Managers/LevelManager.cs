@@ -21,6 +21,8 @@ public class LevelManager : MonoBehaviour
     private readonly int maxDemoLevel = 10;
 
     public static Action OnLevelLoad;
+    public static Action<int> OnLevelCompleted;
+    public static Action OnLevelFailed;
 
     #region Getters
 
