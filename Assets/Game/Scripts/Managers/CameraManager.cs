@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using DG.Tweening;
 using Lean.Touch;
 using UnityEngine;
@@ -26,7 +27,6 @@ public class CameraManager : MonoBehaviour
     [SerializeField] private float camCubeyOffset = 0.1f;
 
     private GameManager gameManager;
-    //private MapManager mapManager;
     private GlobalMetaData globalMetaData;
 
     private bool panningFromExit;
@@ -47,7 +47,7 @@ public class CameraManager : MonoBehaviour
     private GameObject cubeyPlayer;
 
     public bool autoPanToCubey = true;
-    
+
     private void Awake()
     {
         if (Instance == null)
@@ -56,13 +56,12 @@ public class CameraManager : MonoBehaviour
         LevelManager.OnLevelLoad += EnteringLevel;
         MainMenuManager.OnMainMenuLoad += OnMainMenuLoad;
         MapManager.OnMapLoad += PanToLevelButton;
-        //LeanTouch.OnFingerUp += ReturnPanToCubey;
-        //LeanTouch.OnFingerDown += CamFollowFinger;
 
         chapterList = GlobalMetaData.Instance.ChapterList;
         gameManager = GameManager.Instance;
-        //mapManager = MapManager.Instance;
         globalMetaData = GlobalMetaData.Instance;
+
+        UiManager.AutoPanToggle += AutoPanToCubey;
     }
 
     private void Start()
