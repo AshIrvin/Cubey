@@ -204,6 +204,7 @@ public class MapManager : MonoBehaviour
             SaveLoadManager.UnlockChapter(2);
             SaveLoadManager.UnlockChapter(3);
             SaveLoadManager.SaveGameInfo();
+            mainMenuManager.ShowMenuBackButton(false);
             tutoralCompleteGo.SetActive(true);
         }
     }
@@ -284,7 +285,7 @@ public class MapManager : MonoBehaviour
     private void EnableShopMenu()
     {
         mainMenuManager.ToggleGameObject(shopMenu);
-        mainMenuManager.BackButton = false;
+        mainMenuManager.ShowMenuBackButton(false);
     }
     
     // Set stars for each level button
