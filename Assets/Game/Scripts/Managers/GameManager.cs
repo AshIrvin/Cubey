@@ -269,7 +269,7 @@ public class GameManager : MonoBehaviour
         
         RestartTimer();
 
-        uiManager.SetPauseMenu(false);
+        uiManager.ShowPauseMenu(false);
 
         EnableCubeyLevelObject(true);
         DisableStartPosition();
@@ -386,7 +386,7 @@ public class GameManager : MonoBehaviour
 
         if (!onBreakablePlatform && !IsJumpOverMagnitude())
         {
-            uiManager.SetFailedScreen(true);
+            uiManager.ShowFailedScreen(true);
         }
         else if (onBreakablePlatform)
         {
@@ -397,7 +397,7 @@ public class GameManager : MonoBehaviour
     private async void DelayAsyncFailedScreen()
     {
         await Task.Delay(delayFailedScreenInSeconds * 1000);
-        uiManager.SetFailedScreen(true);
+        uiManager.ShowFailedScreen(true);
     }
 
     // TODO - what's this for? Special level?
@@ -420,14 +420,14 @@ public class GameManager : MonoBehaviour
     {
         if (!won)
         {
-            uiManager.SetFailedScreen(true);
+            uiManager.ShowFailedScreen(true);
             return;
         }
 
         TimeTaken(false);
         audioManager.PlayAudio(audioManager.cubeyCelebration);
         ReParentExitSwirl(false);
-        uiManager.SetEndScreen(true);
+        uiManager.ShowEndScreen(true);
             
         ShowStarsAchieved();
         SaveLoadManager.SaveGameInfo();
@@ -745,7 +745,7 @@ public class GameManager : MonoBehaviour
         if (!hasFocus && gameState == GameState.Level)
         {
             print($"OnApplicationFocus. gameState: {gameState}");
-            uiManager.SetPauseMenu(true);
+            uiManager.ShowPauseMenu(true);
             return;
         }
 
