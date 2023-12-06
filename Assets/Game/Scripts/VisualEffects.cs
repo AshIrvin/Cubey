@@ -61,7 +61,7 @@ public class VisualEffects : MonoBehaviour
         FingerPos.belowCubey += PowerDustEffect;
         LevelManager.OnLevelLoad += OnLevelLoad;
         MapManager.OnMapLoad += OnMapLoad;
-        MainMenuManager.OnMainMenuLoad += OnMapLoad;
+        MainMenuManager.OnMainMenuLoad += OnMenuLoad;
         // FingerPos.aboveCubey += StopDustEffect;
     }
 
@@ -90,6 +90,11 @@ public class VisualEffects : MonoBehaviour
     }
 
     private void OnMapLoad()
+    {
+        StopEffect(peExitExplosion);
+    }
+
+    private void OnMenuLoad()
     {
         StopEffect(peMapLevelStars);
         StopEffect(peExitExplosion);
