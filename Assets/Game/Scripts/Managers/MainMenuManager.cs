@@ -82,7 +82,7 @@ public class MainMenuManager : MonoBehaviour
     public bool BackButton
     {
         get => backButton.isActiveAndEnabled;
-        set => backButton.gameObject.SetActive(value);
+        private set => backButton.gameObject.SetActive(value);
     }
 
     #endregion Getters
@@ -104,6 +104,8 @@ public class MainMenuManager : MonoBehaviour
         DeleteFinishScreenData();
 
         SetRefreshRate(PlayerPrefs.GetInt("RefreshRate"));
+
+        UiManager.DeleteSaves += ResetSaves;
     }
 
     private void OnEnable()
@@ -133,7 +135,7 @@ public class MainMenuManager : MonoBehaviour
         mainMenu.SetActive(true);
         menuEnvironmentParent.SetActive(true);
         mainMenuUi.SetActive(true);
-        BackButton = false;
+        ShowMenuBackButton(false);
 
         ButtonSizePong();
         ChangeMenuEnvironment(SaveLoadManager.LastChapterPlayed);
@@ -144,6 +146,11 @@ public class MainMenuManager : MonoBehaviour
         shopButton.SetActive(true);
         
         gameManager.SetGameState(GameManager.GameState.Menu);
+    }
+
+    public void ShowMenuBackButton(bool state)
+    {
+        BackButton = state;
     }
 
     private void DeleteFinishScreenData()
@@ -356,6 +363,7 @@ public class MainMenuManager : MonoBehaviour
         menuEnvironmentParent.SetActive(false);
     }
 
+    // TODO - is this and LoadMainMenu required? line133
     private void MainMenuScreen()
     {
         mapManager.DisableMaps();
@@ -365,7 +373,7 @@ public class MainMenuManager : MonoBehaviour
         chapterScreen.SetActive(false);
         SetNavButtons(false);
         mainMenuUi.SetActive(true);
-
+        OnMainMenuLoad?.Invoke();
         cameraManager.ResetCamPosition();
         leanZoom.enabled = true;
     }
