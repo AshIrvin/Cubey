@@ -1,6 +1,8 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 using UnityEngine.UI;
 using System.Collections.Generic;
+using UnityEngine.EventSystems;
 
 public class UiManager : MonoBehaviour
 {
@@ -64,6 +66,13 @@ public class UiManager : MonoBehaviour
 
     private AudioManager audioManager;
 
+    public static Action<bool> AutoPanToggle;
+    public static Action<bool> MusicToggle;
+    public static Action<bool> SoundToggle;
+    public static Action DeleteSaves;
+    public static Action<bool> AnalyticsConsent;
+
+
     private void Awake()
     {
         if (Instance == null)
@@ -93,13 +102,13 @@ public class UiManager : MonoBehaviour
 
     public void SetGameLevelCanvases(bool state)
     {
-        SetTopUi(state);
-        SetPauseMenu(false);
-        SetEndScreen(false);
-        SetFailedScreen(false);
+        ShowTopUi(state);
+        ShowPauseMenu(false);
+        ShowEndScreen(false);
+        ShowFailedScreen(false);
     }
 
-    public void SetTopUi(bool state)
+    public void ShowTopUi(bool state)
     {
         if (TopUi == null)
         {
@@ -111,7 +120,7 @@ public class UiManager : MonoBehaviour
         PickupGraphic(SaveLoadManager.LastChapterPlayed);
     }
 
-    public void SetPauseMenu(bool state)
+    public void ShowPauseMenu(bool state)
     {
         GameManager.Instance.LaunchArc = !state;
 
@@ -128,7 +137,7 @@ public class UiManager : MonoBehaviour
         }
     }
 
-    public void SetEndScreen(bool state)
+    public void ShowEndScreen(bool state)
     {
         if (EndScreen == null)
         {
@@ -143,13 +152,13 @@ public class UiManager : MonoBehaviour
 
     public void HideScreens()
     {
-        SetPauseMenu(false);
-        SetFailedScreen(false);
-        SetEndScreen(false);
-        SetTopUi(false);
+        ShowPauseMenu(false);
+        ShowFailedScreen(false);
+        ShowEndScreen(false);
+        ShowTopUi(false);
     }
 
-    public void SetFailedScreen(bool on)
+    public void ShowFailedScreen(bool on)
     {
         if (FailedScreen == null)
         {
@@ -183,15 +192,17 @@ public class UiManager : MonoBehaviour
 
         pickupUiImages[n].gameObject.SetActive(true);
     }
-    
+
+    #region Options/End screen
+
     public void RestartLevel()
     {
         Logger.Instance.ShowDebugLog("Restarting Level");
 
         LevelManager.OnLevelLoad?.Invoke();
 
-        SetTopUi(false);
-        SetTopUi(true);
+        ShowTopUi(false);
+        ShowTopUi(true);
 
         GameManager.Instance.ResetCubey();
     }
@@ -210,4 +221,59 @@ public class UiManager : MonoBehaviour
         HideScreens();
         MainMenuManager.Instance.LoadMainMenu();
     }
+
+    #endregion Options/End screen
+
+    #region Settings menu
+
+    public void MusicButton()
+    {
+        bool clicked = EventSystem.current.currentSelectedGameObject.gameObject
+            .GetComponent<Toggle>().isOn;
+
+        MusicToggle?.Invoke(clicked);
+    }
+
+    public void SoundButton()
+    {
+        bool clicked = EventSystem.current.currentSelectedGameObject.gameObject
+            .GetComponent<Toggle>().isOn;
+
+        SoundToggle?.Invoke(clicked);
+    }
+
+    public void AutoPanButton()
+    {
+        bool clicked = EventSystem.current.currentSelectedGameObject.gameObject
+            .GetComponent<Toggle>().isOn;
+
+        AutoPanToggle?.Invoke(clicked);
+    }
+
+    public void DeleteSavesButton()
+    {
+
+    }
+
+    public void DeleteSavesConfirmButton()
+    {
+        DeleteSaves?.Invoke();
+    }
+
+    public void AnalyticsConsentButton()
+    {
+        AnalyticsConsent?.Invoke(true);
+    }
+
+    public void AnalyticsOptOutButton()
+    {       
+        AnalyticsConsent?.Invoke(false);
+    }
+
+    public void EnableCloudSaving(bool state)
+    {
+        // This should be a switch in the settings UI. On as default
+    }
+
+    #endregion Settings menu
 }
