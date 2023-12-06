@@ -16,7 +16,7 @@ namespace Game.Scripts
                 return;
             }
 
-            UiManager.Instance.SetFailedScreen(true);
+            UiManager.Instance.ShowFailedScreen(true);
         }
 
         private void OnTriggerEnter(Collider other)
@@ -29,7 +29,7 @@ namespace Game.Scripts
                 return;
             }
 
-            UiManager.Instance.SetFailedScreen(true);    
+            UiManager.Instance.ShowFailedScreen(true);    
         }
     }
 }
