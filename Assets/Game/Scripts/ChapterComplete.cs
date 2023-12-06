@@ -1,7 +1,3 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -22,7 +18,7 @@ public class ChapterComplete : MonoBehaviour
 
     private void Awake()
     {
-        if (gameManager == null) gameManager = FindObjectOfType<GameManager>();        
+        if (gameManager == null) gameManager = FindFirstObjectByType<GameManager>();        
         if (goldCollected == null) transform.Find("GoldCollected_text");
         if (goldLeftToCollect == null) transform.Find("MoreToCollectNumber_text");
     }
