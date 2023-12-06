@@ -2,13 +2,13 @@
 using System.Collections.Generic;
 using BayatGames.SaveGamePro;
 using UnityEngine;
-using Debug = UnityEngine.Debug;
 using Unity.Services.Core;
 using Unity.Services.Authentication;
 using Unity.Services.CloudSave;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 
-[System.Serializable]
+[Serializable]
 public class SaveLoadManager : MonoBehaviour
 {
     public enum Awards
@@ -23,23 +23,21 @@ public class SaveLoadManager : MonoBehaviour
     public static List<ChapterLevelData> SaveStaticList;
 
     [SerializeField] private SaveMetaData saveMetaData;
+    [SerializeField] private bool viewSavesInInspector;
 
     private static int lastChapterPlayed;
     private static int chapterLevelSaved;
-
-    private int xmasStartMonth = 10;
-    private int xmasEndMonth = 1;
-    private bool useCloudSaves = false;
-
-    public int chapterAmount = 6;
-    public int levelAmount = 30;
-    public bool deleteAllSaves;
+    private static int LevelAmount = 30;
+    private int chapterAmount = 6;
+    private int levelAmount = 30;
+    private bool deleteAllSaves;
+    private readonly int xmasStartMonth = 10;
+    private readonly int xmasEndMonth = 1;
 
     public static int ChapterAmount = 6;
-    public static int LevelAmount = 30;
     public static bool GamePurchased = false;
+    public static bool useCloudSaving;
 
-    [SerializeField] private bool viewSavesInInspector;
 
     #region Getters
 
@@ -57,7 +55,7 @@ public class SaveLoadManager : MonoBehaviour
 
     public static int LastChapterPlayed
     {
-        get => SaveGame.Load<int>("LastChapterPlayed", 1);
+        get => SaveGame.Load("LastChapterPlayed", 1);
         set
         {
             lastChapterPlayed = LastChapterPlayed;
@@ -84,7 +82,7 @@ public class SaveLoadManager : MonoBehaviour
             if (deleteAllSaves)
                 ResetSaves();
             
-            LoadSaves();            
+            LoadSaves();
         }
         else
         {
@@ -106,26 +104,32 @@ public class SaveLoadManager : MonoBehaviour
         await AuthenticationService.Instance.SignInAnonymouslyAsync();
     }
 
-    public void EnableCloudSaving(bool state)
+    private static async Task SaveToCloud(string key, object value)
     {
-        // This should be a switch in the settings UI. On as default
+        var data = new Dictionary<string, object> { { key, value } };
+
+        await CloudSaveService.Instance.Data.Player.SaveAsync(data);
     }
 
-    private void SaveToCloud(string text, object save)
+    private static async Task<T> LoadFromCloud<T>(string key)
     {
-        var data = new Dictionary<string, object> { { text, save } };
+        var query = await CloudSaveService.Instance.Data.Player.LoadAsync(new HashSet<string> { key });
         
-        Task task = CloudSaveService.Instance.Data.Player.SaveAsync(data);
+        return query.TryGetValue(key, out var value) ? Deserialize<T>(value.Value.GetAsString()) : default;
     }
 
-    // TODO - Finish implementing cloud save/load
-    private void LoadFromCloud()
+    private static T Deserialize<T>(string input)
     {
-        Task task = CloudSaveService.Instance.Data.Player.LoadAllAsync();
+        if (typeof(T) == typeof(string))
+            return (T)(object)input;
+        
+        return JsonConvert.DeserializeObject<T>(input);
     }
 
     private void FirstTimeUse()
     {
+        // TODO - Add first-run analytics here
+
         if (SaveStaticList.Count == 0)
         {
             Logger.Instance.ShowDebugError("SaveStaticList not created. Old data?");
@@ -241,68 +245,40 @@ public class SaveLoadManager : MonoBehaviour
         }
     }
 
-    private void LoadSaves()
+    private async void LoadSaves()
     {
-        Logger.Instance.ShowDebugLog($"Found save, {(useCloudSaves ? "loading cloud saves." : "loading local saves.")}");
+        Logger.Instance.ShowDebugLog($"Found save, {(useCloudSaving ? "loading cloud saves." : "loading local saves.")}");
 
-        if (useCloudSaves)
-        {
-            GetCloudSaves();
-            return;
-        }
-
-        GetLocalSaves();
-    }
-
-    private void GetCloudSaves()
-    {
-
-    }
-
-    private void GetLocalSaves()
-    {
         for (int i = 0; i < chapterAmount; i++)
         {
             SaveStaticList[i] = SaveGame.Load<ChapterLevelData>($"SaveChapters{i}.txt");
+
+            if (useCloudSaving)
+            {
+                await LoadFromCloud<string>($"SaveChapters{i}.txt");
+            }
 
             if (viewSavesInInspector)
             {
                 showSaveData[i] = SaveGame.Load<ChapterLevelData>($"SaveChapters{i}.txt");
             }
         }
-
     }
     
-    public static void SaveGameInfo()
+    public static async void SaveGameInfo()
     {
         Logger.Instance.ShowDebugLog("Saving game at... " + SaveGame.PersistentDataPath);
 
         for (int i = 0; i < 6; i++)
         {
             SaveGame.Save($"SaveChapters{i}.txt", SaveStaticList[i]);
+
+            if (useCloudSaving)
+            {
+                await SaveToCloud($"SaveChapters{i}.txt", SaveStaticList[i]);
+            }
         }
     }
-
-    // TODO - Still needed?
-/*    private void RefreshShowSaveData()
-    {
-        for (int i = 0; i < chapterAmount; i++)
-        {
-            showSaveData[i] = SaveGame.Load<ChapterLevelData>($"SaveChapters{i}.txt");
-        }
-    }*/
-
-    // TODO - Still needed?
-    public static void SaveChapterAndLevel(int n)
-    {
-        chapterLevelSaved = n;
-    }
-    
-    // TODO - Still needed?
-/*    public static void SaveLastChapterLevelPlayed(int n)
-    {
-        lastChapterLevelPlayed = n;
-    }*/
     
     /// <summary>
     /// Pass chapter and level to get award. 1 = bronze. 3 = gold
