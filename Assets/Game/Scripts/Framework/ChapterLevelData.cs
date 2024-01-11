@@ -1,30 +1,41 @@
 using System;
 using System.Collections.Generic;
 
-[System.Serializable]
+[Serializable]
 public class ChapterLevelData
-{   
-    public bool chapterUnlocked;
-    public int lastLevelPlayed;
-    public int lastLevelUnlocked;
+{
+    public int ChapterNumber;
+    public bool ChapterUnlocked;
+    public int LastLevelPlayed;
+    public int LastLevelUnlocked;
     
-    public int allBronze;
-    public int allSilver;
-    public int allStars;
-    public float chapterTimeTaken;
+    public int AllBronze;
+    public int AllSilver;
+    public int AllStars;
+    public float ChapterTimeTaken;
     
-    public List<LevelInfo> levels;
+    public List<LevelInfo> Levels;
+
+    public ChapterLevelData(int number)
+    {
+        ChapterNumber = number;
+    }
 
     [Serializable]
     public class LevelInfo
     {
-        public bool levelUnlocked;
-        
-        public int starsReceived;
-        public int bronze;
-        public int silver;
-        public int stars;
-        public float timeTaken;
-        public int jumpsUsed;
+        public bool LevelUnlocked;
+
+        public int StarsReceived = 0;
+        public int Bronze = 0;
+        public int Silver;
+        public int Stars;
+        public float TimeTaken;
+        public int JumpsUsed;
     }
+}
+
+public class ChapterData
+{
+    public List<ChapterLevelData> ChapterLevelsData;
 }

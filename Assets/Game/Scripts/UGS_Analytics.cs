@@ -2,9 +2,12 @@ using UnityEngine;
 using Unity.Services.Analytics;
 using Unity.Services.Core;
 using System.Collections.Generic;
+using System;
 
 public class UGS_Analytics : MonoBehaviour
 {
+    public static Action<bool> AnalyticsConsent;
+
     private void Awake()
     {
         UiManager.AnalyticsConsent += HasGivenConsent;
@@ -22,6 +25,8 @@ public class UGS_Analytics : MonoBehaviour
         {
             Debug.Log(e.ToString());
         }
+
+        HasGivenConsent(PlayerPrefs.GetInt("AnalyticsConsent") == 1);
     }
 
     private void HasGivenConsent(bool state)
@@ -33,6 +38,7 @@ public class UGS_Analytics : MonoBehaviour
         }
 
         GiveConsent();
+        AnalyticsConsent?.Invoke(state);
     }
 
     private void GiveConsent()

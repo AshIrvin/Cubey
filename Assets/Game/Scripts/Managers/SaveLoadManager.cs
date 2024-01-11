@@ -1,12 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using BayatGames.SaveGamePro;
 using UnityEngine;
-using Unity.Services.Core;
-using Unity.Services.Authentication;
-using Unity.Services.CloudSave;
-using System.Threading.Tasks;
-using Newtonsoft.Json;
+using System.IO;
 
 [Serializable]
 public class SaveLoadManager : MonoBehaviour
@@ -18,48 +13,47 @@ public class SaveLoadManager : MonoBehaviour
         TwoStars,
         ThreeStars
     }
-    
-    public List<ChapterLevelData> showSaveData = new (6);
-    public static List<ChapterLevelData> SaveStaticList;
 
     [SerializeField] private SaveMetaData saveMetaData;
-    [SerializeField] private bool viewSavesInInspector;
+    
+    public List<ChapterLevelData> showSaveData = new (6);
 
+    public static List<ChapterLevelData> SaveStaticList;
+    public static bool GamePurchased = false;
+    public static bool useCloudSaving;
     private static int lastChapterPlayed;
     private static int chapterLevelSaved;
-    private static int LevelAmount = 30;
-    private int chapterAmount = 6;
-    private int levelAmount = 30;
-    private bool deleteAllSaves;
+
+    public static readonly int ChapterAmount = 6;
+    private static readonly int LevelAmount = 30;
     private readonly int xmasStartMonth = 10;
     private readonly int xmasEndMonth = 1;
 
-    public static int ChapterAmount = 6;
-    public static bool GamePurchased = false;
-    public static bool useCloudSaving;
-
+    private readonly bool deleteAllSaves = false; // TODO - keep testing this till no errors. Follow
 
     #region Getters
 
     public static int LastLevelPlayed
     {
-        get => SaveStaticList[lastChapterPlayed].lastLevelPlayed;
-        set => SaveStaticList[lastChapterPlayed].lastLevelPlayed = value;
+        get => SaveStaticList[lastChapterPlayed].LastLevelPlayed;
+        set => SaveStaticList[lastChapterPlayed].LastLevelPlayed = value;
     }
 
     public static int LastLevelUnlocked
     {
-        get => SaveStaticList[lastChapterPlayed].lastLevelUnlocked;
-        set => SaveStaticList[lastChapterPlayed].lastLevelUnlocked = value;
+        get => SaveStaticList[lastChapterPlayed].LastLevelUnlocked;
+        set => SaveStaticList[lastChapterPlayed].LastLevelUnlocked = value;
     }
 
     public static int LastChapterPlayed
     {
-        get => SaveGame.Load("LastChapterPlayed", 1);
+        //get => SaveGame.Load("LastChapterPlayed", 1);
+        get => 1;// SaveToFile.LoadFromJson("LastChapterPlayed", 1);
         set
         {
             lastChapterPlayed = LastChapterPlayed;
-            SaveGame.Save("LastChapterPlayed", value);
+            //SaveGame.Save("LastChapterPlayed", value);
+            //SaveToFile.SaveToJson("LastChapterPlayed", value);
         }
     }
 
@@ -75,101 +69,42 @@ public class SaveLoadManager : MonoBehaviour
     {
         LoadGamePurchased();
 
-        if (SaveGame.Exists($"SaveChapters{0}.txt"))
+        if (deleteAllSaves)
+            ResetSaves();
+
+        SaveToFile.OnFirstTimeUse += CreateSaves;
+        
+        //if (GamePurchased)
+            //UnlockedPurchasedChapters();
+
+        //UnlockSeasonalChapter();
+    }
+
+    private void Start()
+    {
+        if (SaveToFile.CheckFileExists())
         {
-            SetupSaveClass();
-            
-            if (deleteAllSaves)
-                ResetSaves();
-            
+            Logger.Instance.ShowDebugLog("Existing player, loading save");
+
             LoadSaves();
         }
         else
         {
             Logger.Instance.ShowDebugLog("No save found");
-            SetupSaveClass();
-            FirstTimeUse();
-            SaveGameInfo();
-        }
-        
-        if (GamePurchased)
-            UnlockedPurchasedChapters();
+            SaveToFile.SetupJson();
+            //CreateSaves();
 
-        UnlockSeasonalChapter();
-    }
-
-    private async void Start()
-    {
-        await UnityServices.InitializeAsync();
-        await AuthenticationService.Instance.SignInAnonymouslyAsync();
-    }
-
-    private static async Task SaveToCloud(string key, object value)
-    {
-        var data = new Dictionary<string, object> { { key, value } };
-
-        await CloudSaveService.Instance.Data.Player.SaveAsync(data);
-    }
-
-    private static async Task<T> LoadFromCloud<T>(string key)
-    {
-        var query = await CloudSaveService.Instance.Data.Player.LoadAsync(new HashSet<string> { key });
-        
-        return query.TryGetValue(key, out var value) ? Deserialize<T>(value.Value.GetAsString()) : default;
-    }
-
-    private static T Deserialize<T>(string input)
-    {
-        if (typeof(T) == typeof(string))
-            return (T)(object)input;
-        
-        return JsonConvert.DeserializeObject<T>(input);
-    }
-
-    private void FirstTimeUse()
-    {
-        // TODO - Add first-run analytics here
-
-        if (SaveStaticList.Count == 0)
-        {
-            Logger.Instance.ShowDebugError("SaveStaticList not created. Old data?");
-            return;
-        }
-        
-        Logger.Instance.ShowDebugLog("Setting up 1st time use");
-        SaveStaticList[0].chapterUnlocked = false;
-        SaveStaticList[1].chapterUnlocked = true;
-        SaveStaticList[2].chapterUnlocked = false;
-        SaveStaticList[3].chapterUnlocked = false;
-        
-        for (int i = 0; i < chapterAmount; i++)
-        {
-            SaveStaticList[i].levels[0].levelUnlocked = true;
-            SaveStaticList[i].lastLevelUnlocked = 0;
-        }
-
-        if (viewSavesInInspector)
-        {
-            showSaveData[0].chapterUnlocked = false;
-            showSaveData[1].chapterUnlocked = true;
-            showSaveData[2].chapterUnlocked = false;
-            showSaveData[3].chapterUnlocked = false;
-            
-            for (int i = 0; i < chapterAmount; i++)
-            {
-                showSaveData[i].levels[0].levelUnlocked = true;
-            }
         }
     }
 
     private void UnlockedPurchasedChapters()
     {
-        showSaveData[4].chapterUnlocked = true;
-        showSaveData[5].chapterUnlocked = true;
+        showSaveData[4].ChapterUnlocked = true;
+        showSaveData[5].ChapterUnlocked = true;
         
         UnlockChapter(4);
         UnlockChapter(5);
-        SaveGameInfo();
+        SaveGameData();
     }
     
     public void PurchasedAndUnlockFestiveChapter()
@@ -184,12 +119,7 @@ public class SaveLoadManager : MonoBehaviour
         {
             if (LoadGamePurchased())
             {
-                SaveStaticList[0].chapterUnlocked = true;
-
-                if (viewSavesInInspector)
-                { 
-                    showSaveData[0].chapterUnlocked = true; 
-                }
+                SaveStaticList[0].ChapterUnlocked = true;
 
                 Logger.Instance.ShowDebugLog("Xmas chapter unlocked");
             }
@@ -200,82 +130,50 @@ public class SaveLoadManager : MonoBehaviour
         }
         else
         {
-            SaveStaticList[0].chapterUnlocked = false;
-
-            if (viewSavesInInspector)
-            { 
-                showSaveData[0].chapterUnlocked = false; 
-            }
+            SaveStaticList[0].ChapterUnlocked = false;
 
             Logger.Instance.ShowDebugLog("Xmas chapter locked. Month: " + DateTime.Now.Month);
         }
     }
-    
-    private void SetupSaveClass()
+
+    private void CreateSaves()
     {
-        SaveStaticList = new List<ChapterLevelData>(chapterAmount);
+        SaveStaticList ??= new List<ChapterLevelData>();
 
-        if (viewSavesInInspector) showSaveData = new List<ChapterLevelData>(chapterAmount);
+        var list = SaveToFile.LoadFromJson().ChapterLevelsData;
 
-        for (int i = 0; i < chapterAmount; i++)
+        foreach (var item in list)
         {
-            if (viewSavesInInspector)
-            {
-                showSaveData.Add(new ChapterLevelData());
-            }
-            
-            SaveStaticList.Add(new ChapterLevelData());
-            
-            if (viewSavesInInspector)
-            {
-                showSaveData[i].levels = new List<ChapterLevelData.LevelInfo>(levelAmount);
-            }
-            
-            SaveStaticList[i].levels = new List<ChapterLevelData.LevelInfo>(levelAmount);
-            
-            for (int j = 0; j < levelAmount; j++)
-            {
-                if (viewSavesInInspector)
-                {
-                    showSaveData[i].levels.Add(new ChapterLevelData.LevelInfo());
-                }
-                
-                SaveStaticList[i].levels.Add(new ChapterLevelData.LevelInfo());
-            }   
+            SaveStaticList.Add(item);
         }
+
+        Debug.Log("CreateSaves. : " + SaveStaticList.Count);
     }
 
-    private async void LoadSaves()
+    private void LoadSaves()
     {
-        Logger.Instance.ShowDebugLog($"Found save, {(useCloudSaving ? "loading cloud saves." : "loading local saves.")}");
+        Logger.Instance.ShowDebugLog($"LoadSaves. Found save, {(useCloudSaving ? "loading cloud saves." : "loading local saves.")}");
 
-        for (int i = 0; i < chapterAmount; i++)
+        SaveStaticList = SaveToFile.LoadFromJson().ChapterLevelsData;
+        
+        if (useCloudSaving)
         {
-            SaveStaticList[i] = SaveGame.Load<ChapterLevelData>($"SaveChapters{i}.txt");
-
-            if (useCloudSaving)
-            {
-                await LoadFromCloud<string>($"SaveChapters{i}.txt");
-            }
-
-            if (viewSavesInInspector)
-            {
-                showSaveData[i] = SaveGame.Load<ChapterLevelData>($"SaveChapters{i}.txt");
-            }
-        }
+            //await LoadFromCloud<string>($"SaveChapters{i}.txt");
+        }     
     }
-    
-    public static async void SaveGameInfo()
+
+    public static async void SaveGameData()
     {
-        Logger.Instance.ShowDebugLog("Saving game at... " + SaveGame.PersistentDataPath);
+        SaveToFile.SaveChapterData(SaveStaticList);
 
         for (int i = 0; i < 6; i++)
         {
-            SaveGame.Save($"SaveChapters{i}.txt", SaveStaticList[i]);
+            //allChapterData.Add(SaveStaticList[i]);
+            //SaveToFile.SaveChapterData(SaveStaticList[i]);
 
             if (useCloudSaving)
             {
-                await SaveToCloud($"SaveChapters{i}.txt", SaveStaticList[i]);
+                await CloudManager.SendToCloud($"SaveChapters{i}.txt", SaveStaticList[i]);
             }
         }
     }
@@ -286,7 +184,7 @@ public class SaveLoadManager : MonoBehaviour
     /// <param name="level"></param>
     public static int GetAwards(int level)
     {
-        return SaveStaticList[lastChapterPlayed].levels[level].starsReceived;
+        return SaveStaticList[lastChapterPlayed].Levels[level].StarsReceived;
     }
 
     public static void SetAward(int level, Awards awardType)
@@ -296,9 +194,9 @@ public class SaveLoadManager : MonoBehaviour
         
         if (remainingAward > 0)
         {
-            SaveStaticList[lastChapterPlayed].allStars += remainingAward;
-            SaveStaticList[lastChapterPlayed].levels[level].stars += remainingAward;
-            SaveStaticList[lastChapterPlayed].levels[level].starsReceived += remainingAward;
+            SaveStaticList[lastChapterPlayed].AllStars += remainingAward;
+            SaveStaticList[lastChapterPlayed].Levels[level].Stars += remainingAward;
+            SaveStaticList[lastChapterPlayed].Levels[level].StarsReceived += remainingAward;
         }
     }
     
@@ -309,7 +207,7 @@ public class SaveLoadManager : MonoBehaviour
     /// <returns></returns>
     public static int GetLevelAward(int level)
     {
-        return SaveStaticList[lastChapterPlayed].levels[level].stars;
+        return SaveStaticList[lastChapterPlayed].Levels[level].Stars;
     }
 
     /// <summary>
@@ -320,7 +218,7 @@ public class SaveLoadManager : MonoBehaviour
     /// <returns></returns>
     public static int GetChapterAward(int chapter, Awards awardType)
     {
-        return SaveStaticList[chapter].allStars;
+        return SaveStaticList[chapter].AllStars;
     }
     
     /// <summary>
@@ -331,7 +229,7 @@ public class SaveLoadManager : MonoBehaviour
     {
         if (chapter < ChapterAmount)
         {
-            SaveStaticList[chapter].chapterUnlocked = true;
+            SaveStaticList[chapter].ChapterUnlocked = true;
         }
     }
     
@@ -343,9 +241,8 @@ public class SaveLoadManager : MonoBehaviour
     {
         if (level < LevelAmount && level >= LastLevelUnlocked)
         {
-            SaveStaticList[lastChapterPlayed].levels[level].levelUnlocked = true;
+            SaveStaticList[lastChapterPlayed].Levels[level].LevelUnlocked = true;
             LastLevelUnlocked = level;
-            // SaveGameInfo();
         }
     }
     
@@ -353,7 +250,7 @@ public class SaveLoadManager : MonoBehaviour
     {
         for (int i = 0; i < SaveStaticList.Count; i++)
         {
-            if (SaveStaticList[chapter].chapterUnlocked)
+            if (SaveStaticList[chapter].ChapterUnlocked)
             {
                 return true;
             }
@@ -363,36 +260,44 @@ public class SaveLoadManager : MonoBehaviour
 
     public static void ResetSaves()
     {
-        if (SaveGame.Exists($"SaveChapters{0}.txt"))
-            SaveGame.Delete($"SaveChapters{0}.txt");
-        
-        if (SaveGame.Exists("LastChapterPlayed"))
-            SaveGame.Delete("LastChapterPlayed");
+        // Todo: update to new save file system
 
-        if (PlayerPrefs.HasKey("levelsPlayed"))
-            PlayerPrefs.DeleteKey("levelsPlayed");
-        
-        if (SaveGame.Exists("GamePurchased"))
-            SaveGame.Delete("GamePurchased");
+        File.Delete($"{Application.dataPath}/saveData.json");
+        File.Delete($"{Application.dataPath}/saveData.json.meta");
 
-        LastLevelUnlocked = 0;
+
+        //if (SaveGame.Exists($"SaveChapters{0}.txt"))
+        //    SaveGame.Delete($"SaveChapters{0}.txt");
+        
+        //if (SaveGame.Exists("LastChapterPlayed"))
+        //    SaveGame.Delete("LastChapterPlayed");
+
+        //if (PlayerPrefs.HasKey("levelsPlayed"))
+        //    PlayerPrefs.DeleteKey("levelsPlayed");
+        
+        //if (SaveGame.Exists("GamePurchased"))
+        //    SaveGame.Delete("GamePurchased");
+
+        //LastLevelUnlocked = 0;
     }
 
     public static void SaveGamePurchased(bool state)
     {
         GamePurchased = state;
-        SaveGame.Save("GamePurchased", state);
+        //SaveGame.Save("GamePurchased", state);
+        //SaveToFile.SaveToJson("GamePurchased", state);
     }
 
     public static bool LoadGamePurchased()
     {
-        GamePurchased = SaveGame.Load("GamePurchased", false);
+        //GamePurchased = SaveGame.Load("GamePurchased", false);
+        //GamePurchased = SaveToFile.LoadFromJson("GamePurchased", false);
         return GamePurchased;
     }
 
     public static void LevelTimeTaken(int chapter, int level, float time)
     {
-        float t = SaveStaticList[chapter].levels[level].timeTaken;
+        float t = SaveStaticList[chapter].Levels[level].TimeTaken;
         if (t == 0)
         {
             t = 1000;
@@ -400,7 +305,7 @@ public class SaveLoadManager : MonoBehaviour
         
         if (time < t)
         {
-            SaveStaticList[chapter].levels[level].timeTaken = time;
+            SaveStaticList[chapter].Levels[level].TimeTaken = time;
         }
 
         ChapterTimeTaken(chapter, level, time);
@@ -411,12 +316,12 @@ public class SaveLoadManager : MonoBehaviour
     public static void ChapterTimeTaken(int chapter, int level, float time)
     {
         float totalChapterTime = 0;
-        for (int i = 0; i < SaveStaticList[chapter].levels.Count; i++)
+        for (int i = 0; i < SaveStaticList[chapter].Levels.Count; i++)
         {
-            totalChapterTime += SaveStaticList[chapter].levels[i].timeTaken;
+            totalChapterTime += SaveStaticList[chapter].Levels[i].TimeTaken;
         }
 
-        SaveStaticList[chapter].chapterTimeTaken = totalChapterTime; 
+        SaveStaticList[chapter].ChapterTimeTaken = totalChapterTime; 
         
         Logger.Instance.ShowDebugLog("Total chapter time? " + totalChapterTime);
     }

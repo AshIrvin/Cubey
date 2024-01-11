@@ -133,7 +133,7 @@ public class InitialiseAds : MonoBehaviour
         print("Show ad if not null");
         if (fullscreenAd != null && fullscreenAd.InterstitialAd != null && fullscreenAd.InterstitialAd.IsLoaded())
         {
-            fullscreenAd.ShowIfLoaded(); // crashed here
+            fullscreenAd.ShowIfLoaded(); // TODO - fix: crashed here
             Logger.Instance.ShowDebugLog("Ad 2 - show if loaded: " + fullscreenAd.name);
         }
         

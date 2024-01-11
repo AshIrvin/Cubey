@@ -15,7 +15,7 @@ public class UiManager : MonoBehaviour
     [SerializeField] private List<string> nearlyFinishedInfoText;
     [SerializeField] private List<string> failedFinishedInfoText;
 
-    [Header("Game Screens1")]
+    [Header("Game Screens")]
     [SerializeField] private GameObject pauseMenu;
     [SerializeField] private GameObject endScreen;
     [SerializeField] private GameObject failedScreen;
@@ -39,6 +39,9 @@ public class UiManager : MonoBehaviour
 
     [Header("UI Pickups")]
     [SerializeField] private List<Image> pickupUiImages;
+
+    [Header("UI Buttons")]
+    [SerializeField] private Toggle analyticsButton;
 
     #endregion Fields
 
@@ -82,6 +85,8 @@ public class UiManager : MonoBehaviour
     private void Start()
     {
         audioManager = AudioManager.Instance;
+
+        UGS_Analytics.AnalyticsConsent += GetAnalyticsConsentForButton;
     }
 
     public void ModifyEndScreenInfoText(GameManager.FinishedInfo info)
@@ -275,5 +280,16 @@ public class UiManager : MonoBehaviour
         // This should be a switch in the settings UI. On as default
     }
 
+    private void GetAnalyticsConsentForButton(bool state)
+    {
+        analyticsButton.GetComponent<Toggle>().isOn = state;
+    }
+
     #endregion Settings menu
+
+    #region Level End screen
+
+    
+
+    #endregion Level End screen
 }

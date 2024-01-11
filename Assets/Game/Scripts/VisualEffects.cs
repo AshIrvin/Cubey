@@ -68,6 +68,8 @@ public class VisualEffects : MonoBehaviour
     private void Start()
     {
         gameManager = GameManager.Instance;
+
+        peExitSwirl.SetActive(false);
     }
 
     private void OnDestroy()

@@ -293,10 +293,10 @@ public class MainMenuManager : MonoBehaviour
     #region Used for UI Buttons
 
     // Used in chapter menu buttons
+    // TODO - move to UiManager
     public void ShowMap(int n)
     {
-        int chapter;
-        chapter = SaveLoadManager.LastChapterPlayed = n;
+        int chapter = SaveLoadManager.LastChapterPlayed = n;
         
         ChangeMenuEnvironment(chapter);
         DisableMenuScreens();

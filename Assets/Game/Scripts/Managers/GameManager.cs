@@ -55,7 +55,6 @@ public class GameManager : MonoBehaviour
     private GameObject exitPrezzie;
     private ChapterList chapterList;
     private LevelMetaData levelMetaData;
-    //private MapManager mapManager;
     private UiManager uiManager;
     private LevelManager levelManager;
     private AwardManager awardManager;
@@ -112,17 +111,12 @@ public class GameManager : MonoBehaviour
 
     #endregion
 
-    public bool playSingleLevel = false;
+    //public bool playSingleLevel = false;
 
     [SerializeField] public bool allowPlayerMovement;
     [SerializeField] private bool jumpCounting;
     [SerializeField] private bool onBreakablePlatform;
     [SerializeField] private bool onMovingPlatform;
-
-    private readonly int jumpsToStartWith = 10;
-    private readonly int countdown = 60;
-    private SaveLoadManager.Awards award;
-    private int jumpLeft;
 
     [Header("Animation")]
     [SerializeField] private Animator starGold_anim;
@@ -130,18 +124,21 @@ public class GameManager : MonoBehaviour
     [SerializeField] private Animator starBronze_anim;
 
     [Header("Other")]
-    public float cubeyMagnitude;
-    private Vector3 flip;
-    
     [SerializeField] private List<Image> starImages;
+    [SerializeField] private Rigidbody playerRb;
+    //public float cubeyMagnitude;
 
+    private readonly int jumpsToStartWith = 10;
+    private readonly int countdown = 60;
+    private SaveLoadManager.Awards award;
+    private int jumpLeft;
+    private Vector3 flip;
     private float timeStarted;
     private float durationInLevel;
     private int delayFailedScreenInSeconds = 4;
 
-    public float cubeyJumpHeight = 2.6f;
-    public bool useTimer;
-    public Rigidbody playerRb;
+    //public float cubeyJumpHeight = 2.6f;
+    //public bool useTimer;
 
 
     private void Awake()
@@ -154,15 +151,14 @@ public class GameManager : MonoBehaviour
         chapterList = GlobalMetaData.Instance.ChapterList;
         visualEffects = VisualEffects.Instance;
         uiManager = UiManager.Instance;
+        levelManager = LevelManager.Instance;
+        awardManager = AwardManager.Instance;
 
         pickupCountProperty.OnValueChanged += CheckPickupCount;
         stickyObject.OnValueChanged += ToggleSticky;
         leanForceRb.onGround += PlayerAllowedJump;
         // FingerPos.allowedJump += PlayerAllowedJump;
         LevelManager.OnLevelLoad += OnLevelLoad;
-
-        levelManager = LevelManager.Instance;
-        awardManager = AwardManager.Instance;
 
         if (leanForceRb == null)
             leanForceRb = FindFirstObjectByType<LeanForceRigidbodyCustom>();
@@ -173,7 +169,7 @@ public class GameManager : MonoBehaviour
 
     private void Start()
     {
-        visualEffects.peExitSwirl.SetActive(false);
+        //visualEffects.peExitSwirl.SetActive(false);
 
         jumpLeft = jumpsToStartWith;
         uiManager.JumpAmountText.text = jumpLeft.ToString();
@@ -430,7 +426,7 @@ public class GameManager : MonoBehaviour
         uiManager.ShowEndScreen(true);
             
         ShowStarsAchieved();
-        SaveLoadManager.SaveGameInfo();
+        SaveLoadManager.SaveGameData();
     }
 
     public void EnableCubeyLevelObject(bool state)
@@ -517,7 +513,7 @@ public class GameManager : MonoBehaviour
         exitObject.transform.GetChild(0).gameObject.SetActive(true);
     }
 
-    // TODO - remove all finds. Assign on load or in scriptable object
+    // TODO - remove all finds. Assign on load or in scriptable object or enum/switch
     private GameObject FindExit()
     {
         if (levelManager.LevelGameObject.transform.GetChild(0).name.Contains("MovingExitPlatform"))
@@ -645,17 +641,7 @@ public class GameManager : MonoBehaviour
 
         AwardManager.Instance.SetAwardForLevel(award);
 
-        if (award > 0)
-        {
-            if (SaveLoadManager.SaveStaticList[chapterNo].levels[levelNo].levelUnlocked)
-            {
-                SaveLoadManager.UnlockLevel(SaveLoadManager.LastLevelPlayed + 1);
-            }
-            else
-            {
-                SaveLoadManager.SaveGameInfo();
-            }
-        }
+        UnlockNextLevel();
 
         starImages[0].color = ColourManager.starDefault;
         starImages[1].color = ColourManager.starDefault;
@@ -666,6 +652,25 @@ public class GameManager : MonoBehaviour
         starGold_anim.StopPlayback();
 
         SetStars();
+    }
+
+    private void UnlockNextLevel()
+    {
+        if (award > 0)
+        {
+            // TODO - This is the current level? This needed? Can't play it unless unlocked?
+            if (SaveLoadManager.SaveStaticList[chapterNo].Levels[levelNo].LevelUnlocked)
+            {
+                // This unlocks the next level and updates SaveStaticList
+                // Is SaveStaticList still needed? Yes, to save to the json presumably
+                SaveLoadManager.UnlockLevel(SaveLoadManager.LastLevelPlayed + 1);
+                Debug.Log($"Unlocking chapter: {chapterNo}, level: {SaveLoadManager.LastLevelPlayed + 1}");
+            }
+            else
+            {
+                Debug.LogError("ShowStarsAchieved. Can't find level unlock");
+            }
+        }
     }
 
     private void SetStars()
@@ -762,6 +767,7 @@ public class GameManager : MonoBehaviour
 
         float duration = Mathf.Abs(timeStarted - Time.time);
         durationInLevel = Mathf.Round(duration * 100) /100;
+        durationInLevel = (float)Math.Round(durationInLevel, 3);
         SaveLoadManager.LevelTimeTaken(chapterNo, levelNo, durationInLevel);
     }
 

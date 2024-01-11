@@ -203,7 +203,7 @@ public class MapManager : MonoBehaviour
             PlayerPrefs.SetInt("tutorialFinished", 1);
             SaveLoadManager.UnlockChapter(2);
             SaveLoadManager.UnlockChapter(3);
-            SaveLoadManager.SaveGameInfo();
+            SaveLoadManager.SaveGameData();
             mainMenuManager.ShowMenuBackButton(false);
             tutoralCompleteGo.SetActive(true);
         }
@@ -227,11 +227,11 @@ public class MapManager : MonoBehaviour
             // set all level 1 buttons unlocked - needed?
             button.interactable = i == 0;
 
-            CheckGamePurchased(button, i);
+            CheckLevelUnlocks(button, i);
             
             Image screen = screenShot.GetComponent<Image>();
-            var colour = screen.color;
-            colour = Color.white;
+            //var colour = screen.color;
+            var colour = Color.white;
             screen.color = colour;
 
             if (!button.interactable)
@@ -249,13 +249,16 @@ public class MapManager : MonoBehaviour
         SetButtonToShopButton(lastChapter.InGameMapButtonList[10].GetComponent<Button>());
     }
 
-    private void CheckGamePurchased(Button button, int i)
+    private void CheckLevelUnlocks(Button button, int i)
     {
         int maxLevels = SaveLoadManager.GamePurchased ? 30 : LevelManager.Instance.MaxDemoLevel;
 
         if (i > 0 && i < maxLevels)
         {
-            if (SaveLoadManager.SaveStaticList[SaveLoadManager.LastChapterPlayed].levels[i].levelUnlocked)
+                // TODO - fix the levels section in the json file!
+                // Need to set LevelUnlocked in the json file
+                // should this be checking the SaveStaticList?
+            if (SaveLoadManager.SaveStaticList[SaveLoadManager.LastChapterPlayed].Levels[i].LevelUnlocked)
             {
                 button.interactable = true;
             }
