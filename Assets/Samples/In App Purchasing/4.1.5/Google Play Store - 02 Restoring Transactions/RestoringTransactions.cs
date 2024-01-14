@@ -1,5 +1,3 @@
-using System;
-using TMPro;
 using UnityEngine;
 using UnityEngine.Purchasing;
 using UnityEngine.UI;
@@ -9,14 +7,14 @@ namespace Samples.Purchasing.GooglePlay.RestoringTransactions
     [RequireComponent(typeof(UserWarningGooglePlayStore))]
     public class RestoringTransactions : MonoBehaviour, IStoreListener
     {
-        IStoreController m_StoreController;
-        IGooglePlayStoreExtensions m_GooglePlayStoreExtensions;
+        private IStoreController m_StoreController;
+        private IGooglePlayStoreExtensions m_GooglePlayStoreExtensions;
 
-        public string noAdsProductId = "com.ashirvin.cubey.unlockgame";
-        public Text hasNoAdsText;
-        public Text restoreStatusText;
+        private readonly string noAdsProductId = "com.ashirvin.cubey.unlockgame";
+        [SerializeField] private Text hasNoAdsText;
+        [SerializeField] private Text restoreStatusText;
 
-        public GameObject thanksGo;
+        [SerializeField] private GameObject thanksGo;
         [SerializeField] private ShopManager shopManager;
 
         private void Awake()
@@ -31,13 +29,13 @@ namespace Samples.Purchasing.GooglePlay.RestoringTransactions
                 shopManager = transform.Find("Shop").GetComponent<ShopManager>();
         }
 
-        void Start()
+        private void Start()
         {
             InitializePurchasing();
             UpdateWarningMessage();
         }
 
-        void InitializePurchasing()
+        private void InitializePurchasing()
         {
             var builder = ConfigurationBuilder.Instance(StandardPurchasingModule.Instance());
 
@@ -61,7 +59,7 @@ namespace Samples.Purchasing.GooglePlay.RestoringTransactions
             m_GooglePlayStoreExtensions.RestoreTransactions(OnRestore);
         }
 
-        void OnRestore(bool success)
+        private void OnRestore(bool success)
         {
             Logger.Instance.ShowDebugLog("Trying to restore purchase...");
             var restoreMessage = "";
@@ -70,7 +68,8 @@ namespace Samples.Purchasing.GooglePlay.RestoringTransactions
                 // This does not mean anything was restored,
                 // merely that the restoration process succeeded.
                 restoreMessage = "Restore Successful";
-                ShopManager.RestoreTransaction();
+                // TODO - does this need fixed?
+                //ShopManager.RestoreTransaction();
                 shopManager.gameObject.SetActive(false);
                 thanksGo.SetActive(HasNoAds());
             }
@@ -84,6 +83,7 @@ namespace Samples.Purchasing.GooglePlay.RestoringTransactions
             restoreStatusText.text = restoreMessage;
         }
 
+        // TODO - this needing to be public?
         public void BuyNoAds()
         {
             m_StoreController.InitiatePurchase(noAdsProductId);
@@ -96,8 +96,8 @@ namespace Samples.Purchasing.GooglePlay.RestoringTransactions
             Logger.Instance.ShowDebugLog($"Processing Purchase: {product.definition.id}");
             if (args.purchasedProduct.hasReceipt)
             {
-                Logger.Instance.ShowDebugLog("Purchase product has receipt: " + args.purchasedProduct.receipt);
-                shopManager.PurchaseGameButton();
+                Logger.Instance.ShowDebugLog("RestoringTransactions - Purchase product has receipt: " + args.purchasedProduct.receipt);
+                //shopManager.PurchaseGameButton();
                 shopManager.gameObject.SetActive(false);
             }
             
@@ -106,13 +106,13 @@ namespace Samples.Purchasing.GooglePlay.RestoringTransactions
             return PurchaseProcessingResult.Complete;
         }
 
-        void UpdateUI()
+        private void UpdateUI()
         {
             // hasNoAdsText.text = HasNoAds() ? "No ads will be shown" : "Ads will be shown";
             thanksGo.SetActive(HasNoAds());
         }
 
-        bool HasNoAds()
+        private bool HasNoAds()
         {
             var noAdsProduct = m_StoreController.products.WithID(noAdsProductId);
             return noAdsProduct != null && noAdsProduct.hasReceipt;

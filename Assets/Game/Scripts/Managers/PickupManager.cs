@@ -1,26 +1,11 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-
+﻿using UnityEngine;
 
 public class PickupManager : MonoBehaviour
 {
     [SerializeField] private IntGlobalVariable pickupCountProperty;
-    
-    // [SerializeField] private AudioManager audioManager;
-    [SerializeField] private Vector3 startPos;
+    [SerializeField] private bool levelPickup;
 
-    [SerializeField] private bool levelPickup; // increases jumps
-    // [SerializeField] private bool friend; //
-    // [SerializeField] private bool sweet;
-
-    // [SerializeField] private bool butterflyWing;
-
-
-    [Header("Timer")]
-    public float setTime = 2f;
-    public float timer;
-
+    private float timer;
     private Vector3 velocity = Vector3.zero;
 
     [Header("Movement")]
@@ -40,11 +25,6 @@ public class PickupManager : MonoBehaviour
     {
         get => pickupCountProperty.CurrentValue;
         set => pickupCountProperty.CurrentValue = value;
-    }
-
-    private void Start()
-    {
-        startPos = transform.position;
     }
 
     private void Update()
@@ -91,12 +71,11 @@ public class PickupManager : MonoBehaviour
         return newPos;
     }
 
-    float RandomTime()
+    private float RandomTime()
     {
         return Random.Range(timeMin, timeMax);
     }
 
-    // if player his a friend, friend vanishes and PE emits
     private void OnTriggerEnter(Collider other)
     {
         if (other.CompareTag("Player"))
@@ -108,7 +87,7 @@ public class PickupManager : MonoBehaviour
 
                 PickupCountProperty--;
 
-                Destroy(gameObject);
+                gameObject.SetActive(false);
             }
         }
     }

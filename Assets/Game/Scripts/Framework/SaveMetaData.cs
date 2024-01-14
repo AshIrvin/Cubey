@@ -3,13 +3,11 @@ using UnityEngine;
 [CreateAssetMenu(menuName = "Cubey/Save")]
 public class SaveMetaData : ScriptableObject
 {
-    // [SerializeField] private string saveName;
-    // [SerializeField] private string playerName;
-    // [SerializeField] private int lastChapterPlayed;
-    // [SerializeField] private int lastLevelPlayed;
-    // [SerializeField] private string levelLoaded;
+    /*[SerializeField] private string saveName;
+    [SerializeField] private string playerName;
+    [SerializeField] private int lastChapterPlayed;
 
-    /*public string SaveName
+    public string SaveName
     {
         get => saveName;
         set => saveName = value;
@@ -25,17 +23,5 @@ public class SaveMetaData : ScriptableObject
     {
         get => lastChapterPlayed;
         set => lastChapterPlayed = value;
-    }
-
-    public int LastLevelPlayed
-    {
-        get => lastLevelPlayed;
-        set => lastLevelPlayed = value;
-    }
-
-    public string LevelLoaded
-    {
-        get => levelLoaded;
-        set => levelLoaded = value;
     }*/
 }

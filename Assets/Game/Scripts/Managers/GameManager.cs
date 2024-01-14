@@ -82,11 +82,11 @@ public class GameManager : MonoBehaviour
 
     public int JumpCount
     {
-        get => jumpLeft;
+        get => JumpsLeft;
         set
         {
-            jumpLeft = value;
-            uiManager.JumpAmountText.text = jumpLeft.ToString();
+            JumpsLeft = value;
+            uiManager.JumpAmountText.text = JumpsLeft.ToString();
         }
     }
 
@@ -128,18 +128,14 @@ public class GameManager : MonoBehaviour
     [SerializeField] private Rigidbody playerRb;
     //public float cubeyMagnitude;
 
-    private readonly int jumpsToStartWith = 10;
+    internal readonly int JumpsToStartWith = 10;
+    internal int JumpsLeft;
+
     private readonly int countdown = 60;
-    private SaveLoadManager.Awards award;
-    private int jumpLeft;
+    private AwardManager.Awards award;
     private Vector3 flip;
-    private float timeStarted;
-    private float durationInLevel;
+
     private int delayFailedScreenInSeconds = 4;
-
-    //public float cubeyJumpHeight = 2.6f;
-    //public bool useTimer;
-
 
     private void Awake()
     {
@@ -169,10 +165,8 @@ public class GameManager : MonoBehaviour
 
     private void Start()
     {
-        //visualEffects.peExitSwirl.SetActive(false);
-
-        jumpLeft = jumpsToStartWith;
-        uiManager.JumpAmountText.text = jumpLeft.ToString();
+        JumpsLeft = JumpsToStartWith;
+        uiManager.JumpAmountText.text = JumpsLeft.ToString();
 
         uiManager.SetGameLevelCanvases(false);
         SetupStarFinishImages();
@@ -188,9 +182,9 @@ public class GameManager : MonoBehaviour
 
     private void GetLevelInfo()
     {
-        levelNo = SaveLoadManager.LastLevelPlayed;
-        chapterNo = SaveLoadManager.LastChapterPlayed;
-        levelMetaData = chapterList[SaveLoadManager.LastChapterPlayed].LevelList[SaveLoadManager.LastLevelPlayed];
+        levelNo = LevelManager.LastLevelPlayed;
+        chapterNo = LevelManager.LastChapterPlayed;
+        levelMetaData = chapterList[LevelManager.LastChapterPlayed].LevelList[LevelManager.LastLevelPlayed];
         
         //timer = levelMetaData.Timer;
         //levelName = levelMetaData.LevelName;
@@ -262,8 +256,6 @@ public class GameManager : MonoBehaviour
 
         if (deathWalls != null)
             deathWalls.SetActive(false);
-        
-        RestartTimer();
 
         uiManager.ShowPauseMenu(false);
 
@@ -272,14 +264,15 @@ public class GameManager : MonoBehaviour
         UpdateLevelText(levelNo);
 
         JumpCount = 10;
-        CountSweetsForLevel();
+        GetPickupsForLevel();
         ReParentExitSwirl(false);
         SetupExit();
         StartCoroutine(UpdateAwardsNeeded());
 
         uiManager.PickupText();
         
-        TimeTaken(true);
+        //TimeTaken(true);
+        TimeTaken.TimeDuration(TimeTaken.TimeAction.Start);
 
         PlayerFaceDirection(exitObject.transform.position.x < 0);
 
@@ -313,15 +306,15 @@ public class GameManager : MonoBehaviour
     {
         yield return new WaitUntil(() => levelMetaData != null);
 
-        if (jumpsToStartWith - jumpLeft <= levelMetaData.JumpsForGold) // 10 - 8 < 3
+        if (JumpsToStartWith - JumpsLeft <= levelMetaData.JumpsForGold) // 10 - 8 < 3
         {
             ChangeTextColour(uiManager.JumpAmountText, ColourManager.starGold);
         }
-        else if (jumpsToStartWith - jumpLeft <= levelMetaData.JumpsForSilver)
+        else if (JumpsToStartWith - JumpsLeft <= levelMetaData.JumpsForSilver)
         {
             ChangeTextColour(uiManager.JumpAmountText, ColourManager.starSilver);
         }
-        else if (jumpsToStartWith - jumpLeft <= levelMetaData.JumpsForBronze) // 9 - 9 <= 9
+        else if (JumpsToStartWith - JumpsLeft <= levelMetaData.JumpsForBronze) // 9 - 9 <= 9
         {
             ChangeTextColour(uiManager.JumpAmountText, ColourManager.starBronze);
         }
@@ -378,7 +371,7 @@ public class GameManager : MonoBehaviour
 
     private void CheckJumpCount() 
     {
-        if (!jumpCounting && jumpLeft > 0) return;
+        if (!jumpCounting && JumpsLeft > 0) return;
 
         if (!onBreakablePlatform && !IsJumpOverMagnitude())
         {
@@ -396,23 +389,17 @@ public class GameManager : MonoBehaviour
         uiManager.ShowFailedScreen(true);
     }
 
-    // TODO - what's this for? Special level?
-    private void RestartTimer()
-    {
-        //time = countdown;
-    }
-
-    public void ResetCubey()
+    internal void ResetCubey()
     {
         playerRb.drag = 0;
         playerRb.angularDrag = 0;
         stickyObject.CurrentValue = false;
         playerRb.isKinematic = false;
-        TimeTaken(true);
+        TimeTaken.TimeDuration(TimeTaken.TimeAction.Start);
     }
 
-    // TODO - move this to UiManager
-    public void LoadEndScreen(bool won)
+    // Comes from ExitManager
+    internal void LoadEndScreen(bool won)
     {
         if (!won)
         {
@@ -420,7 +407,7 @@ public class GameManager : MonoBehaviour
             return;
         }
 
-        TimeTaken(false);
+        TimeTaken.TimeDuration(TimeTaken.TimeAction.Stop);
         audioManager.PlayAudio(audioManager.cubeyCelebration);
         ReParentExitSwirl(false);
         uiManager.ShowEndScreen(true);
@@ -451,8 +438,6 @@ public class GameManager : MonoBehaviour
         
         if (leanForceRb == null)
             leanForceRb = cubeyPlayer.GetComponent<LeanForceRigidbodyCustom>();
-
-        RestartTimer();
     }
 
     private void UpdateLevelText(int n)
@@ -460,7 +445,7 @@ public class GameManager : MonoBehaviour
         uiManager.LevelText.text = "Level " + (n+1);
     }
 
-    private void CheckPickupCount(int count)
+    private void CheckPickupCount(int na)
     {
         uiManager.PickupText();
 
@@ -471,20 +456,15 @@ public class GameManager : MonoBehaviour
         uiManager.ItemText.text = "Go to Exit";
     }
 
-    private void CountSweetsForLevel()
+    private void GetPickupsForLevel()
     {
         GameObject pickupGroup = levelManager.LevelGameObject.transform.Find("Pickups").gameObject;
-
-        if (pickupGroup == null)
-        {
-            // Logger.Instance.ShowDebugLog("<color:red>Setup pickups for level!</color>");
-            return;
-        }
 
         var pickupCount = 0;
         for (int i = 0; i < pickupGroup.transform.childCount; i++)
         {
             pickupCount += 1;
+            pickupGroup.transform.GetChild(i).gameObject.SetActive(true);
         }
 
         PickupCountProperty = pickupCount;
@@ -494,7 +474,7 @@ public class GameManager : MonoBehaviour
 
     private void OpenExit()
     {
-        if (SaveLoadManager.LastChapterPlayed == 0)
+        if (LevelManager.LastChapterPlayed == 0)
         {
             audioManager.PlayAudio(audioManager.cubeyExitOpen);
             SetupExitXmas(false, true);
@@ -603,20 +583,6 @@ public class GameManager : MonoBehaviour
         cubeyPlayer.gameObject.transform.SetPositionAndRotation(pos, new Quaternion(0, 0, 0, 0));
     }
 
-    private SaveLoadManager.Awards StarsGiven()
-    {
-        var jumps = jumpsToStartWith - jumpLeft;
-
-        if (jumps <= AwardManager.Instance.ThreeStars)
-            return SaveLoadManager.Awards.ThreeStars;
-        else if (jumps <= AwardManager.Instance.TwoStars)
-            return SaveLoadManager.Awards.TwoStars;
-        else if (jumps <= AwardManager.Instance.OneStar)
-            return SaveLoadManager.Awards.OneStar;
-
-        return SaveLoadManager.Awards.NoAward;
-    }
-
     private void SetupStarFinishImages()
     {
         if (starImages != null) 
@@ -634,7 +600,7 @@ public class GameManager : MonoBehaviour
 
     private void ShowStarsAchieved()
     {
-        award = StarsGiven();
+        award = AwardManager.Instance.StarsGiven();
 
         // TODO - Remove finds. Add to load or scriptable object
         uiManager.EndScreen.transform.Find("Buttons/Continue_button").gameObject.SetActive(award > 0);
@@ -643,15 +609,7 @@ public class GameManager : MonoBehaviour
 
         UnlockNextLevel();
 
-        starImages[0].color = ColourManager.starDefault;
-        starImages[1].color = ColourManager.starDefault;
-        starImages[2].color = ColourManager.starDefault;
-        
-        starBronze_anim.StopPlayback();
-        starSilver_anim.StopPlayback();
-        starGold_anim.StopPlayback();
-
-        SetStars();
+        AssignStarsFromAward();
     }
 
     private void UnlockNextLevel()
@@ -663,8 +621,8 @@ public class GameManager : MonoBehaviour
             {
                 // This unlocks the next level and updates SaveStaticList
                 // Is SaveStaticList still needed? Yes, to save to the json presumably
-                SaveLoadManager.UnlockLevel(SaveLoadManager.LastLevelPlayed + 1);
-                Debug.Log($"Unlocking chapter: {chapterNo}, level: {SaveLoadManager.LastLevelPlayed + 1}");
+                UnlockManager.UnlockLevel(LevelManager.LastLevelPlayed + 1);
+                Debug.Log($"Unlocking chapter: {chapterNo}, level: {LevelManager.LastLevelPlayed + 1}");
             }
             else
             {
@@ -673,66 +631,56 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    private void SetStars()
+    // TODO - this needs cleaned up
+    private void AssignStarsFromAward()
     {
+        starImages[0].color = ColourManager.starDefault;
+        starImages[1].color = ColourManager.starDefault;
+        starImages[2].color = ColourManager.starDefault;
+
+        starBronze_anim.StopPlayback();
+        starSilver_anim.StopPlayback();
+        starGold_anim.StopPlayback();
+
+        float[] animSpeed = new float[3] { 1,1,1 };
+        float[] normTime = new float[3] { 0,0,0 };
+
         switch (award)
         {
-            case SaveLoadManager.Awards.NoAward:
+            case AwardManager.Awards.NoAward:
                 uiManager.ModifyEndScreenInfoText(FinishedInfo.Failed);
                 break;
-            case SaveLoadManager.Awards.OneStar:
-                // Logger.Instance.ShowDebugLog("Running bronze stars");
-                starImages[0].color = ColourManager.starBronze;
-                starImages[1].color = ColourManager.starDefault;
-                starImages[2].color = ColourManager.starDefault;
-
-                starBronze_anim.Play("StarBronze", 0, 0.4f);
-                starBronze_anim.speed = 1;
-
-                starSilver_anim.Play("StarSilver", 0, 1);
-                starSilver_anim.speed = 0;
-
-                starGold_anim.Play("StarGold", 0, 1);
-                starGold_anim.speed = 0;
-
-                uiManager.ModifyEndScreenInfoText(FinishedInfo.Nearly);
+            case AwardManager.Awards.OneStar:
+                animSpeed = new float[] { 1, 0, 0 };
+                normTime = new float[] { 0.4f, 1, 1 };
+                SetStars(animSpeed, normTime, FinishedInfo.Nearly);
                 break;
-            case SaveLoadManager.Awards.TwoStars:
-                // Logger.Instance.ShowDebugLog("Running silver stars");
-                starImages[0].color = ColourManager.starBronze;
-                starImages[1].color = ColourManager.starSilver;
-                starImages[2].color = ColourManager.starDefault;
-
-                starBronze_anim.Play("StarBronze", 0, 0);
-                starBronze_anim.speed = 1;
-
-                starSilver_anim.Play("StarSilver", 0, -0.5f);
-                starSilver_anim.speed = 1;
-
-                starGold_anim.StopPlayback();
-                starGold_anim.Play("StarGold", 0, 1);
-                starGold_anim.speed = 1;
-
-                uiManager.ModifyEndScreenInfoText(FinishedInfo.Nearly);
+            case AwardManager.Awards.TwoStars:
+                normTime = new float [] { 0, -0.5f, 1 };
+                SetStars(animSpeed, normTime, FinishedInfo.Nearly);
                 break;
-            case SaveLoadManager.Awards.ThreeStars:
-                // Logger.Instance.ShowDebugLog("Running gold stars");
-                starImages[0].color = ColourManager.starBronze;
-                starImages[1].color = ColourManager.starSilver;
-                starImages[2].color = ColourManager.starGold;
-
-                starBronze_anim.Play("StarBronze", 0, 0);
-                starBronze_anim.speed = 1;
-
-                starSilver_anim.Play("StarSilver", 0, 0f);
-                starSilver_anim.speed = 1;
-
-                starGold_anim.Play("StarGold", 0, 0); // 0.4
-                starGold_anim.speed = 1;
-
-                uiManager.ModifyEndScreenInfoText(FinishedInfo.Completed);
+            case AwardManager.Awards.ThreeStars:
+                SetStars(animSpeed, normTime, FinishedInfo.Completed);
                 break;
         }
+    }
+
+    private void SetStars(float[] normTime, float[] animSpeed, FinishedInfo finishedInfo)
+    {
+        starImages[0].color = ColourManager.starBronze;
+        starImages[1].color = ColourManager.starSilver;
+        starImages[2].color = ColourManager.starGold;
+
+        starBronze_anim.Play("StarBronze", 0, normTime[0]);
+        starBronze_anim.speed = animSpeed[0];
+
+        starSilver_anim.Play("StarSilver", 0, normTime[1]);
+        starSilver_anim.speed = animSpeed[1];
+
+        starGold_anim.Play("StarGold", 0, normTime[2]); // 0.4
+        starGold_anim.speed = animSpeed[2];
+
+        uiManager.ModifyEndScreenInfoText(finishedInfo);
     }
 
     // TODO - is a loading image still needed?
@@ -757,37 +705,23 @@ public class GameManager : MonoBehaviour
         // TODO - create pause image with no buttons
     }
 
-    private void TimeTaken(bool state)
-    {
-        if (state)
-        {
-            timeStarted = Time.time;
-            return;
-        }
-
-        float duration = Mathf.Abs(timeStarted - Time.time);
-        durationInLevel = Mathf.Round(duration * 100) /100;
-        durationInLevel = (float)Math.Round(durationInLevel, 3);
-        SaveLoadManager.LevelTimeTaken(chapterNo, levelNo, durationInLevel);
-    }
-
     public void PlayerJumped()
     {
         audioManager.PlayAudio(audioManager.cubeyJump);
 
         if (!jumpCounting)
         {
-            if (jumpLeft != 0)
+            if (JumpsLeft != 0)
             {
-                jumpLeft--;
+                JumpsLeft--;
             }
         }
         else
         {
-            jumpLeft++;
+            JumpsLeft++;
         }
 
-        JumpCount = jumpLeft;
+        JumpCount = JumpsLeft;
         
         StartCoroutine(UpdateAwardsNeeded());
         CheckJumpCount();

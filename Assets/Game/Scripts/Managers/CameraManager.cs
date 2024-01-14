@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections;
+﻿using System.Collections;
 using DG.Tweening;
 using Lean.Touch;
 using UnityEngine;
@@ -213,24 +212,26 @@ public class CameraManager : MonoBehaviour
     {
         KillSequence();
         
-        var currentChapterList = chapterList[SaveLoadManager.LastChapterPlayed];
-        var currentLevelNo = SaveLoadManager.LastLevelPlayed;
+        var currentChapterList = chapterList[LevelManager.LastChapterPlayed];
+        var currentLevelNo = LevelManager.LastLevelPlayed;
         var buttonPos = currentChapterList.ChapterMapButtonList[currentLevelNo].transform.position;
+
+        int maxLevel = ShopManager.GamePurchased ? 29 : 9;
 
         if (currentLevelNo < currentChapterList.ChapterMapButtonList.Count && currentLevelNo != 0)
         {
             buttonToStartFrom = buttonPos;
-            var moveToNewLevel = currentLevelNo < 29 ? currentLevelNo + 1 : currentLevelNo;
+            var moveToNewLevel = currentLevelNo < maxLevel ? currentLevelNo + 1 : currentLevelNo;
             buttonToEndAt = currentChapterList.ChapterMapButtonList[moveToNewLevel].transform.position;
-            panningToLevel = SaveLoadManager.LastLevelUnlocked;
+            panningToLevel = LevelManager.LastLevelUnlocked;
         }
         else
         {
             buttonToStartFrom = buttonPos;
             buttonToEndAt = buttonPos;
         }
-        
-        nextOpenLevel = currentChapterList.ChapterMapButtonList[SaveLoadManager.LastLevelUnlocked].transform.position;
+
+        nextOpenLevel = currentChapterList.ChapterMapButtonList[LevelManager.LastLevelUnlocked].transform.position;
         nextOpenLevel.z -= 0.5f;
         
         distanceFromStartButton = Vector3.Distance(transform.position, buttonToStartFrom);

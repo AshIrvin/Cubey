@@ -19,6 +19,6 @@ public class GlobalMetaData : MonoBehaviour
 
     public void AssignLevelMetaData()
     {
-        levelMetaData = ChapterList[SaveLoadManager.LastChapterPlayed].LevelList[SaveLoadManager.LastLevelPlayed];
+        levelMetaData = ChapterList[LevelManager.LastChapterPlayed].LevelList[LevelManager.LastLevelPlayed];
     }
 }

@@ -7,6 +7,7 @@ using UnityEngine.EventSystems;
 public class UiManager : MonoBehaviour
 {
     public static UiManager Instance;
+    private AudioManager audioManager;
 
     #region Fields
 
@@ -67,14 +68,22 @@ public class UiManager : MonoBehaviour
 
     #endregion Public Getters
 
-    private AudioManager audioManager;
+    #region Actions
 
     public static Action<bool> AutoPanToggle;
     public static Action<bool> MusicToggle;
     public static Action<bool> SoundToggle;
     public static Action DeleteSaves;
     public static Action<bool> AnalyticsConsent;
+    public static Action<int> OnLevelButtonPressed;
+    public static Action<int> OnChapterButtonPressed;
+    public static Action OnGamePurchased;
+    public static Action OnDemoMode;
+    public static Action OnRestorePurchase;
+    public static Action<bool> OnLoadChapterScreen;
+    public static Action<bool> OnLoadSettings;
 
+    #endregion Actions
 
     private void Awake()
     {
@@ -89,28 +98,20 @@ public class UiManager : MonoBehaviour
         UGS_Analytics.AnalyticsConsent += GetAnalyticsConsentForButton;
     }
 
-    public void ModifyEndScreenInfoText(GameManager.FinishedInfo info)
-    {
-        switch (info)
-        {
-            case GameManager.FinishedInfo.Failed:
-                endScreenInfo.text = failedFinishedInfoText[UnityEngine.Random.Range(0, failedFinishedInfoText.Count)];
-                break;
-            case GameManager.FinishedInfo.Nearly:
-                endScreenInfo.text = nearlyFinishedInfoText[UnityEngine.Random.Range(0, nearlyFinishedInfoText.Count)];
-                break;
-            case GameManager.FinishedInfo.Completed:
-                endScreenInfo.text = finishedInfoText[UnityEngine.Random.Range(0, finishedInfoText.Count)];
-                break;
-        }
-    }
-
     public void SetGameLevelCanvases(bool state)
     {
         ShowTopUi(state);
         ShowPauseMenu(false);
         ShowEndScreen(false);
         ShowFailedScreen(false);
+    }
+
+    public void HideScreens()
+    {
+        ShowPauseMenu(false);
+        ShowFailedScreen(false);
+        ShowEndScreen(false);
+        ShowTopUi(false);
     }
 
     public void ShowTopUi(bool state)
@@ -122,8 +123,84 @@ public class UiManager : MonoBehaviour
         }
 
         TopUi.SetActive(state);
-        PickupGraphic(SaveLoadManager.LastChapterPlayed);
+        PickupGraphic(LevelManager.LastChapterPlayed);
     }
+
+    public void PickupText()
+    {
+        if (ItemText == null) return;
+
+        ItemText.text = GameManager.Instance.PickupCountProperty + " X";
+    }
+
+    public void DisablePickupGraphics()
+    {
+        foreach (var image in pickupUiImages)
+        {
+            image.gameObject.SetActive(false);
+        }
+    }
+
+    private void PickupGraphic(int n)
+    {
+        DisablePickupGraphics();
+
+        pickupUiImages[n].gameObject.SetActive(true);
+    }
+
+    #region Main Menu
+
+    public void StartButton()
+    {
+        OnLoadChapterScreen?.Invoke(true);
+    }
+
+    public void SettingsButton()
+    {
+        OnLoadSettings?.Invoke(true);
+    }
+
+    #endregion Main Menu
+
+    #region Map
+
+    // Attached to Level buttons on map
+    public void GetLevelNoToLoad()
+    {
+        var levelButtonClicked = EventSystem.current.currentSelectedGameObject.gameObject.transform.Find("LevelText_no").GetComponent<Text>().text.ToString();
+        int.TryParse(levelButtonClicked, out int levelNumber);
+        levelNumber -= 1;
+
+        OnLevelButtonPressed?.Invoke(levelNumber);
+    }
+
+    public void ShowMap(int n)
+    {
+        OnChapterButtonPressed?.Invoke(n);
+    }
+
+    #endregion Map
+
+    #region Shop
+
+    public void GamePurchasedButton()
+    {
+        OnGamePurchased?.Invoke();
+    }
+
+    public void DemoModeButton()
+    {
+        OnDemoMode?.Invoke();
+    }
+
+    public void RestorePurchase()
+    {
+        OnRestorePurchase?.Invoke();
+    }
+
+    #endregion Shop
+
+    #region Pause/Options/End screen
 
     public void ShowPauseMenu(bool state)
     {
@@ -155,12 +232,20 @@ public class UiManager : MonoBehaviour
         Time.timeScale = state ? 0.1f : 1f;
     }
 
-    public void HideScreens()
+    public void ModifyEndScreenInfoText(GameManager.FinishedInfo info)
     {
-        ShowPauseMenu(false);
-        ShowFailedScreen(false);
-        ShowEndScreen(false);
-        ShowTopUi(false);
+        switch (info)
+        {
+            case GameManager.FinishedInfo.Failed:
+                endScreenInfo.text = failedFinishedInfoText[UnityEngine.Random.Range(0, failedFinishedInfoText.Count)];
+                break;
+            case GameManager.FinishedInfo.Nearly:
+                endScreenInfo.text = nearlyFinishedInfoText[UnityEngine.Random.Range(0, nearlyFinishedInfoText.Count)];
+                break;
+            case GameManager.FinishedInfo.Completed:
+                endScreenInfo.text = finishedInfoText[UnityEngine.Random.Range(0, finishedInfoText.Count)];
+                break;
+        }
     }
 
     public void ShowFailedScreen(bool on)
@@ -175,30 +260,6 @@ public class UiManager : MonoBehaviour
 
         Time.timeScale = on ? 0f : 1f;
     }
-
-    public void PickupText()
-    {
-        if (ItemText == null) return;
-
-        ItemText.text = GameManager.Instance.PickupCountProperty + " X";
-    }
-
-    public void DisablePickupGraphics()
-    {
-        foreach (var image in pickupUiImages)
-        {
-            image.gameObject.SetActive(false);
-        }
-    }
-
-    private void PickupGraphic(int n)
-    {
-        DisablePickupGraphics();
-
-        pickupUiImages[n].gameObject.SetActive(true);
-    }
-
-    #region Options/End screen
 
     public void RestartLevel()
     {

@@ -8,7 +8,6 @@ public class ChapterLevelData
     public bool ChapterUnlocked;
     public int LastLevelPlayed;
     public int LastLevelUnlocked;
-    
     public int AllBronze;
     public int AllSilver;
     public int AllStars;
@@ -25,7 +24,6 @@ public class ChapterLevelData
     public class LevelInfo
     {
         public bool LevelUnlocked;
-
         public int StarsReceived = 0;
         public int Bronze = 0;
         public int Silver;
@@ -38,4 +36,5 @@ public class ChapterLevelData
 public class ChapterData
 {
     public List<ChapterLevelData> ChapterLevelsData;
+    public bool GamePurchased = false;
 }

@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using System;
 
 public abstract class GenericGlobalVariable<T> : ScriptableObject
 {
@@ -7,7 +8,7 @@ public abstract class GenericGlobalVariable<T> : ScriptableObject
 	
 	private T currentValue;
 	
-	public event System.Action<T> OnValueChanged;
+	public event Action<T> OnValueChanged;
 	
 	public T CurrentValue
 	{

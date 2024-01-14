@@ -5,6 +5,7 @@ using UnityEngine.UI;
 
 public class ShopManager : MonoBehaviour
 {
+    public static ShopManager Instance { get; set; }
     [SerializeField] private GameObject restoreButton;
     [SerializeField] private GameObject demoButton;
     [SerializeField] private Text purchaseText;
@@ -14,21 +15,32 @@ public class ShopManager : MonoBehaviour
     [SerializeField] private TextMeshProUGUI purchaseRestoredText;
 
     private MapManager mapManager;
-    
+    private static bool gamePurchased = false;
+
     public static bool GamePurchased
-    {
-        get => SaveLoadManager.GamePurchased;
-        set => SaveLoadManager.SaveGamePurchased(value);
+    { // TODO - reassign everything to this
+        get => gamePurchased;
+        set => gamePurchased = value;
     }
-    
+
+    private void Awake()
+    {
+        if (Instance == null)
+            Instance = this;
+
+        UiManager.OnGamePurchased += PurchaseGame;
+        UiManager.OnRestorePurchase += RestoreTransaction;
+        UiManager.OnDemoMode += GameDemoMode;
+    }
+
     private void OnEnable()
     {
         if (mapManager == null)
             mapManager = MapManager.Instance;
 
-        if (SaveLoadManager.GamePurchased)
+        if (GamePurchased)
         {
-            GameIsPurchased();
+            SetPurchasedButtonsColours("Purchased", "Thank You!");
         }
         else
         {
@@ -45,47 +57,54 @@ public class ShopManager : MonoBehaviour
 
     private void GameDemoMode()
     { // show purchase button
-        purchaseText.text = "Purchase";
-        testPurchaseText.text = "Test Purchase";
+
+        GamePurchased = false;
+
+        //purchaseText.text = "Purchase";
+        //testPurchaseText.text = "Test Purchase";
         purchaseText.transform.parent.gameObject.SetActive(true);
         testPurchaseText.transform.parent.gameObject.SetActive(true);
-        shopText.text = "Purchase full game";
+        //shopText.text = "Purchase full game";
+        SetPurchasedButtonsColours("Buy", "Shop");
+        SaveLoadManager.SaveGameData();
     }
 
-    public void PurchaseGameButton()
+    private void PurchaseGame()
     {
         GamePurchased = true;
         Logger.Instance.ShowDebugLog("Game Purchased: " + GamePurchased);
-        // TODO - Needs logic here to open chapter without restarting
 
-    }
-    
-    public void DemoMode()
-    {
-        GamePurchased = false;
-        Logger.Instance.ShowDebugLog("Demo mode. Purchased: " + GamePurchased);
+        UnlockManager.UnlockAllChapters();
+        UnlockManager.UnlockSeasonalChapter();
+
+        MainMenuManager.Instance.CycleThroughUnlockedChapters();
+        SetPurchasedButtonsColours("Purchased", "Thank You!");
+        MainMenuManager.Instance.ToggleThankYouSign();
+        SaveLoadManager.SaveGameData();
     }
 
-    public static void RestoreTransaction()
+    private void RestoreTransaction()
     {
-        GamePurchased = true;
+        PurchaseGame();
         Logger.Instance.ShowDebugLog("Game Purchase restored: " + GamePurchased);
-        SceneManager.LoadScene("CubeyGame");
     }
-    
-    public void GameIsPurchased()
+
+    // TODO - move to UiManager
+    public void SetPurchasedButtonsColours(string buttonText, string titleText)
     {
-        purchaseText.text = "Purchased";
-        testPurchaseText.text = "Purchased";
-        //purchaseText.transform.parent.GetComponent<IAPButton>().interactable = false;
-        var tc = purchaseText.color;
-        purchaseText.color = new Color(tc.r, tc.g, tc.b, 0.5f);   
+        purchaseText.text = buttonText;
+        testPurchaseText.text = buttonText;
+        
+        var purchaseTextColour = purchaseText.color;
+        purchaseTextColour.a = 0.5f;
+        purchaseText.color = purchaseTextColour;   
             
-        var c = purchaseText.transform.parent.transform.GetChild(0).GetComponent<Image>().color;
-        purchaseText.transform.parent.transform.GetChild(0).GetComponent<Image>().color =
-            new Color(c.r, c.g, c.b, 0.5f);            
-        testPurchaseText.transform.parent.gameObject.SetActive(false);
-        shopText.text = "Game Purchased";
+        //var borderImageColour = purchaseText.transform.parent.transform.Find("border").GetComponent<Image>().color;
+        var borderImageColour = new Color(0.9f, 0.9f, 0.9f, 1);
+        purchaseText.transform.parent.transform.Find("border").GetComponent<Image>().color = borderImageColour;
+
+        //testPurchaseText.transform.parent.gameObject.SetActive(false);
+        shopText.text = titleText;
     }
 
     public void RestorePurchasesText()

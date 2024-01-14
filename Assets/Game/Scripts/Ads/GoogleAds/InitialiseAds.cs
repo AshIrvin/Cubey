@@ -28,7 +28,7 @@ public class InitialiseAds : MonoBehaviour
 
     private void Start()
     {
-        if (SaveLoadManager.GamePurchased)
+        if (ShopManager.GamePurchased)
         {
             return;
         }
@@ -50,7 +50,7 @@ public class InitialiseAds : MonoBehaviour
 
     private void OnEnable()
     {
-        if (SaveLoadManager.GamePurchased)
+        if (ShopManager.GamePurchased)
         {
             DestroyTopBannerAd();
             Destroy(this);

@@ -106,6 +106,8 @@ public class MainMenuManager : MonoBehaviour
         SetRefreshRate(PlayerPrefs.GetInt("RefreshRate"));
 
         UiManager.DeleteSaves += ResetSaves;
+        UiManager.OnChapterButtonPressed += ShowMap;
+        UiManager.OnLoadChapterScreen += EnableChapterScreen;
     }
 
     private void OnEnable()
@@ -138,7 +140,7 @@ public class MainMenuManager : MonoBehaviour
         ShowMenuBackButton(false);
 
         ButtonSizePong();
-        ChangeMenuEnvironment(SaveLoadManager.LastChapterPlayed);
+        ChangeMenuEnvironment(LevelManager.LastChapterPlayed);
         chapterFinishScreen.SetActive(false);
 
         OnMainMenuLoad?.Invoke();
@@ -157,21 +159,13 @@ public class MainMenuManager : MonoBehaviour
     {
         if (deleteLastChapterFinishScreenData)
         {
-            PlayerPrefs.DeleteKey("chapterFinishScreenGold" + SaveLoadManager.LastChapterPlayed);
+            PlayerPrefs.DeleteKey("chapterFinishScreenGold" + LevelManager.LastChapterPlayed);
         }
     }
 
     public void SetNavButtons(bool state)
     {
         NavButtons = state;
-    }
-
-    private void SetRefreshRate(int n)
-    {
-        if (PlayerPrefs.HasKey("RefreshRate"))
-        {
-            Application.targetFrameRate = n;
-        }
     }
 
     private void CheckForErrors()
@@ -181,6 +175,14 @@ public class MainMenuManager : MonoBehaviour
 
         if (leanConstrainToBox == null) leanConstrainToBox = cameraManager.gameObject.GetComponent<LeanConstrainToBox>();
         if (chapterFinishScreen == null) chapterFinishScreen = GameObject.Find("ChapterFinishScreen");
+    }
+
+    private void SetRefreshRate(int n)
+    {
+        if (PlayerPrefs.HasKey("RefreshRate"))
+        {
+            Application.targetFrameRate = n;
+        }
     }
     
     public void ChangeRefreshRate()
@@ -202,6 +204,7 @@ public class MainMenuManager : MonoBehaviour
         }
     }
 
+    // TODO - loading scene required?
     public void LoadingScene(bool state)
     {
         loadingScreen.SetActive(state);
@@ -240,15 +243,20 @@ public class MainMenuManager : MonoBehaviour
         }
     }
 
-    private void ChangeMenuEnvironment(int n)
+    private void ChangeMenuEnvironment(int chapterNo)
     {
         DisableMenuEnv();
         
-        menuEnvironments[n].SetActive(true);
+        menuEnvironments[chapterNo].SetActive(true);
 
-        leanZoom.Zoom = chapterList[n].MenuZoomLevel;
-        
-        menuEnvironments[n].transform.Find("ThankYou").gameObject.SetActive(SaveLoadManager.GamePurchased);
+        leanZoom.Zoom = chapterList[chapterNo].MenuZoomLevel;
+
+        ToggleThankYouSign();
+    }
+
+    internal void ToggleThankYouSign()
+    {
+        menuEnvironments[LevelManager.LastChapterPlayed].transform.Find("ThankYou").gameObject.SetActive(ShopManager.GamePurchased);
     }
 
     private void DisableMenuEnv()
@@ -272,10 +280,10 @@ public class MainMenuManager : MonoBehaviour
         switch (collisionBox)
         {
             case CollisionBox.Menu:
-                leanConstrainToBox.Target = chapterList[SaveLoadManager.LastChapterPlayed].MenuCollision.GetComponent<BoxCollider>();
+                leanConstrainToBox.Target = chapterList[LevelManager.LastChapterPlayed].MenuCollision.GetComponent<BoxCollider>();
                 break;
             case CollisionBox.Map:
-                leanConstrainToBox.Target = chapterList[SaveLoadManager.LastChapterPlayed].MapCollision.GetComponent<BoxCollider>();
+                leanConstrainToBox.Target = chapterList[LevelManager.LastChapterPlayed].MapCollision.GetComponent<BoxCollider>();
                 break;
             case CollisionBox.Level:
                 leanConstrainToBox.Target = col;
@@ -290,13 +298,9 @@ public class MainMenuManager : MonoBehaviour
         }
     }
 
-    #region Used for UI Buttons
-
-    // Used in chapter menu buttons
-    // TODO - move to UiManager
-    public void ShowMap(int n)
+    private void ShowMap(int n)
     {
-        int chapter = SaveLoadManager.LastChapterPlayed = n;
+        int chapter = LevelManager.LastChapterPlayed = n;
         
         ChangeMenuEnvironment(chapter);
         DisableMenuScreens();
@@ -308,13 +312,11 @@ public class MainMenuManager : MonoBehaviour
 
         MapManager.Instance.LoadMapScreen();
 
-        // TODO - fix this backbutton code
         BackButton = true;
-        backButton.onClick.AddListener(() => LoadChapterScreen(true));
+        backButton.onClick.AddListener(() => EnableChapterScreen(true));
     }
 
-    // for going back to chapter screen using back button on map and Start ui button
-    private void LoadChapterScreen(bool enable)
+    private void EnableChapterScreen(bool enable)
     {
         CycleThroughUnlockedChapters();
         
@@ -328,32 +330,17 @@ public class MainMenuManager : MonoBehaviour
         BackButton = true;
         backButton.onClick.AddListener(MainMenuScreen);
     }
-    
-    #endregion Used for UI Buttons
 
     // disable chapters that aren't unlocked?
-    private void CycleThroughUnlockedChapters()
+    internal void CycleThroughUnlockedChapters()
     {
-        int c = 0;
-
-        for (int i = 0; i < chapterList.Count; i++)
+        for (int i = 3; i < chapterList.Count; i++)
         {
-            if (SaveLoadManager.GetChapterUnlocked(i))
-            {
-                c = i;
-                chapterButtons[c].GetComponent<Button>().interactable = true;
-                var image = chapterButtons[i].transform.GetChild(0).GetChild(0).GetComponent<Image>();
-                image.color = unlockedButton;
-            }
-            else
-            {
-                chapterButtons[i].GetComponent<Button>().interactable = false;
-                var image = chapterButtons[i].transform.GetChild(0).GetChild(0).GetComponent<Image>();
-                image.color = fadedButton;
-            }
+            bool unlocked = ShopManager.GamePurchased ? SaveLoadManager.GetChapterUnlocked(i) : false;
+            chapterButtons[i].GetComponent<Button>().interactable = unlocked;
+            var image = chapterButtons[i].transform.Find("Mask/Screenshot").GetComponent<Image>();
+            image.color = unlocked ? unlockedButton : fadedButton;
         }
-        
-        chapterUnlockedTo = c;
     }
 
     private void DisableMenuScreens()
@@ -367,7 +354,7 @@ public class MainMenuManager : MonoBehaviour
     private void MainMenuScreen()
     {
         mapManager.DisableMaps();
-        ChangeMenuEnvironment(SaveLoadManager.LastChapterPlayed);
+        ChangeMenuEnvironment(LevelManager.LastChapterPlayed);
         SetCollisionBox(CollisionBox.Menu);
         chapterFinishScreen.SetActive(false);
         chapterScreen.SetActive(false);
@@ -380,30 +367,25 @@ public class MainMenuManager : MonoBehaviour
 
     private void ButtonSizePong()
     {
-        StartCoroutine(WaitForPong());
+        Pong();
     }
 
-    private IEnumerator WaitForPong()
+    private async void Pong()
     {
-        yield return new WaitForSeconds(1);
-        
+        await System.Threading.Tasks.Task.Delay(1000);
         menuButtonAnim.SetBool("EnablePingPong", true);
     }
     
     public void TryChapterFinishScreen()
     {
-        var goldFinishScreen = PlayerPrefs.GetInt("chapterFinishScreenGold" + SaveLoadManager.LastChapterPlayed , 0);
+        var goldFinishScreen = PlayerPrefs.GetInt("chapterFinishScreenGold" + LevelManager.LastChapterPlayed , 0);
         
-        if (SaveLoadManager.LastLevelPlayed == 29)
+        if (LevelManager.LastLevelPlayed == 29 &&
+            AwardManager.GetLevelAward(29) >= 1 &&
+            goldFinishScreen == 0)
         {
-            if (SaveLoadManager.GetLevelAward(29) >= 1) // if the last level has at least 1 star
-            {
-                if (goldFinishScreen == 0)
-                {
-                    PlayerPrefs.SetInt("chapterFinishScreenGold" + SaveLoadManager.LastChapterPlayed, 1);
-                    chapterFinishScreen.GetComponent<ChapterComplete>().OpenPopup();
-                }
-            }
+            PlayerPrefs.SetInt("chapterFinishScreenGold" + LevelManager.LastChapterPlayed, 1);
+            chapterFinishScreen.GetComponent<ChapterComplete>().OpenPopup();
         }
     }
 

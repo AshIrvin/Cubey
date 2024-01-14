@@ -8,14 +8,18 @@ public class FirstTimeUseSettings : MonoBehaviour
         SaveToFile.OnFirstTimeUse += UnlockedFirstTimeLevels;
     }
 
-    // Could be used to reset the game too
     private void UnlockedFirstTimeLevels()
     {
-        var length = SaveLoadManager.SaveStaticList.Count;
+        var chapterLength = SaveLoadManager.SaveStaticList.Count;
 
-        for (int i = 0; i < length; i++)
+        for (int i = 0; i < chapterLength; i++)
         {
             SaveLoadManager.SaveStaticList[i].ChapterUnlocked = false;
+
+            for (int j = 0; j < SaveLoadManager.SaveStaticList[i].Levels.Count; j++)
+            {
+                SaveLoadManager.SaveStaticList[i].Levels[j].LevelUnlocked = false;
+            }
         }
 
         SaveLoadManager.SaveStaticList[1].ChapterUnlocked = true;

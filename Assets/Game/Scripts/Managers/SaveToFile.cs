@@ -15,13 +15,13 @@ public class SaveToFile : MonoBehaviour
         {
             ChapterLevelsData = Enumerable.Range(0, 6)
                 .Select(CreateChapterListData)
-                .ToList()
+                .ToList(),
+            GamePurchased = false
         };
 
         SaveToJson(chapterData);
 
         OnFirstTimeUse?.Invoke();
-        Debug.Log("SetupJson. Done");
     }
 
     private static ChapterLevelData CreateChapterListData(int n)
@@ -36,45 +36,37 @@ public class SaveToFile : MonoBehaviour
     {
         ChapterData chapterData = LoadFromJson();
         chapterData.ChapterLevelsData = chapterLevelData;
+        chapterData.GamePurchased = ShopManager.GamePurchased;
         
         SaveToJson(chapterData);
-        Debug.Log("SaveChapterData. Done");
     }
 
-    // save/append specific object to file
     private static void SaveToJson(ChapterData data)
     {
         var json = JsonUtility.ToJson(data);
 
         File.WriteAllText($"{ Application.dataPath}/saveData.json", json);
-
-        Debug.Log("Save to Json: " + json.ToString());
     }
 
-    // load file
     internal static ChapterData LoadFromJson()
     {
         var deserialised = DeserialiseData();
 
         _ = new ChapterData
         {
-            ChapterLevelsData = new List<ChapterLevelData>(6)
+            ChapterLevelsData = new List<ChapterLevelData>(6),
         };
 
         ChapterData chapterData = deserialised;
-        Debug.Log("LoadFromJson. Done.");
         return chapterData;
     }
 
-    // gets full save file
     private static ChapterData DeserialiseData()
     {
         CheckFileExists();
 
         var json = File.ReadAllText($"{Application.dataPath}/saveData.json");
         var deserialised = JsonConvert.DeserializeObject<ChapterData>(json);
-
-        Logger.Instance.ShowDebugLog("Deserialised data");
 
         return deserialised;
     }

@@ -6,9 +6,6 @@ using UnityEngine.UI;
 [DefaultExecutionOrder(100)]
 public class MapManager : MonoBehaviour
 {
-    // TODO - the class is for managing maps only
-    // Everything else belongs in another class
-
     public static MapManager Instance;
 
     #region Fields
@@ -30,17 +27,18 @@ public class MapManager : MonoBehaviour
     private ChapterList chapterList;
     private VisualEffects visualEffects;
     private GameManager gameManager;
+    //private ShopManager shopManager;
 
     private List<GameObject> levelButtons;    
     private Vector3 lerpPos1 = new Vector3(0.9f, 0.9f, 0.9f);
     private Vector3 lerpPos2 = new Vector3(1f, 1f, 1f);
     private List<SpriteRenderer> starImages = new(3);
+    [SerializeField]private Sprite originalLevel10Image;
 
     #endregion Private
 
     #region Public
 
-    //public bool mapActive;
     public static Action OnMapLoad;
     public GameObject CubeyOnMap => cubeyOnMap;
     
@@ -52,6 +50,8 @@ public class MapManager : MonoBehaviour
             Instance = this;
 
         LevelManager.OnLevelLoad += OnLevelLoad;
+        UiManager.OnGamePurchased += ResetLevelShopButton;
+        UiManager.OnDemoMode += DemoMode;
     }
 
     private void Start()
@@ -62,6 +62,7 @@ public class MapManager : MonoBehaviour
         chapterList = GlobalMetaData.Instance.ChapterList;
         mainMenuManager = MainMenuManager.Instance;
         adSettings = AdSettings.Instance;
+        //shopManager = ShopManager.Instance;
 
         adSettings.EnableAdBackgroundBlocker(false);
         shopButton.SetActive(true);
@@ -73,7 +74,7 @@ public class MapManager : MonoBehaviour
     {
         gameManager.SetGameState(GameManager.GameState.Map);
 
-        EnableMap(SaveLoadManager.LastChapterPlayed);
+        EnableMap(LevelManager.LastChapterPlayed);
         
         SetCubeyMapPosition(false);
 
@@ -97,8 +98,8 @@ public class MapManager : MonoBehaviour
 
         cubeyOnMap.SetActive(!state);
         
-        var chapter = chapterList[SaveLoadManager.LastChapterPlayed];
-        var currentLevelNo = SaveLoadManager.LastLevelPlayed;
+        var chapter = chapterList[LevelManager.LastChapterPlayed];
+        var currentLevelNo = LevelManager.LastLevelPlayed;
         var pos = chapter.ChapterMapButtonList[currentLevelNo].transform.position;
         
         pos.x -= 1.1f;
@@ -114,7 +115,6 @@ public class MapManager : MonoBehaviour
         {
             chapterList[i].InGameMapButtonList.Clear();
 
-            // This is only done on start
             var map = Instantiate(chapterList[i].ChapterMap, mapsParent.transform);
             chapterMaps.Add(map);
 
@@ -127,14 +127,15 @@ public class MapManager : MonoBehaviour
     private void AssignMapButtons(GameObject map, int i)
     {
         var mapButtons = map.transform.Find("Canvas_Map/Map_buttons").gameObject;
+        var length = mapButtons.transform.childCount;
 
-        for (int j = 0; j < mapButtons.transform.childCount; j++)
+        for (int j = 0; j < length; j++)
         {
             if (mapButtons.transform.GetChild(j).name.Contains("Leveln"))
             {
                 GameObject levelButton = mapButtons.transform.GetChild(j).gameObject;
                 chapterList[i].InGameMapButtonList.Add(levelButton);
-                levelButton.GetComponent<Button>().onClick.AddListener(LevelManager.Instance.GetLevelNoToLoad);
+                levelButton.GetComponent<Button>().onClick.AddListener(UiManager.Instance.GetLevelNoToLoad);
             }
         }
     }
@@ -143,13 +144,13 @@ public class MapManager : MonoBehaviour
     {
         DisableMaps();
         chapterMaps[chapter].SetActive(true);
-        SaveLoadManager.LastChapterPlayed = chapter;
+        LevelManager.LastChapterPlayed = chapter;
         CycleButtonLocks();
         
         mainMenuManager.EnableGoldAwardsButton(true);
         mainMenuManager.TryChapterFinishScreen();
         
-        if(!SaveLoadManager.GamePurchased && LevelManager.Instance.LevelsPlayed >= AdSettings.Instance.LevelsBeforeAd)
+        if(!ShopManager.GamePurchased && LevelManager.Instance.LevelsPlayed >= AdSettings.Instance.LevelsBeforeAd)
         {
             // TODO - enable ads. Shouldn't it already be enabled?
             // initialiseAds.enabled = true;
@@ -197,12 +198,12 @@ public class MapManager : MonoBehaviour
     private void IsTutorialComplete()
     {
         // TODO: check if the last level was chapter 1, level 5 that completes the tutorial
-        if (SaveLoadManager.LastChapterPlayed == 1 && SaveLoadManager.GetLevelAward(4) > 1
+        if (LevelManager.LastChapterPlayed == 1 && AwardManager.GetLevelAward(4) > 1
                                                    && PlayerPrefs.GetInt("tutorialFinished", 0) == 0)
         {
             PlayerPrefs.SetInt("tutorialFinished", 1);
-            SaveLoadManager.UnlockChapter(2);
-            SaveLoadManager.UnlockChapter(3);
+            UnlockManager.UnlockChapter(2);
+            UnlockManager.UnlockChapter(3);
             SaveLoadManager.SaveGameData();
             mainMenuManager.ShowMenuBackButton(false);
             tutoralCompleteGo.SetActive(true);
@@ -214,7 +215,7 @@ public class MapManager : MonoBehaviour
     // Check which levels are unlocked inside the chapter
     private void CycleButtonLocks()
     {
-        var lastChapter = chapterList[SaveLoadManager.LastChapterPlayed];
+        var lastChapter = chapterList[LevelManager.LastChapterPlayed];
 
         var buttons = lastChapter.InGameMapButtonList;
         levelButtons = buttons;
@@ -222,67 +223,84 @@ public class MapManager : MonoBehaviour
         for (int i = 0; i < buttons.Count; i++)
         {
             var button = buttons[i].GetComponent<Button>();
-            var screenShot = button.transform.Find("Mask").GetChild(0).gameObject;
+            var screenShot = button.transform.Find("Mask/Screenshot").GetComponent<Image>();
             
             // set all level 1 buttons unlocked - needed?
             button.interactable = i == 0;
 
             CheckLevelUnlocks(button, i);
             
-            Image screen = screenShot.GetComponent<Image>();
-            //var colour = screen.color;
             var colour = Color.white;
-            screen.color = colour;
+            screenShot.color = colour;
 
-            if (!button.interactable)
-            {
-                colour.a = 0.3f;
-            } else
-            {
-                colour.a = 1f;
-            }
-            screen.color = colour;
+            colour.a = button.interactable ? 1 : 0.3f;
+
+            screenShot.color = colour;
         }
 
         SetStarsForEachLevel();
         
-        SetButtonToShopButton(lastChapter.InGameMapButtonList[10].GetComponent<Button>());
+        SetShopToButton();
     }
 
     private void CheckLevelUnlocks(Button button, int i)
     {
-        int maxLevels = SaveLoadManager.GamePurchased ? 30 : LevelManager.Instance.MaxDemoLevel;
+        int maxLevels = ShopManager.GamePurchased ? 30 : LevelManager.Instance.MaxDemoLevel;
 
         if (i > 0 && i < maxLevels)
         {
-                // TODO - fix the levels section in the json file!
-                // Need to set LevelUnlocked in the json file
-                // should this be checking the SaveStaticList?
-            if (SaveLoadManager.SaveStaticList[SaveLoadManager.LastChapterPlayed].Levels[i].LevelUnlocked)
-            {
-                button.interactable = true;
-            }
-            else
-            {
-                button.interactable = false;
-            }
+            button.interactable = SaveLoadManager.SaveStaticList[LevelManager.LastChapterPlayed].Levels[i].LevelUnlocked;
+            return;
         }
+
+        button.interactable = false;
     }
 
-    private void SetButtonToShopButton(Button button)
+    private void DemoMode()
     {
-        if (!ShopManager.GamePurchased)
-        {
-            var pos = button.transform.position;
-            var b = button.GetComponent<Button>();
-            b.onClick.RemoveAllListeners();
-            b.onClick.AddListener(() => EnableShopMenu());
-            b.interactable = true;
-            b.image = shopButton.GetComponent<Image>();
-            GameObject level10 = b.transform.GetChild(2).GetChild(0).gameObject;
-            level10.GetComponent<Image>().sprite = b.image.sprite;
-            level10.GetComponent<Image>().color = Color.white;
-        }
+        ShopManager.GamePurchased = false;
+
+        //SetShopToButton();
+        CycleButtonLocks();
+
+        mainMenuManager.ToggleThankYouSign();
+        mainMenuManager.CycleThroughUnlockedChapters();
+    }
+
+    private void SetShopToButton()
+    {
+        var button = chapterList[LevelManager.LastChapterPlayed].InGameMapButtonList[10].GetComponent<Button>();
+        originalLevel10Image = button.transform.Find("Mask/Screenshot").GetComponent<Image>().sprite;
+
+        if (ShopManager.GamePurchased) return;
+
+        //var pos = button.transform.position;
+
+        button.onClick.RemoveAllListeners();
+        button.onClick.AddListener(() => EnableShopMenu());
+        button.interactable = true;
+        //button.image = shopButton.GetComponent<Image>();
+
+        Image level10 = button.transform.Find("Mask/Screenshot").GetComponent<Image>();
+        level10.sprite = shopButton.GetComponent<Image>().sprite;
+        level10.color = Color.white;
+    }
+
+    private void ResetLevelShopButton()
+    {
+        var button = chapterList[LevelManager.LastChapterPlayed].InGameMapButtonList[10].GetComponent<Button>();
+
+        GameObject level10 = button.transform.Find("Mask/Screenshot").gameObject;
+        var image = level10.GetComponent<Image>();
+        image.sprite = originalLevel10Image;
+
+        button.onClick.RemoveAllListeners();
+        button.onClick.AddListener(() => UiManager.Instance.GetLevelNoToLoad());
+
+        button.interactable = SaveLoadManager.SaveStaticList[LevelManager.LastChapterPlayed].Levels[10].LevelUnlocked;
+        var colour = image.color;
+        colour.a = button.interactable ? 1 : 0.3f;
+        image.color = colour;
     }
 
     private void EnableShopMenu()
@@ -294,14 +312,14 @@ public class MapManager : MonoBehaviour
     // Set stars for each level button
     private void SetStarsForEachLevel()
     {
-        var level = SaveLoadManager.LastLevelPlayed;
+        var level = LevelManager.LastLevelPlayed;
 
         for (int i = 0; i < levelButtons.Count; i++)
         {
             var b = levelButtons[i].GetComponent<Button>();
             var sGrp = levelButtons[i].transform.GetChild(4);
 
-            var awardForLevel = SaveLoadManager.GetAwards(i);
+            var awardForLevel = AwardManager.GetAwards(i);
 
             starImages.Clear();
             

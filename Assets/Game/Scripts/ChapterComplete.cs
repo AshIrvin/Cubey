@@ -30,15 +30,12 @@ public class ChapterComplete : MonoBehaviour
 
     public void ShowCompleteScreen(bool state)
     {
-        if (gameManager == null)
-        {
-            return;
-        }
+        if (gameManager == null) return;
 
-        var chapter = SaveLoadManager.LastChapterPlayed;
+        var chapter = LevelManager.LastChapterPlayed;
         chapterNumberText.text = "Chapter " + chapter.ToString();
         
-        var threeStars = SaveLoadManager.GetChapterAward(chapter, SaveLoadManager.Awards.ThreeStars);
+        var threeStars = AwardManager.GetChapterAward(chapter);
 
         goldCollected.text = threeStars.ToString();
         goldButtonCollected.text = threeStars.ToString();
@@ -46,14 +43,19 @@ public class ChapterComplete : MonoBehaviour
         var levelCount = chapterList[chapter].LevelList.Count;
         goldLeftToCollect.text = levelCount * 3 - threeStars + " stars to collect!";
 
-        if (SaveLoadManager.GetChapterAward(chapter, SaveLoadManager.Awards.ThreeStars) >= 90)
+        CheckCompletedChapter(chapter, state);
+    }
+
+    private void CheckCompletedChapter(int chapter, bool state)
+    {
+        if (AwardManager.GetChapterAward(chapter) >= 90)
         {
             bool completedGame = true;
-            
+
             // also check other chapters if player has finished the game
-            for (int i = 0; i < SaveLoadManager.ChapterAmount; i++)
+            for (int i = 0; i < LevelManager.ChapterAmount; i++)
             {
-                if (SaveLoadManager.GetChapterAward(i, SaveLoadManager.Awards.ThreeStars) < 90)
+                if (AwardManager.GetChapterAward(i) < 90)
                 {
                     completedGame = false;
                     break;
@@ -64,7 +66,7 @@ public class ChapterComplete : MonoBehaviour
             if (completedGame)
             {
                 // player has completed the whole game! Show new popup
-                
+
             }
             else
             {
@@ -73,13 +75,13 @@ public class ChapterComplete : MonoBehaviour
                 VisualEffects.Instance.PlayEffect(peChapterCompleteStars);
             }
         }
-        else 
+        else
         {
-            if (SaveLoadManager.LastLevelPlayed == 29 && SaveLoadManager.GetLevelAward(29) > 0)
+            if (LevelManager.LastLevelPlayed == 29 && AwardManager.GetLevelAward(29) > 0)
             {
                 popup.SetActive(state);
                 completedChapter100.SetActive(false);
-                
+
                 chapterNumberText.text = "Chapter " + chapter.ToString() + " Complete!";
             }
         }
@@ -94,7 +96,7 @@ public class ChapterComplete : MonoBehaviour
 
     public void OpenPopup()
     {
-        if (SaveLoadManager.GetChapterAward(SaveLoadManager.LastChapterPlayed, SaveLoadManager.Awards.ThreeStars) >= 90)
+        if (AwardManager.GetChapterAward(LevelManager.LastChapterPlayed) >= 90)
         {
             completedChapter100.SetActive(true);
             popup.SetActive(false);

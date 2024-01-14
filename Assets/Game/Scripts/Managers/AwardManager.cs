@@ -2,17 +2,22 @@ using UnityEngine;
 
 public class AwardManager : MonoBehaviour
 {
+    public enum Awards
+    {
+        NoAward,
+        OneStar,
+        TwoStars,
+        ThreeStars
+    }
+
     public static AwardManager Instance;
 
     private LevelMetaData levelMetaData;
 
-    private int threeStars;
-    private int twoStars;
-    private int oneStar;
+    internal int ThreeStars { private set; get; }
+    internal int TwoStars { private set; get; }
+    internal int OneStar { private set; get; }
 
-    public int ThreeStars => threeStars;
-    public int TwoStars => twoStars;
-    public int OneStar => oneStar;
 
     private void Awake()
     {
@@ -20,23 +25,66 @@ public class AwardManager : MonoBehaviour
             Instance = this;
     }
 
-    public void GetLevelAwards()
+    internal static int GetChapterAward(int chapter)
+    {
+        return SaveLoadManager.SaveStaticList[chapter].AllStars;
+    }
+
+    internal Awards StarsGiven()
+    {
+        var jumps = GameManager.Instance.JumpsToStartWith - GameManager.Instance.JumpsLeft;
+
+        if (jumps <= ThreeStars)
+            return Awards.ThreeStars;
+        else if (jumps <= TwoStars)
+            return Awards.TwoStars;
+        else if (jumps <= OneStar)
+            return Awards.OneStar;
+
+        return Awards.NoAward;
+    }
+
+    internal void GetLevelAwards()
     {
         levelMetaData = GlobalMetaData.Instance.LevelMetaData;
 
-        oneStar = levelMetaData.JumpsForBronze;
-        twoStars = levelMetaData.JumpsForSilver;
-        threeStars = levelMetaData.JumpsForGold;
+        OneStar = levelMetaData.JumpsForBronze;
+        TwoStars = levelMetaData.JumpsForSilver;
+        ThreeStars = levelMetaData.JumpsForGold;
     }
 
-    public void SetAwardForLevel(SaveLoadManager.Awards award)
+    internal void SetAwardForLevel(Awards award)
     {
-        SetStarAward(SaveLoadManager.LastLevelPlayed, award);
+        SetStarAward(LevelManager.LastLevelPlayed, award);
     }
 
-    private void SetStarAward(int level, SaveLoadManager.Awards award)
+    private void SetStarAward(int level, Awards award)
     {
-        if (SaveLoadManager.GetLevelAward(level) < (int)award)
-            SaveLoadManager.SetAward(level, award);
+        if (GetLevelAward(level) < (int)award)
+            SetAward(level, award);
+    }
+
+    internal static int GetLevelAward(int level)
+    {
+        return SaveLoadManager.SaveStaticList[LevelManager.LastChapterPlayed].Levels[level].Stars;
+    }
+
+    public static int GetAwards(int level)
+    {
+        return SaveLoadManager.SaveStaticList[LevelManager.LastChapterPlayed].Levels[level].StarsReceived;
+    }
+
+    public static void SetAward(int level, AwardManager.Awards awardType)
+    { // check current award, so to not add too many!
+        int currentAward = GetAwards(level);
+        int remainingAward = (int)awardType - currentAward;
+
+        if (remainingAward > 0)
+        {
+            var lastChapter = LevelManager.LastChapterPlayed;
+            SaveLoadManager.SaveStaticList[lastChapter].AllStars += remainingAward;
+            SaveLoadManager.SaveStaticList[lastChapter].Levels[level].Stars += remainingAward;
+            SaveLoadManager.SaveStaticList[lastChapter].Levels[level].StarsReceived += remainingAward;
+        }
     }
 }

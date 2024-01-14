@@ -1,8 +1,6 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.EventSystems;
-using UnityEngine.UI;
 
 public class LevelManager : MonoBehaviour
 {
@@ -14,18 +12,24 @@ public class LevelManager : MonoBehaviour
     [SerializeField] private bool deleteLevelsPlayed;
     [SerializeField] private List<ChapterLevels> chapterLevelsList;
 
-    private BoxCollider levelCollision;
-    private int levelToLoad;
-    private int levelsPlayed;
-    private readonly int maxDemoLevel = 10;
-
     public static Action OnLevelLoad;
     public static Action<int> OnLevelCompleted;
     public static Action OnLevelFailed;
 
+    internal static readonly int ChapterAmount = 6;
+    internal static readonly int LevelAmount = 30;
+
+    internal readonly int XmasStartMonth = 10;
+    internal readonly int XmasEndMonth = 1;
+
+    private BoxCollider levelCollision;
+    private int levelToLoad;
+    private int demoLevelsPlayed;
+    private readonly int maxDemoLevel = 10;
+
     #region Getters
 
-    public int LevelsPlayed => levelsPlayed;
+    public int LevelsPlayed => demoLevelsPlayed;
     public int MaxDemoLevel => maxDemoLevel;
 
     public GameObject LevelGameObject
@@ -47,6 +51,30 @@ public class LevelManager : MonoBehaviour
         }
     }
 
+    internal static int LastChapterPlayed
+    {
+        get
+        {
+            return PlayerPrefs.GetInt("LastChapterPlayed", 1);
+        }
+        set
+        {
+            PlayerPrefs.SetInt("LastChapterPlayed", value);
+        }
+    }
+
+    public static int LastLevelPlayed
+    {
+        get => SaveLoadManager.SaveStaticList[LastChapterPlayed].LastLevelPlayed;
+        set => SaveLoadManager.SaveStaticList[LastChapterPlayed].LastLevelPlayed = value;
+    }
+
+    public static int LastLevelUnlocked
+    {
+        get => SaveLoadManager.SaveStaticList[LastChapterPlayed].LastLevelUnlocked;
+        set => SaveLoadManager.SaveStaticList[LastChapterPlayed].LastLevelUnlocked = value;
+    }
+
     #endregion Getters
 
     private void Awake()
@@ -57,9 +85,11 @@ public class LevelManager : MonoBehaviour
 
     private void Start()
     {
-        CheckForLevelsPlayed();
+        CheckDemoLevelsPlayed();
 
         SpawnAllLevels();
+
+        UiManager.OnLevelButtonPressed += CheckLevelsPlayed;
     }
 
     public void SetLevelToLoad(int levelNo)
@@ -67,28 +97,28 @@ public class LevelManager : MonoBehaviour
         levelToLoad = levelNo;
     }
 
-    private void CheckForLevelsPlayed()
+    private void CheckDemoLevelsPlayed()
     {
         if (deleteLevelsPlayed)
         {
-            levelsPlayed = 0;
-            PlayerPrefs.SetInt("levelsPlayed", 0);
+            demoLevelsPlayed = 0;
+            PlayerPrefs.SetInt("demoLevelsPlayed", 0);
         }
         else
         {
-            levelsPlayed = PlayerPrefs.GetInt("levelsPlayed", 0);
+            demoLevelsPlayed = PlayerPrefs.GetInt("demoLevelsPlayed", 0);
         }
     }
 
     private void GetDemoLevelWithAds(int n)
     {
-        if (PlayerPrefs.HasKey("levelsPlayed"))
+        if (PlayerPrefs.HasKey("demoLevelsPlayed"))
         {
-            levelsPlayed = PlayerPrefs.GetInt("levelsPlayed");
-            levelsPlayed += 1;
-            PlayerPrefs.SetInt("levelsPlayed", levelsPlayed);
+            demoLevelsPlayed = PlayerPrefs.GetInt("demoLevelsPlayed");
+            demoLevelsPlayed += 1;
+            PlayerPrefs.SetInt("demoLevelsPlayed", demoLevelsPlayed);
 
-            if (levelsPlayed >= AdSettings.Instance.LevelsBeforeAd)
+            if (demoLevelsPlayed >= AdSettings.Instance.LevelsBeforeAd)
             {
                 SetAmountLevelsPlayed(0);
                 InitialiseAds.LoadAd?.Invoke();
@@ -105,23 +135,13 @@ public class LevelManager : MonoBehaviour
 
     private void SetAmountLevelsPlayed(int n)
     {
-        levelsPlayed = n;
-        PlayerPrefs.SetInt("levelsPlayed", n);
-    }
-
-    // Attached to Level buttons on map
-    // TODO - move to UiManager
-    public void GetLevelNoToLoad()
-    {
-        var levelButtonClicked = EventSystem.current.currentSelectedGameObject.gameObject.transform.Find("LevelText_no").GetComponent<Text>().text.ToString();
-        int.TryParse(levelButtonClicked, out int n);
-        n -= 1;
-        CheckLevelsPlayed(n);
+        demoLevelsPlayed = n;
+        PlayerPrefs.SetInt("demoLevelsPlayed", n);
     }
 
     private void CheckLevelsPlayed(int n)
     {
-        if (SaveLoadManager.GamePurchased)
+        if (ShopManager.GamePurchased)
         {
             LoadLevelNumber(n);
             return;
@@ -150,11 +170,11 @@ public class LevelManager : MonoBehaviour
         if (levelNo.Length > 2)
         {
             var levelString = levelNo[1].ToString() + levelNo[2].ToString();
-            SaveLoadManager.LastLevelPlayed = int.Parse(levelString);
+            LastLevelPlayed = int.Parse(levelString);
         }
         else
         {
-            SaveLoadManager.LastLevelPlayed = levelNumber;
+            LastLevelPlayed = levelNumber;
         }
 
         GlobalMetaData.Instance.AssignLevelMetaData();
@@ -170,7 +190,6 @@ public class LevelManager : MonoBehaviour
         Logger.Instance.ShowDebugLog($"Game level {levelNumber++} loaded");
 
         MainMenuManager.Instance.SetCollisionBox(MainMenuManager.CollisionBox.Level, levelCollision);
-        
         GameManager.Instance.SetGameState(GameManager.GameState.Level);
 
         OnLevelLoad?.Invoke();
@@ -210,7 +229,7 @@ public class LevelManager : MonoBehaviour
 
     private GameObject GetLevel(int levelNo)
     {
-        var chapter = GlobalMetaData.Instance.ChapterList[SaveLoadManager.LastChapterPlayed];
+        var chapter = GlobalMetaData.Instance.ChapterList[LastChapterPlayed];
         var prefabLevel = chapter.LevelList[levelNo].LevelPrefab;
 
         foreach (var Chapters in chapterLevelsList)
@@ -241,5 +260,3 @@ public class LevelManager : MonoBehaviour
         }
     }
 }
-
-
