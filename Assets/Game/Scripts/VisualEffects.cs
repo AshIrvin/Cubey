@@ -94,6 +94,7 @@ public class VisualEffects : MonoBehaviour
     private void OnMapLoad()
     {
         StopEffect(peExitExplosion);
+        StopEffect(peExitOpened);
     }
 
     private void OnMenuLoad()
@@ -104,7 +105,7 @@ public class VisualEffects : MonoBehaviour
 
     private void PowerDustEffect()
     {
-        if (!gameManager.enabled || Time.timeScale < 0.5f || !gameManager.allowPlayerMovement)
+        if (!gameManager.enabled || Time.timeScale < 0.5f || !gameManager.AllowPlayerMovement)
             return;
         
         var playerPos = gameManager.CubeyPlayer.transform.position;

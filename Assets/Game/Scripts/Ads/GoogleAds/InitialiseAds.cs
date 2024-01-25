@@ -7,14 +7,13 @@ using System.Threading.Tasks;
 
 public class InitialiseAds : MonoBehaviour
 {
-    public InterstitialAd interstitial;
+    [SerializeField] private InterstitialAd interstitial;
 
-    public static Action LoadLevel;
-    public static Action LoadAd;
+    internal static Action LoadLevel;
+    internal static Action LoadAd;
 
     private InterstitialAdGameObject fullscreenAd;
     private BannerAdGameObject bannerAd;
-
 
     private void Awake()
     {
@@ -104,8 +103,10 @@ public class InitialiseAds : MonoBehaviour
     #endregion
 
     // ******** Placement ads ********** //
-    public void GetAd()
+    internal void GetAd()
     {
+        if (ShopManager.GamePurchased) return;
+
         fullscreenAd.LoadAd();
         
         StartCoroutine(WaitToGetAd());
@@ -126,6 +127,8 @@ public class InitialiseAds : MonoBehaviour
             Logger.Instance.ShowDebugError("Ad errored out");
             DestroyAd();
         }
+
+        LoadTopBannerAd();
     }
     
     public void ShowAd()
@@ -151,7 +154,7 @@ public class InitialiseAds : MonoBehaviour
         }
     }
 
-    public void AdFailed()
+    private void AdFailed()
     {
         Logger.Instance.ShowDebugError("Ad 4 - has failed to load");
         ContinueToLevel();
@@ -164,14 +167,14 @@ public class InitialiseAds : MonoBehaviour
         Logger.Instance.ShowDebugLog("Destroying ad. fullscreenAd null? " + fullscreenAd);
     }
     
-    public void ContinueToLevel()
+    private void ContinueToLevel()
     {
         DestroyAd();
         
         LoadLevel?.Invoke();
     }
 
-    public void DestroyTopBannerAd()
+    internal void DestroyTopBannerAd()
     {
         if (bannerAd == null)
             Logger.Instance.ShowDebugLog("Can't find bannerAd");
@@ -181,7 +184,7 @@ public class InitialiseAds : MonoBehaviour
         bannerAd.enabled = false;
     }
 
-    public void LoadTopBannerAd()
+    private void LoadTopBannerAd()
     {
         bannerAd.LoadAd();
     }

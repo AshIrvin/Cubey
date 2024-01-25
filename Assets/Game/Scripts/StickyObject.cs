@@ -60,7 +60,7 @@ public class StickyObject : MonoBehaviour
             
             if (other != null)
             {
-                other.transform.SetParent(GameManager.gameFolder.transform, true);
+                other.transform.SetParent(GameManager.GameFolder.transform, true);
             }
             
             if (drawBridge)

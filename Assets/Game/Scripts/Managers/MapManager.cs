@@ -39,8 +39,9 @@ public class MapManager : MonoBehaviour
 
     #region Public
 
-    public static Action OnMapLoad;
-    public GameObject CubeyOnMap => cubeyOnMap;
+    internal static Action OnMapLoad;
+    internal GameObject CubeyOnMap => cubeyOnMap;
+    internal static Action OnQuitToMap;
     
     #endregion Public
 
@@ -174,18 +175,14 @@ public class MapManager : MonoBehaviour
 
     public void QuitToMap()
     {
-        mainMenuManager.mainMenu.SetActive(true);
+        UiManager.Instance.MainMenu.SetActive(true);
         
         gameManager.SetGameState(GameManager.GameState.Map);
 
         visualEffects.peExitSwirl.transform.SetParent(VisualEffects.Instance.ParticleEffectsGroup.transform, true);
         visualEffects.peExitSwirl.SetActive(false);
 
-        //if (!SaveLoadManager.GamePurchased)
-        //{
-        //    InitialiseAds.LoadTopBannerAd();
-        //}
-
+        // TODO - move all timescales together
         Time.timeScale = 1;
 
         LoadMapScreen();
@@ -198,8 +195,9 @@ public class MapManager : MonoBehaviour
     private void IsTutorialComplete()
     {
         // TODO: check if the last level was chapter 1, level 5 that completes the tutorial
-        if (LevelManager.LastChapterPlayed == 1 && AwardManager.GetLevelAward(4) > 1
-                                                   && PlayerPrefs.GetInt("tutorialFinished", 0) == 0)
+        if (LevelManager.LastChapterPlayed == 1 &&
+            AwardManager.GetLevelAward(4) > 1 &&
+            PlayerPrefs.GetInt("tutorialFinished", 0) == 0)
         {
             PlayerPrefs.SetInt("tutorialFinished", 1);
             UnlockManager.UnlockChapter(2);
@@ -226,7 +224,7 @@ public class MapManager : MonoBehaviour
             var screenShot = button.transform.Find("Mask/Screenshot").GetComponent<Image>();
             
             // set all level 1 buttons unlocked - needed?
-            button.interactable = i == 0;
+            //button.interactable = i == 0;
 
             CheckLevelUnlocks(button, i);
             
@@ -241,13 +239,15 @@ public class MapManager : MonoBehaviour
         SetStarsForEachLevel();
         
         SetShopToButton();
+
+        Debug.Log("CycleButtonLocks in chapter " + lastChapter.ChapterNumber);
     }
 
     private void CheckLevelUnlocks(Button button, int i)
     {
         int maxLevels = ShopManager.GamePurchased ? 30 : LevelManager.Instance.MaxDemoLevel;
 
-        if (i > 0 && i < maxLevels)
+        if (i >= 0 && i < maxLevels)
         {
             button.interactable = SaveLoadManager.SaveStaticList[LevelManager.LastChapterPlayed].Levels[i].LevelUnlocked;
             return;
@@ -258,9 +258,8 @@ public class MapManager : MonoBehaviour
 
     private void DemoMode()
     {
-        ShopManager.GamePurchased = false;
+        ShopManager.SetGamePurchased(false);
 
-        //SetShopToButton();
         CycleButtonLocks();
 
         mainMenuManager.ToggleThankYouSign();
@@ -274,12 +273,9 @@ public class MapManager : MonoBehaviour
 
         if (ShopManager.GamePurchased) return;
 
-        //var pos = button.transform.position;
-
         button.onClick.RemoveAllListeners();
         button.onClick.AddListener(() => EnableShopMenu());
         button.interactable = true;
-        //button.image = shopButton.GetComponent<Image>();
 
         Image level10 = button.transform.Find("Mask/Screenshot").GetComponent<Image>();
         level10.sprite = shopButton.GetComponent<Image>().sprite;
@@ -309,16 +305,13 @@ public class MapManager : MonoBehaviour
         mainMenuManager.ShowMenuBackButton(false);
     }
     
-    // Set stars for each level button
     private void SetStarsForEachLevel()
     {
-        var level = LevelManager.LastLevelPlayed;
+        var levelNumber = LevelManager.LastLevelPlayed;
 
         for (int i = 0; i < levelButtons.Count; i++)
         {
-            var b = levelButtons[i].GetComponent<Button>();
             var sGrp = levelButtons[i].transform.GetChild(4);
-
             var awardForLevel = AwardManager.GetAwards(i);
 
             starImages.Clear();
@@ -329,28 +322,33 @@ public class MapManager : MonoBehaviour
                 starImages[j].color = ColourManager.starDefault;
             }
 
-            switch (awardForLevel)
-            {
-                case 1:
-                    starImages[0].color = ColourManager.starBronze;
-                    break;
-                case 2:
-                    starImages[0].color = ColourManager.starBronze;
-                    starImages[1].color = ColourManager.starSilver;
-                    break;
-                case 3:
-                    starImages[0].color = ColourManager.starBronze;
-                    starImages[1].color = ColourManager.starSilver;
-                    starImages[2].color = ColourManager.starGold;
-                    if (level == i)
-                    {
-                        starImages[2].transform.localScale =
-                            Vector3.Lerp(lerpPos1, lerpPos2, Mathf.PingPong(Time.time, 1));
-                    }
-                    break;
-                default:
-                    break;
-            }
+            AssignStarsToLevelButton(awardForLevel, levelNumber, i);
+        }
+    }
+
+    private void AssignStarsToLevelButton(int awardForLevel, int levelNumber, int i)
+    {
+        switch (awardForLevel)
+        {
+            case 1:
+                starImages[0].color = ColourManager.starBronze;
+                break;
+            case 2:
+                starImages[0].color = ColourManager.starBronze;
+                starImages[1].color = ColourManager.starSilver;
+                break;
+            case 3:
+                starImages[0].color = ColourManager.starBronze;
+                starImages[1].color = ColourManager.starSilver;
+                starImages[2].color = ColourManager.starGold;
+                if (levelNumber == i)
+                {
+                    starImages[2].transform.localScale =
+                        Vector3.Lerp(lerpPos1, lerpPos2, Mathf.PingPong(Time.time, 1));
+                }
+                break;
+            default:
+                break;
         }
     }
     

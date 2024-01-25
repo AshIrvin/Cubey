@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using Lean.Touch;
 using UnityEngine;
@@ -56,6 +55,7 @@ public class MainMenuManager : MonoBehaviour
     [SerializeField] private List<GameObject> chapterButtons;
     [SerializeField] private Color fadedButton = new Color(0.25f, 0.25f, 0.25f);
     [SerializeField] private Color unlockedButton = Color.white;
+    [SerializeField] private LeanConstrainToBox leanConstrainToBox;
 
     #endregion Fields
 
@@ -87,26 +87,19 @@ public class MainMenuManager : MonoBehaviour
 
     #endregion Getters
 
-    public static Action OnMainMenuLoad;
+    internal static Action OnMainMenuLoad;
 
-    public int chapterUnlockedTo;
-    public LeanConstrainToBox leanConstrainToBox;
-    public GameObject mainMenu;
 
     private void Awake()
     {
         if (Instance == null)
             Instance = this;
-
-        SetNavButtons(false);
-        //LoadingScene(true);
-
+        
         DeleteFinishScreenData();
-
         SetRefreshRate(PlayerPrefs.GetInt("RefreshRate"));
 
         UiManager.DeleteSaves += ResetSaves;
-        UiManager.OnChapterButtonPressed += ShowMap;
+        UiManager.OnChapterButtonPressed += ChapterButton;
         UiManager.OnLoadChapterScreen += EnableChapterScreen;
     }
 
@@ -121,12 +114,12 @@ public class MainMenuManager : MonoBehaviour
         gameManager = GameManager.Instance;
         cameraManager = CameraManager.Instance;
         audioManager = AudioManager.Instance;
-
         CheckForErrors();
 
         versionNo.text = "v: " + Application.version;
         chapterList = GlobalMetaData.Instance.ChapterList;
 
+        SetNavButtons(false);
         AddMenuEnvironments();
         SetColours();
         LoadMainMenu();
@@ -134,7 +127,7 @@ public class MainMenuManager : MonoBehaviour
 
     public void LoadMainMenu()
     {
-        mainMenu.SetActive(true);
+        UiManager.Instance.MainMenu.SetActive(true);
         menuEnvironmentParent.SetActive(true);
         mainMenuUi.SetActive(true);
         ShowMenuBackButton(false);
@@ -146,7 +139,6 @@ public class MainMenuManager : MonoBehaviour
         OnMainMenuLoad?.Invoke();
         
         shopButton.SetActive(true);
-        
         gameManager.SetGameState(GameManager.GameState.Menu);
     }
 
@@ -185,7 +177,7 @@ public class MainMenuManager : MonoBehaviour
         }
     }
     
-    public void ChangeRefreshRate()
+    private void ChangeRefreshRate()
     {
         var refreshRateButton = EventSystem.current.currentSelectedGameObject.gameObject.
             transform.GetChild(0).GetComponent<Text>();
@@ -194,6 +186,7 @@ public class MainMenuManager : MonoBehaviour
         {
             SetRefreshRate(60);
             PlayerPrefs.SetInt("RefreshRate", 60);
+            // TODO - move this to UiManager
             refreshRateButton.text = "Normal mode (60hz)";
         }
         else
@@ -202,12 +195,6 @@ public class MainMenuManager : MonoBehaviour
             PlayerPrefs.SetInt("RefreshRate", 120);
             refreshRateButton.text = "SuperSmooth mode (120hz)";
         }
-    }
-
-    // TODO - loading scene required?
-    public void LoadingScene(bool state)
-    {
-        loadingScreen.SetActive(state);
     }
     
     public void ToggleGameObject(GameObject gameObject)
@@ -298,7 +285,7 @@ public class MainMenuManager : MonoBehaviour
         }
     }
 
-    private void ShowMap(int n)
+    private void ChapterButton(int n)
     {
         int chapter = LevelManager.LastChapterPlayed = n;
         
@@ -331,15 +318,20 @@ public class MainMenuManager : MonoBehaviour
         backButton.onClick.AddListener(MainMenuScreen);
     }
 
-    // disable chapters that aren't unlocked?
     internal void CycleThroughUnlockedChapters()
     {
-        for (int i = 3; i < chapterList.Count; i++)
+        var tutorialComplete = PlayerPrefs.GetInt("tutorialFinished", 0);
+        var length = ShopManager.GamePurchased ? chapterList.Count : tutorialComplete == 1 ? 3 : 1;
+        var startChapter = UnlockManager.IsDateInWinter() ? 0 : 1;
+
+        for (int i = startChapter; i < length; i++)
         {
-            bool unlocked = ShopManager.GamePurchased ? SaveLoadManager.GetChapterUnlocked(i) : false;
-            chapterButtons[i].GetComponent<Button>().interactable = unlocked;
+            bool chapterUnlocked = ShopManager.GamePurchased ? UnlockManager.GetChapterUnlocked(i) : tutorialComplete == 1 || i == 1;
+            //Debug.Log($"Chapter {i} : {chapterUnlocked}");
+
+            chapterButtons[i].GetComponent<Button>().interactable = chapterUnlocked;
             var image = chapterButtons[i].transform.Find("Mask/Screenshot").GetComponent<Image>();
-            image.color = unlocked ? unlockedButton : fadedButton;
+            image.color = chapterUnlocked ? unlockedButton : fadedButton;
         }
     }
 
@@ -367,10 +359,10 @@ public class MainMenuManager : MonoBehaviour
 
     private void ButtonSizePong()
     {
-        Pong();
+        WaitThenAnimationButton();
     }
 
-    private async void Pong()
+    private async void WaitThenAnimationButton()
     {
         await System.Threading.Tasks.Task.Delay(1000);
         menuButtonAnim.SetBool("EnablePingPong", true);

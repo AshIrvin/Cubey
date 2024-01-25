@@ -14,14 +14,14 @@ public class CloudManager : MonoBehaviour
         await AuthenticationService.Instance.SignInAnonymouslyAsync();
     }
 
-    public static async Task SendToCloud(string key, object value)
+    internal static async Task SendToCloud(string key, object value)
     {
         var data = new Dictionary<string, object> { { key, value } };
 
         await CloudSaveService.Instance.Data.Player.SaveAsync(data);
     }
 
-    private static async Task<T> LoadFromCloud<T>(string key)
+    internal static async Task<T> LoadFromCloud<T>(string key)
     {
         var query = await CloudSaveService.Instance.Data.Player.LoadAsync(new HashSet<string> { key });
 

@@ -21,26 +21,25 @@ public class CameraManager : MonoBehaviour
     [SerializeField] private Vector3 velocity = Vector3.zero;
     [SerializeField] private float delayCameraOnExitStart = 1f;
     [SerializeField] private Vector3 nextOpenLevel;
-    [SerializeField] private int panningToLevel;
+    //[SerializeField] private int panningToLevel;
     [SerializeField] private Toggle autoPanToCubeyButton;
     [SerializeField] private float camCubeyOffset = 0.1f;
 
-    private GameManager gameManager;
-    private GlobalMetaData globalMetaData;
+    //private GameManager gameManager;
+    //private GlobalMetaData globalMetaData;
 
     private bool panningFromExit;
-    private Vector3 dragOrigin; //Where are we moving?
+    //private Vector3 dragOrigin; //Where are we moving?
     private Vector3 buttonToStartFrom;
     private Vector3 buttonToEndAt;
-    private float offsetFromButton = 0.1f;
-    private float distanceFromStartButton;
-    private float distanceFromEndButton;
-    private bool playedIntroOnce;
-    private bool reachedStartButton;
+    //private float offsetFromButton = 0.1f;
+    //private float distanceFromStartButton;
+    //private float distanceFromEndButton;
+    //private bool playedIntroOnce;
+    //private bool reachedStartButton;
 
     //private float gameCamTime2 = 2;
     private float defaultGameCamTime = 0.5f;
-    private float camCubeyDistance = 0.3f;
     
     private Tween panToCubey;
     private GameObject cubeyPlayer;
@@ -52,13 +51,12 @@ public class CameraManager : MonoBehaviour
         if (Instance == null)
             Instance = this;
 
-        LevelManager.OnLevelLoad += EnteringLevel;
         MainMenuManager.OnMainMenuLoad += OnMainMenuLoad;
         MapManager.OnMapLoad += PanToLevelButton;
 
         chapterList = GlobalMetaData.Instance.ChapterList;
-        gameManager = GameManager.Instance;
-        globalMetaData = GlobalMetaData.Instance;
+        //gameManager = GameManager.Instance;
+        //globalMetaData = GlobalMetaData.Instance;
 
         UiManager.AutoPanToggle += AutoPanToCubey;
     }
@@ -87,7 +85,7 @@ public class CameraManager : MonoBehaviour
     }
 
     private void SmoothMoveCamToCubey()
-    {
+    { // this is used to pan from exit and pan with cubey in the level
         switch (GameManager.Instance.GameStateType)
         {
             case GameManager.GameState.Level:
@@ -100,10 +98,7 @@ public class CameraManager : MonoBehaviour
 
     private void GetCubeyPlayer()
     {
-        if (gameManager == null)
-            gameManager = GameManager.Instance;
-
-        cubeyPlayer = gameManager.CubeyPlayer;
+        cubeyPlayer = GameManager.Instance.CubeyPlayer;
     }
 
     public void KillSequence()
@@ -125,67 +120,6 @@ public class CameraManager : MonoBehaviour
     {
         autoPanToCubey = PlayerPrefs.GetInt("autoPanToCubey", 1) == 1;
         autoPanToCubeyButton.isOn = !autoPanToCubey;
-    }
-
-    private void EnteringLevel()
-    {
-        StartCoroutine(PanFromExit());
-    }
-
-    private IEnumerator PanFromExit()
-    {
-        panningFromExit = true;
-        yield return new WaitWhile(() => globalMetaData.LevelMetaData == null);
-        transform.position = globalMetaData.LevelMetaData.ExitPosition.transform.position;
-        yield return new WaitForSeconds(delayCameraOnExitStart);
-
-        ExitPanToCubey();
-    }
-
-    private void ExitPanToCubey()
-    {
-        KillSequence();
-        var cubeyPos = cubeyPlayer.transform.position;
-        panToCubey = DOTween.Sequence().Append(transform.DOMove(cubeyPos, panToCubeyTime).SetEase(Ease.InOutQuad));
-
-        panToCubey.onComplete = () =>
-        {
-            panningFromExit = false;
-        };
-    }
-
-    private void ReturnPanToCubey(LeanFinger finger)
-    {
-        if (gameManager.GameStateType != GameManager.GameState.Level) return;
-
-        KillSequence();
-        var cubeyPos = cubeyPlayer.transform.position;
-        panToCubey = DOTween.Sequence().Append(transform.DOMove(cubeyPos, panToCubeyTime).SetEase(Ease.InOutQuad));
-    }
-
-    private void CamFollowFinger(LeanFinger finger)
-    {
-        KillSequence();
-        var cubeyPos = cubeyPlayer.transform.position;
-        panToCubey = DOTween.Sequence().Append(transform.DOMove(cubeyPos, panToCubeyTime).SetEase(Ease.InOutQuad));
-    }
-
-    private void PanToMenuCubey()
-    {
-        KillSequence();
-        var cubeyPos = cubeyPlayer.transform.position;
-        panToCubey = DOTween.Sequence().Append(transform.DOMove(cubeyPos, panToCubeyTime).SetEase(Ease.InOutQuad));
-
-        panToCubey.onComplete = () =>
-        {
-            panningFromExit = false;
-        };
-    }
-
-    private IEnumerator ChangeCamSpeed(float n)
-    {
-        yield return new WaitForSeconds(2);
-        panToCubeyTime = n;
     }
 
     public void ResetCamPosition()
@@ -223,7 +157,7 @@ public class CameraManager : MonoBehaviour
             buttonToStartFrom = buttonPos;
             var moveToNewLevel = currentLevelNo < maxLevel ? currentLevelNo + 1 : currentLevelNo;
             buttonToEndAt = currentChapterList.ChapterMapButtonList[moveToNewLevel].transform.position;
-            panningToLevel = LevelManager.LastLevelUnlocked;
+            //panningToLevel = LevelManager.LastLevelUnlocked;
         }
         else
         {
@@ -234,13 +168,13 @@ public class CameraManager : MonoBehaviour
         nextOpenLevel = currentChapterList.ChapterMapButtonList[LevelManager.LastLevelUnlocked].transform.position;
         nextOpenLevel.z -= 0.5f;
         
-        distanceFromStartButton = Vector3.Distance(transform.position, buttonToStartFrom);
-        distanceFromEndButton = Vector3.Distance(transform.position, buttonToEndAt);
+        //distanceFromStartButton = Vector3.Distance(transform.position, buttonToStartFrom);
+        //distanceFromEndButton = Vector3.Distance(transform.position, buttonToEndAt);
         
         VisualEffects.Instance.PlayEffect(VisualEffects.Instance.peMapLevelStars, nextOpenLevel);
         
         transform.position = buttonToStartFrom;
-        reachedStartButton = true;
+        //reachedStartButton = true;
 
         panToCubey = DOTween.Sequence().Append(transform.DOMove(buttonToEndAt, camToLevelButtonTime).SetEase(Ease.InOutQuad));
         

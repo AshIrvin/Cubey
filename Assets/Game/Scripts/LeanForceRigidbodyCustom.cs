@@ -59,7 +59,7 @@ namespace Lean.Touch
             if (LeanTouch.Fingers.Count >= 2)
                 return;
             
-            if (gameManager.allowPlayerMovement)
+            if (gameManager.AllowPlayerMovement)
             {
                 launchRenderArc.leanEndPos = fingerPos;
                 fingerPos.z = playerPos.z = transform.position.z;

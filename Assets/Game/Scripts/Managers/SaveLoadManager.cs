@@ -8,15 +8,11 @@ public class SaveLoadManager : MonoBehaviour
 {
     [SerializeField] private SaveMetaData saveMetaData;
     
-    public List<ChapterLevelData> showSaveData = new (6);
-
     public static List<ChapterLevelData> SaveStaticList;
     public static bool useCloudSaving;    
 
-    //internal static bool GamePurchased = false;
-
     private static int chapterLevelSaved;
-    private readonly bool deleteAllSaves = false; // TODO - keep testing this till no errors. Follow
+    private const bool DELETE_ALL_SAVES = false; // TODO - keep testing this till no errors. Follow
 
     #region Getters
 
@@ -30,17 +26,10 @@ public class SaveLoadManager : MonoBehaviour
 
     private void Awake()
     {
-        //GetGamePurchased();
-
-        if (deleteAllSaves)
+        if (DELETE_ALL_SAVES)
             ResetSaves();
 
         SaveToFile.OnFirstTimeUse += CreateSaves;
-        
-        //if (GamePurchased)
-        //    UnlockManager.UnlockAllChapters();
-
-        //UnlockManager.UnlockSeasonalChapter();
     }
 
     private void Start()
@@ -72,17 +61,18 @@ public class SaveLoadManager : MonoBehaviour
         Debug.Log("CreateSaves. : " + SaveStaticList.Count);
     }
 
-    private void LoadSaves()
+    private async void LoadSaves()
     {
         Logger.Instance.ShowDebugLog($"LoadSaves. Found save, {(useCloudSaving ? "loading cloud saves." : "loading local saves.")}");
 
         SaveStaticList = SaveToFile.LoadFromJson().ChapterLevelsData;
-        ShopManager.GamePurchased = SaveToFile.LoadFromJson().GamePurchased;
+        ShopManager.SetGamePurchased(SaveToFile.LoadFromJson().GamePurchased);
 
-        if (useCloudSaving)
-        {
-            //await LoadFromCloud<string>($"SaveChapters{i}.txt");
-        }     
+        UnlockManager.CheckSeasonalChapter();
+
+        if (!useCloudSaving) return;
+        
+        await CloudManager.LoadFromCloud<string>($"{Application.dataPath}/saveData.json");    
     }
 
     public static async void SaveGameData()
@@ -91,22 +81,7 @@ public class SaveLoadManager : MonoBehaviour
 
         if (!useCloudSaving) return;
 
-        for (int i = 0; i < 6; i++)
-        {
-            await CloudManager.SendToCloud($"SaveChapters{i}.txt", SaveStaticList[i]);
-        }
-    }
-
-    public static bool GetChapterUnlocked(int chapter)
-    {
-        for (int i = 0; i < SaveStaticList.Count; i++)
-        {
-            if (SaveStaticList[chapter].ChapterUnlocked)
-            {
-                return true;
-            }
-        }
-        return false;
+        await CloudManager.SendToCloud($"{Application.dataPath}/saveData.json", SaveStaticList);
     }
 
     public static void ResetSaves()
@@ -114,6 +89,16 @@ public class SaveLoadManager : MonoBehaviour
         File.Delete($"{Application.dataPath}/saveData.json");
         File.Delete($"{Application.dataPath}/saveData.json.meta");
 
-        //LastLevelUnlocked = 0;
+        PlayerPrefs.DeleteAll();
+    }
+
+    internal static void SetLevelTime(int chapter, int level, float time)
+    {
+        SaveStaticList[chapter].Levels[level].TimeTaken = time;
+    }
+
+    internal static void SetChapterTime(int chapter, float time)
+    {
+        SaveStaticList[chapter].ChapterTimeTaken = time;
     }
 }

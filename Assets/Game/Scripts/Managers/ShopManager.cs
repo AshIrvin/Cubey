@@ -6,6 +6,8 @@ using UnityEngine.UI;
 public class ShopManager : MonoBehaviour
 {
     public static ShopManager Instance { get; set; }
+
+    // TODO - move buttons to UiManager?
     [SerializeField] private GameObject restoreButton;
     [SerializeField] private GameObject demoButton;
     [SerializeField] private Text purchaseText;
@@ -15,13 +17,8 @@ public class ShopManager : MonoBehaviour
     [SerializeField] private TextMeshProUGUI purchaseRestoredText;
 
     private MapManager mapManager;
-    private static bool gamePurchased = false;
 
-    public static bool GamePurchased
-    { // TODO - reassign everything to this
-        get => gamePurchased;
-        set => gamePurchased = value;
-    }
+    public static bool GamePurchased { get; private set; }
 
     private void Awake()
     {
@@ -56,17 +53,18 @@ public class ShopManager : MonoBehaviour
     }
 
     private void GameDemoMode()
-    { // show purchase button
-
+    {
         GamePurchased = false;
 
-        //purchaseText.text = "Purchase";
-        //testPurchaseText.text = "Test Purchase";
         purchaseText.transform.parent.gameObject.SetActive(true);
         testPurchaseText.transform.parent.gameObject.SetActive(true);
-        //shopText.text = "Purchase full game";
         SetPurchasedButtonsColours("Buy", "Shop");
         SaveLoadManager.SaveGameData();
+    }
+
+    internal static void SetGamePurchased(bool state)
+    {
+        GamePurchased = state;
     }
 
     private void PurchaseGame()
@@ -75,7 +73,6 @@ public class ShopManager : MonoBehaviour
         Logger.Instance.ShowDebugLog("Game Purchased: " + GamePurchased);
 
         UnlockManager.UnlockAllChapters();
-        UnlockManager.UnlockSeasonalChapter();
 
         MainMenuManager.Instance.CycleThroughUnlockedChapters();
         SetPurchasedButtonsColours("Purchased", "Thank You!");
@@ -89,21 +86,18 @@ public class ShopManager : MonoBehaviour
         Logger.Instance.ShowDebugLog("Game Purchase restored: " + GamePurchased);
     }
 
-    // TODO - move to UiManager
-    public void SetPurchasedButtonsColours(string buttonText, string titleText)
+    private void SetPurchasedButtonsColours(string buttonText, string titleText)
     {
         purchaseText.text = buttonText;
-        testPurchaseText.text = buttonText;
+        testPurchaseText.text = "Test " + buttonText;
         
         var purchaseTextColour = purchaseText.color;
         purchaseTextColour.a = 0.5f;
         purchaseText.color = purchaseTextColour;   
             
-        //var borderImageColour = purchaseText.transform.parent.transform.Find("border").GetComponent<Image>().color;
         var borderImageColour = new Color(0.9f, 0.9f, 0.9f, 1);
         purchaseText.transform.parent.transform.Find("border").GetComponent<Image>().color = borderImageColour;
 
-        //testPurchaseText.transform.parent.gameObject.SetActive(false);
         shopText.text = titleText;
     }
 

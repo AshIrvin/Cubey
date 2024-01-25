@@ -12,19 +12,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9994f75f442ab0444bb747cfa8b3682f, type: 3}
   m_Name: Chapter00
   m_EditorClassIdentifier: 
-  menuEnvironment: {fileID: 4453112334427730176, guid: 47005d0f31d502842b8142bf33cab8ca,
-    type: 3}
+  menuEnvironment: {fileID: 4453112334427730176, guid: 47005d0f31d502842b8142bf33cab8ca, type: 3}
+  menuCollision: {fileID: 1176134472840427837, guid: 47005d0f31d502842b8142bf33cab8ca, type: 3}
+  mapCollision: {fileID: 7939797506627960118, guid: fbbc67249d1a9ff43bbf7bf14e919cd7, type: 3}
   chapterNumber: 0
   chapterName: Festive Special
   pickupIcon: {fileID: 0}
-  lastLevelPlayed: 0
-  lastLevelUnlocked: 0
-  chapterUnlocked: 0
-  chapterMap: {fileID: 7939797506585355753, guid: fbbc67249d1a9ff43bbf7bf14e919cd7,
-    type: 3}
+  chapterMap: {fileID: 7939797506585355753, guid: fbbc67249d1a9ff43bbf7bf14e919cd7, type: 3}
   cubeyPlayer: {fileID: 0}
   levelList: {fileID: 11400000, guid: 9d7a17c323ad5ec4da9f1b148f120b62, type: 2}
-  menuZoomLevel: 0
+  menuZoomLevel: 65
   chapterMapButtonList:
   - {fileID: 7939797505131494812, guid: fbbc67249d1a9ff43bbf7bf14e919cd7, type: 3}
   - {fileID: 7651464283200398295, guid: fbbc67249d1a9ff43bbf7bf14e919cd7, type: 3}
@@ -67,7 +64,4 @@ MonoBehaviour:
   - {fileID: 0}
   - {fileID: 0}
   - {fileID: 0}
-  awardsBronze: 0
-  awardsSilver: 0
-  awardsGold: 0
   fullPathName: Assets/Src_Images/MainMenu/MapLevelImages/ChapterChristmas/

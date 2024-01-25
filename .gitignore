@@ -360,3 +360,4 @@ healthchecksdb
 /Assembly-CSharp.csproj
 /Cubey.sln
 /.vsconfig
+*.json

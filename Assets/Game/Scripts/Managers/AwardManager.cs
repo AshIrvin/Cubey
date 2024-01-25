@@ -32,7 +32,7 @@ public class AwardManager : MonoBehaviour
 
     internal Awards StarsGiven()
     {
-        var jumps = GameManager.Instance.JumpsToStartWith - GameManager.Instance.JumpsLeft;
+        var jumps = GameManager.JUMPS_TO_START - GameManager.Instance.JumpsLeft;
 
         if (jumps <= ThreeStars)
             return Awards.ThreeStars;

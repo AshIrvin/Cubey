@@ -3,10 +3,11 @@ using UnityEngine;
 using UnityEngine.UI;
 using System.Collections.Generic;
 using UnityEngine.EventSystems;
+using System.Threading.Tasks;
 
 public class UiManager : MonoBehaviour
 {
-    public static UiManager Instance;
+    internal static UiManager Instance;
     private AudioManager audioManager;
 
     #region Fields
@@ -23,6 +24,7 @@ public class UiManager : MonoBehaviour
     [SerializeField] private GameObject helpScreen;
     [SerializeField] private GameObject topUi;
     [SerializeField] private GameObject loadingScreen;
+    [SerializeField] private GameObject mainMenu;
 
     [Header("UI Text")]
     [SerializeField] private Text levelText;
@@ -46,42 +48,43 @@ public class UiManager : MonoBehaviour
 
     #endregion Fields
 
-    #region Public Getters
+    #region Internal Getters
 
-    public Text LevelText => levelText;
-    public Text ItemText => itemText;
-    public Text JumpAmountText => jumpAmountText;
-    public Text AwardToGet => awardToGet;
-    public Text OneStarTutorialText => oneStarTutorialText;
-    public Text TwoStarTutorialText => twoStarTutorialText;
-    public Text ThreeStarTutorialText => threeStarTutorialText;
-    public Text BronzePodium => bronzePodium;
-    public Text SilverPodium => silverPodium;
-    public Text GoldPodium => goldPodium;
+    internal Text LevelText => levelText;
+    internal Text ItemText => itemText;
+    internal Text JumpAmountText => jumpAmountText;
+    internal Text AwardToGet => awardToGet;
+    internal Text OneStarTutorialText => oneStarTutorialText;
+    internal Text TwoStarTutorialText => twoStarTutorialText;
+    internal Text ThreeStarTutorialText => threeStarTutorialText;
+    internal Text BronzePodium => bronzePodium;
+    internal Text SilverPodium => silverPodium;
+    internal Text GoldPodium => goldPodium;
 
-    public GameObject TopUi => topUi;
-    public GameObject PauseMenu => pauseMenu;
-    public GameObject HelpScreen => helpScreen;
-    public GameObject EndScreen => endScreen;
-    public GameObject LoadingScreen => loadingScreen;
-    public GameObject FailedScreen => failedScreen;
+    internal GameObject TopUi => topUi;
+    internal GameObject PauseMenu => pauseMenu;
+    internal GameObject HelpScreen => helpScreen;
+    internal GameObject EndScreen => endScreen;
+    internal GameObject LoadingScreen => loadingScreen;
+    internal GameObject FailedScreen => failedScreen;
+    internal GameObject MainMenu => mainMenu;
 
-    #endregion Public Getters
+    #endregion Internal Getters
 
     #region Actions
 
-    public static Action<bool> AutoPanToggle;
-    public static Action<bool> MusicToggle;
-    public static Action<bool> SoundToggle;
-    public static Action DeleteSaves;
-    public static Action<bool> AnalyticsConsent;
-    public static Action<int> OnLevelButtonPressed;
-    public static Action<int> OnChapterButtonPressed;
-    public static Action OnGamePurchased;
-    public static Action OnDemoMode;
-    public static Action OnRestorePurchase;
-    public static Action<bool> OnLoadChapterScreen;
-    public static Action<bool> OnLoadSettings;
+    internal static Action<bool> AutoPanToggle;
+    internal static Action<bool> MusicToggle;
+    internal static Action<bool> SoundToggle;
+    internal static Action DeleteSaves;
+    internal static Action<bool> AnalyticsConsent;
+    internal static Action<int> OnLevelButtonPressed;
+    internal static Action<int> OnChapterButtonPressed;
+    internal static Action OnGamePurchased;
+    internal static Action OnDemoMode;
+    internal static Action OnRestorePurchase;
+    internal static Action<bool> OnLoadChapterScreen;
+    internal static Action<bool> OnLoadSettings;
 
     #endregion Actions
 
@@ -96,6 +99,8 @@ public class UiManager : MonoBehaviour
         audioManager = AudioManager.Instance;
 
         UGS_Analytics.AnalyticsConsent += GetAnalyticsConsentForButton;
+
+        SetJumpText(GameManager.Instance.JumpsLeft.ToString());
     }
 
     public void SetGameLevelCanvases(bool state)
@@ -112,6 +117,11 @@ public class UiManager : MonoBehaviour
         ShowFailedScreen(false);
         ShowEndScreen(false);
         ShowTopUi(false);
+    }
+
+    internal void SetJumpText(string text)
+    {
+        JumpAmountText.text = text;
     }
 
     public void ShowTopUi(bool state)
@@ -146,6 +156,51 @@ public class UiManager : MonoBehaviour
         DisablePickupGraphics();
 
         pickupUiImages[n].gameObject.SetActive(true);
+    }
+
+    private void ChangeTextColour(Text text, Color color)
+    {
+        text.color = color;
+    }
+
+    internal async Task WaitForLevelMetaData()
+    {
+        await Task.Run(() => new WaitUntil(() => GameManager.Instance.LevelMetaData != null));
+
+        UpdateAwardsNeeded();
+    }
+
+    private void UpdateAwardsNeeded()
+    {
+        var levelMetaData = GameManager.Instance.LevelMetaData;
+        int JumpsToStartWith = GameManager.JUMPS_TO_START;
+        int JumpsLeft = GameManager.Instance.JumpsLeft;
+
+        if (JumpsToStartWith - JumpsLeft <= levelMetaData.JumpsForGold) // 10 - 8 < 3
+        {
+            ChangeTextColour(JumpAmountText, ColourManager.starGold);
+        }
+        else if (JumpsToStartWith - JumpsLeft <= levelMetaData.JumpsForSilver)
+        {
+            ChangeTextColour(JumpAmountText, ColourManager.starSilver);
+        }
+        else if (JumpsToStartWith - JumpsLeft <= levelMetaData.JumpsForBronze) // 9 - 9 <= 9
+        {
+            ChangeTextColour(JumpAmountText, ColourManager.starBronze);
+        }
+        else
+        {
+            AwardToGet.text = "Need bronze for next level";
+            ChangeTextColour(JumpAmountText, ColourManager.starDefault);
+        }
+
+        OneStarTutorialText.text = levelMetaData.JumpsForBronze.ToString();
+        TwoStarTutorialText.text = levelMetaData.JumpsForSilver.ToString();
+        ThreeStarTutorialText.text = levelMetaData.JumpsForGold.ToString();
+
+        BronzePodium.text = levelMetaData.JumpsForBronze.ToString();
+        SilverPodium.text = levelMetaData.JumpsForSilver.ToString();
+        GoldPodium.text = levelMetaData.JumpsForGold.ToString();
     }
 
     #region Main Menu
@@ -346,11 +401,16 @@ public class UiManager : MonoBehaviour
         analyticsButton.GetComponent<Toggle>().isOn = state;
     }
 
+    public void RefreshRateButton()
+    {
+
+    }
+
     #endregion Settings menu
 
     #region Level End screen
 
-    
+
 
     #endregion Level End screen
 }

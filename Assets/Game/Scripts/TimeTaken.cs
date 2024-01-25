@@ -12,7 +12,7 @@ public class TimeTaken : MonoBehaviour
     private static float timeStarted = 0;
     private static float durationInLevel;
 
-    internal static void TimeDuration(TimeAction timeAction, string methodName = "", Action callback = null)
+    internal static void TimeDuration(TimeAction timeAction, Action callback = null)
     {
         switch (timeAction)
         {
@@ -23,7 +23,7 @@ public class TimeTaken : MonoBehaviour
             case TimeAction.Stop:
                 float duration = Mathf.Abs(timeStarted - Time.time);
                 duration = Mathf.Round(duration * 100) / 100;
-                Logger.Instance.ShowDebugLog(methodName + " time taken: " + Mathf.Round(duration * 100) / 100 + ", duration: " + duration);
+                LevelTimeTaken(LevelManager.LastChapterPlayed, LevelManager.LastLevelPlayed, duration);
                 callback?.Invoke();
                 break;
         }
@@ -53,7 +53,7 @@ public class TimeTaken : MonoBehaviour
 
         if (time < t)
         {
-            SaveLoadManager.SaveStaticList[chapter].Levels[level].TimeTaken = time;
+            SaveLoadManager.SetLevelTime(chapter, level, time);
         }
 
         ChapterTimeTaken(chapter);
@@ -69,7 +69,7 @@ public class TimeTaken : MonoBehaviour
             totalChapterTime += SaveLoadManager.SaveStaticList[chapter].Levels[i].TimeTaken;
         }
 
-        SaveLoadManager.SaveStaticList[chapter].ChapterTimeTaken = totalChapterTime;
+        SaveLoadManager.SetChapterTime(chapter, totalChapterTime);
 
         Logger.Instance.ShowDebugLog("Total chapter time? " + totalChapterTime);
     }

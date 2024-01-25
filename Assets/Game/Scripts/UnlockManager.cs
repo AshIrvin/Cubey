@@ -10,7 +10,7 @@ public class UnlockManager : MonoBehaviour
             UnlockChapter(i);
         }
 
-        // TODO - if it's winter, check seasonal chapter
+        CheckSeasonalChapter();
     }
 
     internal static void UnlockChapter(int chapter)
@@ -21,9 +21,19 @@ public class UnlockManager : MonoBehaviour
         }
     }
 
-    internal static void UnlockLevel(int level)
+    internal static void LockChapter(int chapter)
     {
-        var lastChapter = SaveLoadManager.SaveStaticList[LevelManager.LastChapterPlayed];
+        SaveLoadManager.SaveStaticList[chapter].ChapterUnlocked = false;
+    }
+
+    internal static void LockLevel(int chapter, int level)
+    {
+        SaveLoadManager.SaveStaticList[chapter].Levels[level].LevelUnlocked = false;
+    }
+
+    internal static void UnlockLevel(int chapter, int level)
+    {
+        var lastChapter = SaveLoadManager.SaveStaticList[chapter];
 
         if (level < lastChapter.Levels.Count && level >= LevelManager.LastLevelUnlocked)
         {
@@ -32,10 +42,20 @@ public class UnlockManager : MonoBehaviour
         }
     }
 
-    internal static void UnlockSeasonalChapter()
+    internal static bool IsDateInWinter()
     {
         if (DateTime.Now.Month >= LevelManager.Instance.XmasStartMonth || // 11 >= 11 and <= 12
             DateTime.Now.Month <= LevelManager.Instance.XmasEndMonth) // 11 <= 1
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    internal static void CheckSeasonalChapter()
+    {
+        if (IsDateInWinter())
         {
             if (ShopManager.GamePurchased)
             {
@@ -54,5 +74,15 @@ public class UnlockManager : MonoBehaviour
 
             Logger.Instance.ShowDebugLog("Xmas chapter locked. Month: " + DateTime.Now.Month);
         }
+    }
+
+    internal static bool GetChapterUnlocked(int chapter)
+    {
+        return SaveLoadManager.SaveStaticList[chapter].ChapterUnlocked;
+    }
+
+    internal static bool GetLevelUnlocked(int chapter, int level)
+    {
+        return SaveLoadManager.SaveStaticList[chapter].Levels[level].LevelUnlocked;
     }
 }

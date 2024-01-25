@@ -14,15 +14,17 @@ public class FirstTimeUseSettings : MonoBehaviour
 
         for (int i = 0; i < chapterLength; i++)
         {
-            SaveLoadManager.SaveStaticList[i].ChapterUnlocked = false;
+            UnlockManager.LockChapter(i);
 
             for (int j = 0; j < SaveLoadManager.SaveStaticList[i].Levels.Count; j++)
             {
-                SaveLoadManager.SaveStaticList[i].Levels[j].LevelUnlocked = false;
+                UnlockManager.LockLevel(i, j);
             }
+
+            UnlockManager.UnlockLevel(i, 0);
         }
 
-        SaveLoadManager.SaveStaticList[1].ChapterUnlocked = true;
-        SaveLoadManager.SaveStaticList[1].Levels[0].LevelUnlocked = true;
+        UnlockManager.UnlockChapter(1);
+        Debug.Log("UnlockedFirstTimeLevels");
     }
 }

@@ -181,7 +181,7 @@ public class LevelManager : MonoBehaviour
 
         levelGameObject = GetLevel(levelNumber);
         // TODO - remove this find
-        levelCollision = levelGameObject.transform.Find("Environment").Find("LevelCollision").GetComponent<BoxCollider>();
+        levelCollision = levelGameObject.transform.Find("Environment/LevelCollision").GetComponent<BoxCollider>();
 
         levelGameObject.SetActive(true);
         AdSettings.Instance.EnableAdBackgroundBlocker(false);
