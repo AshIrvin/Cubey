@@ -25,7 +25,7 @@ public class LevelManager : MonoBehaviour
     private BoxCollider levelCollision;
     private int levelToLoad;
     private int demoLevelsPlayed;
-    private readonly int maxDemoLevel = 10;
+    private readonly int maxDemoLevel = 5;
 
     #region Getters
 

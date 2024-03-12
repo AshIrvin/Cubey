@@ -29,6 +29,7 @@ public class UiManager : MonoBehaviour
     [Header("UI Text")]
     [SerializeField] private Text levelText;
     [SerializeField] private Text itemText;
+    [SerializeField] private Text goToExitText;
     [SerializeField] private Text jumpAmountText;
     [SerializeField] private Text jumpText;
     [SerializeField] private Text awardToGet;
@@ -52,6 +53,7 @@ public class UiManager : MonoBehaviour
 
     internal Text LevelText => levelText;
     internal Text ItemText => itemText;
+    internal Text GoToExit => goToExitText;
     internal Text JumpAmountText => jumpAmountText;
     internal Text AwardToGet => awardToGet;
     internal Text OneStarTutorialText => oneStarTutorialText;

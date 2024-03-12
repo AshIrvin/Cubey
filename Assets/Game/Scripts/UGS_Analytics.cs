@@ -52,6 +52,8 @@ public class UGS_Analytics : MonoBehaviour
     {
         PlayerPrefs.SetInt("AnalyticsConsent", 0);
 
+        // TODO - This is being called before it's being started
+        // Game is set to no analytics as default
         AnalyticsService.Instance.StopDataCollection();
     }
 

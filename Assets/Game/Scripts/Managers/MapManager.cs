@@ -238,14 +238,16 @@ public class MapManager : MonoBehaviour
 
         SetStarsForEachLevel();
         
-        SetShopToButton();
+        //SetShopToButton();
 
         Debug.Log("CycleButtonLocks in chapter " + lastChapter.ChapterNumber);
     }
 
     private void CheckLevelUnlocks(Button button, int i)
     {
-        int maxLevels = ShopManager.GamePurchased ? 30 : LevelManager.Instance.MaxDemoLevel;
+        // Tutorial finishing should still pop up. This is only for unlocked levels, which all should be unlocked
+
+        int maxLevels = LevelManager.LevelAmount; //ShopManager.GamePurchased ? 30 : LevelManager.Instance.MaxDemoLevel;
 
         if (i >= 0 && i < maxLevels)
         {
@@ -268,7 +270,7 @@ public class MapManager : MonoBehaviour
 
     private void SetShopToButton()
     {
-        var button = chapterList[LevelManager.LastChapterPlayed].InGameMapButtonList[10].GetComponent<Button>();
+        var button = chapterList[LevelManager.LastChapterPlayed].InGameMapButtonList[LevelManager.Instance.MaxDemoLevel].GetComponent<Button>();
         originalLevel10Image = button.transform.Find("Mask/Screenshot").GetComponent<Image>().sprite;
 
         if (ShopManager.GamePurchased) return;
@@ -284,7 +286,7 @@ public class MapManager : MonoBehaviour
 
     private void ResetLevelShopButton()
     {
-        var button = chapterList[LevelManager.LastChapterPlayed].InGameMapButtonList[10].GetComponent<Button>();
+        var button = chapterList[LevelManager.LastChapterPlayed].InGameMapButtonList[LevelManager.Instance.MaxDemoLevel].GetComponent<Button>();
 
         GameObject level10 = button.transform.Find("Mask/Screenshot").gameObject;
         var image = level10.GetComponent<Image>();
@@ -293,7 +295,7 @@ public class MapManager : MonoBehaviour
         button.onClick.RemoveAllListeners();
         button.onClick.AddListener(() => UiManager.Instance.GetLevelNoToLoad());
 
-        button.interactable = SaveLoadManager.SaveStaticList[LevelManager.LastChapterPlayed].Levels[10].LevelUnlocked;
+        button.interactable = SaveLoadManager.SaveStaticList[LevelManager.LastChapterPlayed].Levels[LevelManager.Instance.MaxDemoLevel].LevelUnlocked;
         var colour = image.color;
         colour.a = button.interactable ? 1 : 0.3f;
         image.color = colour;

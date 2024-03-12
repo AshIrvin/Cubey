@@ -29,6 +29,7 @@ public class InitialiseAds : MonoBehaviour
     {
         if (ShopManager.GamePurchased)
         {
+            Logger.Instance.ShowDebugLog("MobileAds. Game purchased. No ads required.");
             return;
         }
 

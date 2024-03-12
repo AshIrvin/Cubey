@@ -163,8 +163,6 @@ public class GameManager : MonoBehaviour
         SetupStarFinishImages();
     }
 
-
-
     private void GetLevelInfo()
     {
         levelNo = LevelManager.LastLevelPlayed;
@@ -244,7 +242,8 @@ public class GameManager : MonoBehaviour
         GetPickupsForLevel();
         ReParentExitSwirl(false);
         SetupExit();
-        
+        EnableGoToExitText(false);
+
         _ = UiManager.Instance.WaitForLevelMetaData();
 
         uiManager.PickupText();
@@ -378,7 +377,15 @@ public class GameManager : MonoBehaviour
 
         uiManager.DisablePickupGraphics();
         ShowExit();
-        uiManager.ItemText.text = "Go to Exit";
+        
+        EnableGoToExitText(true);
+    }
+
+    private void EnableGoToExitText(bool state)
+    {
+        uiManager.ItemText.gameObject.SetActive(!state);
+
+        uiManager.GoToExit.gameObject.SetActive(state);
     }
 
     private void GetPickupsForLevel()
