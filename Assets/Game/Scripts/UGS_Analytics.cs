@@ -10,7 +10,7 @@ public class UGS_Analytics : MonoBehaviour
 
     private void Awake()
     {
-        UiManager.AnalyticsConsent += HasGivenConsent;
+        UiManager.AnalyticsConsent += ToggleConsent;
         LevelManager.OnLevelCompleted += LevelCompletedCustomEvent;
         LevelManager.OnLevelFailed += LevelFailedCustomEvent;
     }
@@ -26,10 +26,20 @@ public class UGS_Analytics : MonoBehaviour
             Debug.Log(e.ToString());
         }
 
-        HasGivenConsent(PlayerPrefs.GetInt("AnalyticsConsent") == 1);
+        //HasGivenConsent(PlayerPrefs.GetInt("AnalyticsConsent") == 1);
+        CheckConsent();
     }
 
-    private void HasGivenConsent(bool state)
+    private void CheckConsent()
+    {
+        if (PlayerPrefs.GetInt("AnalyticsConsent") == 1)
+        {
+            GiveConsent();
+            AnalyticsConsent?.Invoke(true);
+        }
+    }
+
+    private void ToggleConsent(bool state)
     {
         if (!state)
         {
@@ -52,8 +62,6 @@ public class UGS_Analytics : MonoBehaviour
     {
         PlayerPrefs.SetInt("AnalyticsConsent", 0);
 
-        // TODO - This is being called before it's being started
-        // Game is set to no analytics as default
         AnalyticsService.Instance.StopDataCollection();
     }
 
@@ -65,6 +73,7 @@ public class UGS_Analytics : MonoBehaviour
         };
 
         AnalyticsService.Instance.CustomData("levelCompleted", parameters);
+        //AnalyticsService.Instance.RecordEvent(parameters);
 
         AnalyticsService.Instance.Flush();
     }

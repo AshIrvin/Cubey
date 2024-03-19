@@ -151,12 +151,12 @@ public class MapManager : MonoBehaviour
         mainMenuManager.EnableGoldAwardsButton(true);
         mainMenuManager.TryChapterFinishScreen();
         
-        if(!ShopManager.GamePurchased && LevelManager.Instance.LevelsPlayed >= AdSettings.Instance.LevelsBeforeAd)
+/*        if(!ShopManager.GamePurchased && LevelManager.Instance.LevelsPlayed >= AdSettings.Instance.LevelsBeforeAd)
         {
             // TODO - enable ads. Shouldn't it already be enabled?
             // initialiseAds.enabled = true;
             // PrepareAd?.Invoke();
-        }
+        }*/
 
         gameManager.SetGameState(GameManager.GameState.Map);
         gameManager.QuitingLevel();

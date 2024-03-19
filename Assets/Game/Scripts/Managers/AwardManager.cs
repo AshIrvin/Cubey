@@ -27,6 +27,9 @@ public class AwardManager : MonoBehaviour
 
     internal static int GetChapterAward(int chapter)
     {
+        if (SaveLoadManager.SaveStaticList == null || SaveLoadManager.SaveStaticList.Count == 0)
+            Logger.Instance.ShowDebugError("GetChapterAward SaveLoadManager.SaveStaticList issue");
+
         return SaveLoadManager.SaveStaticList[chapter].AllStars;
     }
 

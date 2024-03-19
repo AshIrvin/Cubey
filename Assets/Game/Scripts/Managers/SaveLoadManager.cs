@@ -58,7 +58,7 @@ public class SaveLoadManager : MonoBehaviour
             SaveStaticList.Add(item);
         }
 
-        Debug.Log("CreateSaves. : " + SaveStaticList.Count);
+        Logger.Instance.ShowDebugLog("CreateSaves. SaveStaticList count: " + SaveStaticList.Count);
     }
 
     private async void LoadSaves()

@@ -386,7 +386,11 @@ public class MainMenuManager : MonoBehaviour
         if (chapterFinishScreen != null)
         {
             chapterFinishScreen.SetActive(state);
-            chapterFinishScreen.GetComponent<ChapterComplete>().ShowCompleteScreen(state);
+            var chapterComplete = chapterFinishScreen.GetComponent<ChapterComplete>();
+            if (chapterComplete != null)
+                chapterComplete.ShowCompleteScreen(state);
+            else
+                Logger.Instance.ShowDebugError("Can't find Chapter Complete script!");
         }
     }
     
